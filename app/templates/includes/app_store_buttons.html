@@ -1,0 +1,37 @@
+<div class="flex flex-col sm:flex-row gap-4">
+    {% if ministry.APP_STORE_URL %}
+    <a href="{{ ministry.APP_STORE_URL }}" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Download on the App Store">
+        <i class="fab fa-apple text-2xl"></i>
+        <div class="text-left">
+            <div class="text-xs opacity-70">Download on the</div>
+            <div class="font-black">App Store</div>
+        </div>
+    </a>
+    {% else %}
+    <span class="app-store-btn opacity-80 cursor-default" aria-label="App Store Coming Soon">
+        <i class="fab fa-apple text-2xl"></i>
+        <div class="text-left">
+            <div class="text-xs font-bold" style="color: var(--gold-primary);">Coming Soon</div>
+            <div class="font-black">App Store</div>
+        </div>
+    </span>
+    {% endif %}
+
+    {% if ministry.PLAY_STORE_URL %}
+    <a href="{{ ministry.PLAY_STORE_URL }}" target="_blank" rel="noopener noreferrer" class="app-store-btn gold-variant" aria-label="Get it on Google Play">
+        <i class="fab fa-google-play text-2xl"></i>
+        <div class="text-left">
+            <div class="text-xs opacity-70">Get it on</div>
+            <div class="font-black">Google Play</div>
+        </div>
+    </a>
+    {% else %}
+    <span class="app-store-btn gold-variant opacity-80 cursor-default" aria-label="Google Play Coming Soon">
+        <i class="fab fa-google-play text-2xl"></i>
+        <div class="text-left">
+            <div class="text-xs font-bold" style="color: var(--purple-dark);">Coming Soon</div>
+            <div class="font-black">Google Play</div>
+        </div>
+    </span>
+    {% endif %}
+</div>

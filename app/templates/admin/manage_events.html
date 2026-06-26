@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Manage Events | Admin{% endblock %}
+{% block content %}
+<section class="mb-6 max-w-7xl mx-auto px-4">
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <div>
+            <h1 class="text-3xl font-bold section-heading mb-2">Manage Events</h1>
+            <p class="text-gray-600">Create, edit, publish, and feature ministry events.</p>
+        </div>
+        <a href="{{ url_for('admin.create_event') }}" class="btn-primary px-6 py-3 rounded-xl font-bold">Create Event</a>
+    </div>
+
+    <div class="card overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left border-b">
+                    <th class="p-4">Event</th>
+                    <th class="p-4">Date</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr class="border-b last:border-0">
+                    <td class="p-4">
+                        <div class="font-semibold">{{ event.title }}</div>
+                        <div class="text-gray-500 text-xs">{{ event.slug }}</div>
+                    </td>
+                    <td class="p-4 whitespace-nowrap">
+                        {{ event.start_date.strftime('%Y-%m-%d %H:%M') }}
+                        {% if event.end_date %}<br><span class="text-gray-500">to {{ event.end_date.strftime('%Y-%m-%d %H:%M') }}</span>{% endif %}
+                    </td>
+                    <td class="p-4">
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-bold {% if event.is_published %}badge-published{% else %}badge-draft{% endif %}">
+                            {{ 'Published' if event.is_published else 'Draft' }}
+                        </span>
+                        {% if event.is_featured %}
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-bold badge-featured ml-1">Featured</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap gap-2">
+                            <a href="{{ url_for('admin.edit_event', event_id=event.id) }}" class="btn-outline-gold text-xs px-3 py-1 rounded-lg">Edit</a>
+                            <form method="POST" action="{{ url_for('admin.toggle_event_publish', event_id=event.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn-outline-gold text-xs px-3 py-1 rounded-lg">{{ 'Unpublish' if event.is_published else 'Publish' }}</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin.toggle_event_featured', event_id=event.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn-outline-gold text-xs px-3 py-1 rounded-lg">{{ 'Unfeature' if event.is_featured else 'Feature' }}</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('admin.delete_event', event_id=event.id) }}" onsubmit="return confirm('Delete this event?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn-danger text-xs px-3 py-1 rounded-lg">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="p-8 text-center text-gray-600">No events yet. <a href="{{ url_for('admin.create_event') }}" class="font-bold" style="color: var(--purple-primary);">Create your first event</a>.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

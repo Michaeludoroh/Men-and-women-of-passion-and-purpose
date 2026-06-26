@@ -1,0 +1,62 @@
+{# Social media links — variant: footer | contact | about | compact #}
+{% from 'includes/social_icon_svg.html' import render as social_icon %}
+{% set social_variant = variant|default('footer') %}
+{% if social_variant == 'footer' %}
+<div class="social-links-row social-links-row--footer flex flex-wrap gap-3 {{ extra_class|default('') }}">
+    {% for link in social_links %}
+    <a href="{{ link.url }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="social-icon-btn social-icon-btn--footer"
+       aria-label="{{ link.label }}"
+       title="{{ link.label }}">
+        {{ social_icon(link.key) }}
+    </a>
+    {% endfor %}
+</div>
+{% elif social_variant == 'contact' %}
+<div class="social-links-row flex flex-wrap gap-3 pt-4 {{ extra_class|default('') }}">
+    {% for link in social_links %}
+    <a href="{{ link.url }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="social-icon-btn social-icon-btn--contact"
+       style="background: {{ contact_social_backgrounds[loop.index0 % contact_social_backgrounds|length] }};"
+       aria-label="{{ link.label }}"
+       title="{{ link.label }}">
+        {{ social_icon(link.key) }}
+    </a>
+    {% endfor %}
+</div>
+{% elif social_variant == 'about' %}
+<div class="social-links-row social-links-row--about flex flex-wrap justify-center gap-6 md:gap-10 {{ extra_class|default('') }}">
+    {% for link in social_links %}
+    <a href="{{ link.url }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="social-card-link group"
+       aria-label="{{ link.label }}"
+       title="{{ link.label }}">
+        <span class="social-card-icon">
+            {{ social_icon(link.key) }}
+        </span>
+        <span class="social-card-label">
+            {% if link.key == 'tiktok' %}{{ link.username }}{% elif link.key == 'youtube' %}{{ link.display_name }}{% elif link.key == 'instagram' %}Instagram{% else %}Facebook{% endif %}
+        </span>
+    </a>
+    {% endfor %}
+</div>
+{% elif social_variant == 'compact' %}
+<div class="social-links-row flex flex-wrap justify-center gap-3 {{ extra_class|default('') }}">
+    {% for link in social_links %}
+    <a href="{{ link.url }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="social-icon-btn social-icon-btn--compact"
+       aria-label="{{ link.label }}"
+       title="{{ link.label }}">
+        {{ social_icon(link.key) }}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}

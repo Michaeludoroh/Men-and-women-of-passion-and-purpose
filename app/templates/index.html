@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% block title %}Home | Men and Women of Passion and Purpose{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="relative min-h-screen flex items-center justify-center overflow-hidden" style="background: linear-gradient(135deg, #3C0F6E 0%, #5A189A 40%, #B8962E 100%);">
+    <div class="absolute inset-0 hero-overlay-brand z-10"></div>
+    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, #D4AF37 0%, transparent 50%), radial-gradient(circle at 80% 50%, #7B2CBF 0%, transparent 50%);"></div>
+
+    <div class="relative z-20 text-center text-white px-4 max-w-5xl mx-auto animate-fade-in py-24">
+        <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-lg mx-auto mb-8">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
+            <span class="block" style="color: #D4AF37;">MEN & WOMEN OF</span>
+            <span class="block">PASSION & PURPOSE</span>
+        </h1>
+        <p class="text-lg sm:text-xl md:text-2xl mb-10 max-w-3xl mx-auto opacity-95 leading-relaxed">
+            {{ ministry.MINISTRY_TAGLINE }}
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a href="{{ url_for('sermon.sermons') }}" class="btn-hero-gold px-10 py-4 text-lg font-black uppercase rounded-2xl">
+                <i class="fas fa-play-circle mr-2"></i>Watch Sermons
+            </a>
+            <a href="{{ url_for('main.app_download') }}" class="btn-hero-outline px-10 py-4 text-lg font-black uppercase rounded-2xl">
+                <i class="fas fa-mobile-alt mr-2"></i>Get the App
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Actions -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="feature-card-purple rounded-3xl p-10 shadow-xl hover:-translate-y-2 transition-all duration-500 text-center">
+                <i class="fas fa-play-circle text-5xl mb-4 opacity-90"></i>
+                <h3 class="text-xl font-black mb-2">Live Sermons</h3>
+                <p class="opacity-90 mb-4">Fire-filled messages to ignite your purpose</p>
+                <a href="{{ url_for('sermon.sermons') }}" class="inline-block font-bold underline">Watch Now</a>
+            </div>
+            <div class="feature-card-gold rounded-3xl p-10 shadow-xl hover:-translate-y-2 transition-all duration-500 text-center">
+                <i class="fas fa-hands-praying text-5xl mb-4 opacity-90"></i>
+                <h3 class="text-xl font-black mb-2">Prayer Request</h3>
+                <p class="opacity-90 mb-4">Our prayer team stands with you in faith</p>
+                <a href="{{ url_for('prayer.prayer_request') }}" class="inline-block font-bold underline">Send Prayer</a>
+            </div>
+            <div class="feature-card-white rounded-3xl p-10 shadow-xl hover:-translate-y-2 transition-all duration-500 text-center">
+                <i class="fas fa-heart text-5xl mb-4" style="color: var(--purple-primary);"></i>
+                <h3 class="text-xl font-black mb-2">Online Giving</h3>
+                <p class="text-gray-600 mb-4">Partner with us in kingdom advancement</p>
+                <a href="{{ url_for('giving.giving_page') }}" class="inline-block font-bold" style="color: var(--purple-primary);">Give Securely</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission & Vision -->
+<section class="py-20" style="background: var(--gray-light);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-10">
+            <div class="card p-10">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style="background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));">
+                    <i class="fas fa-bullseye text-2xl" style="color: var(--purple-dark);"></i>
+                </div>
+                <h2 class="text-3xl font-black section-heading mb-4">Our Mission</h2>
+                <p class="text-gray-700 text-lg leading-relaxed">{{ ministry.MINISTRY_MISSION }}</p>
+            </div>
+            <div class="card p-10">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style="background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));">
+                    <i class="fas fa-mountain text-2xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-black section-heading mb-4">Our Vision</h2>
+                <p class="text-gray-700 text-lg leading-relaxed">{{ ministry.MINISTRY_VISION }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Events -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black section-heading mb-4">Upcoming Events</h2>
+            <p class="text-gray-600 mb-4">Join us for conferences, prayer gatherings, and empowerment programs</p>
+            <a href="{{ url_for('main.events') }}" class="font-bold" style="color: var(--purple-primary);">View All Events <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        {% if featured_events %}
+        <div class="event-grid">
+            {% for event in featured_events %}
+            {% include "includes/event_card.html" %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center p-12">
+            <i class="fas fa-calendar-alt text-4xl mb-4" style="color: var(--gold-primary);"></i>
+            <p class="text-gray-600">New events coming soon. Stay connected for conference and prayer night announcements.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Mobile App Download -->
+<section id="download-app" class="app-download-section py-24 text-white relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <span class="inline-block px-4 py-1 rounded-full text-sm font-bold mb-4" style="background: rgba(212,175,55,0.3); color: #E8C547;">WOP App</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-6 section-heading-light">Download the WOP App</h2>
+                <p class="text-lg opacity-90 mb-6 leading-relaxed">
+                    Access announcements, events, sermons, prayer resources, mentorship programs, empowerment initiatives, and ministry updates directly from your mobile device.
+                </p>
+
+                <!-- Feature highlights strip -->
+                <div class="flex flex-wrap gap-3 mb-8">
+                    {% for feature in app_features[:6] %}
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold" style="background: rgba(255,255,255,0.12);">
+                        <i class="fas {{ feature.icon }} text-brand-gold"></i>{{ feature.title }}
+                    </span>
+                    {% endfor %}
+                </div>
+
+                {% include "includes/app_store_buttons.html" %}
+
+                <a href="{{ url_for('main.app_download') }}" class="inline-block mt-6 font-bold underline opacity-90 hover:opacity-100">
+                    Explore the WOP App <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="flex flex-col items-center gap-6">
+                <div class="app-phone-mockup">
+                    <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-mockup mb-6">
+                    <h3 class="text-xl font-black mb-2" style="color: var(--gold-primary);">WOP App</h3>
+                    <p class="text-sm opacity-80">Announcements · Events · Sermons · Prayer</p>
+                </div>
+
+                <!-- Screenshot preview strip -->
+                <div class="flex gap-3 overflow-x-auto max-w-full pb-2 app-screenshot-strip">
+                    {% for screenshot in app_screenshots() %}
+                    <img src="{{ screenshot }}" alt="WOP App preview {{ loop.index }}" class="app-screenshot-thumb rounded-xl flex-shrink-0" loading="lazy">
+                    {% endfor %}
+                </div>
+
+                <!-- QR code linking to /app -->
+                <div class="card p-4 text-center" style="background: rgba(255,255,255,0.1); border: none;">
+                    <img src="{{ app_qr_code_url() }}" alt="QR code for WOP App download page" class="w-24 h-24 mx-auto rounded-lg mb-2" loading="lazy">
+                    <p class="text-xs opacity-80">Scan for WOP App</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Leadership Preview -->
+{% if founders %}
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black section-heading mb-4">Our Founders & Leaders</h2>
+            <a href="{{ url_for('main.leadership') }}" class="font-bold" style="color: var(--purple-primary);">View Full Leadership <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {% for leader in founders %}
+            <div class="leader-card rounded-3xl overflow-hidden">
+                {% if leader.photo %}
+                <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="leader-photo">
+                {% else %}
+                <div class="leader-photo-placeholder"><i class="fas fa-user"></i></div>
+                {% endif %}
+                <div class="p-6">
+                    <h3 class="text-xl font-black">{{ leader.name }}</h3>
+                    <p class="font-bold text-sm" style="color: var(--purple-primary);">{{ leader.role }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Featured Gallery -->
+<section class="py-20" style="background: var(--gray-light);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black section-heading mb-4">Featured Gallery</h2>
+            <p class="text-gray-600 mb-4">Highlights from conferences, empowerment projects, outreach programs, and events</p>
+            <a href="{{ url_for('main.gallery') }}" class="font-bold" style="color: var(--purple-primary);">View Full Gallery <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        {% if featured_gallery %}
+        <div class="gallery-masonry gallery-masonry-home">
+            {% for image in featured_gallery %}
+            <article class="gallery-masonry-item gallery-card rounded-2xl overflow-hidden">
+                <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}" loading="lazy">
+                <div class="p-4">
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Featured</span>
+                    <h3 class="font-bold mt-2">{{ image.title }}</h3>
+                    <p class="text-sm text-gray-500">{{ category_labels.get(image.category, image.category) }}</p>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center p-12">
+            <i class="fas fa-images text-4xl mb-4" style="color: var(--gold-primary);"></i>
+            <p class="text-gray-600">Featured gallery photos coming soon. Check back for conference and outreach highlights.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Recent Sermons -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black section-heading mb-4">Recent Sermons</h2>
+            <a href="{{ url_for('sermon.sermons') }}" class="font-bold" style="color: var(--purple-primary);">View All <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+            {% for sermon in featured_sermons %}
+            <div class="sermon-card rounded-3xl p-6">
+                <span class="text-xs font-bold uppercase px-3 py-1 rounded-full" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">{{ sermon.category }}</span>
+                <h3 class="text-xl font-bold mt-3 mb-2">{{ sermon.title }}</h3>
+                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ sermon.description }}</p>
+                {% if sermon.video_url %}
+                <a href="{{ sermon.video_url }}" target="_blank" class="btn-gold-nav inline-block px-4 py-2 rounded-xl text-sm font-bold">Watch</a>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="col-span-full card text-center p-12">
+                <p class="text-gray-600">Sermons coming soon.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Social Media -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-4xl font-black mb-4 section-heading">Connect With Us</h2>
+        <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Follow Men and Women of Passion and Purpose on social media for teachings, events, and ministry updates.</p>
+        {% with variant='about' %}{% include 'includes/social_links.html' %}{% endwith %}
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-20 text-center text-white" style="background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary));">
+    <div class="max-w-4xl mx-auto px-4">
+        <h2 class="text-4xl font-black mb-4">Ready to Ignite Your Purpose?</h2>
+        <p class="text-xl mb-8 opacity-95">Join our global community of fire-filled believers.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ url_for('auth.register') }}" class="bg-white font-black py-4 px-10 rounded-2xl text-lg" style="color: var(--purple-primary);">Join Community</a>
+            <a href="{{ url_for('classes.classes_home') }}" class="btn-hero-outline py-4 px-10 rounded-2xl text-lg font-black">Ministry School</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

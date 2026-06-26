@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Manage Sermons | Admin{% endblock %}
+{% block content %}
+<section class="mb-6">
+    <h1 class="text-3xl font-bold text-purple-900 mb-3">Manage Sermons</h1>
+    <form method="POST" class="card space-y-3 mb-6">
+        {{ form.hidden_tag() }}
+        <div><label class="label">{{ form.title.label }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label">{{ form.description.label }}</label>{{ form.description(class="input-field", rows="4") }}</div>
+        <div><label class="label">{{ form.video_url.label }}</label>{{ form.video_url(class="input-field") }}</div>
+        <div><label class="label">{{ form.category.label }}</label>{{ form.category(class="input-field") }}</div>
+        <div>{{ form.submit(class="btn-primary") }}</div>
+    </form>
+</section>
+
+<section class="grid gap-4">
+    {% for sermon in sermons %}
+    <article class="card flex justify-between items-center">
+        <div>
+            <h3 class="font-semibold">{{ sermon.title }}</h3>
+            <p class="text-sm text-gray-600">{{ sermon.category }}</p>
+        </div>
+        <form method="POST" action="{{ url_for('admin.delete_sermon', sermon_id=sermon.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn-danger">Delete</button>
+        </form>
+    </article>
+    {% else %}
+    <div class="card">No sermons yet.</div>
+    {% endfor %}
+</section>
+{% endblock %}

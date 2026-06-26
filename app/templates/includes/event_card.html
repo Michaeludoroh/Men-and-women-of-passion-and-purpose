@@ -1,0 +1,43 @@
+<article class="event-card rounded-2xl overflow-hidden">
+    {% if event.banner_image %}
+    <div class="event-card-banner">
+        <img src="{{ url_for('static', filename=event.banner_image) }}" alt="{{ event.title }}" loading="lazy">
+    </div>
+    {% else %}
+    <div class="event-card-banner event-card-banner-placeholder">
+        <i class="fas fa-calendar-alt text-4xl" style="color: var(--gold-primary);"></i>
+    </div>
+    {% endif %}
+    <div class="p-5">
+        {% if event.is_featured %}
+        <span class="event-badge-featured">Featured</span>
+        {% endif %}
+        <h3 class="text-lg font-bold text-gray-900 mt-2">{{ event.title }}</h3>
+        <div class="event-meta mt-3 space-y-1">
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-calendar-day mr-2" style="color: var(--purple-primary);"></i>
+                {{ event.start_date.strftime('%B %d, %Y') }}
+                {% if event.end_date and event.end_date.date() != event.start_date.date() %}
+                – {{ event.end_date.strftime('%B %d, %Y') }}
+                {% endif %}
+            </p>
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-clock mr-2" style="color: var(--purple-primary);"></i>
+                {{ event.start_date.strftime('%I:%M %p') }}
+                {% if event.end_date %} – {{ event.end_date.strftime('%I:%M %p') }}{% endif %}
+            </p>
+            {% if event.location or event.venue %}
+            <p class="text-sm text-gray-600">
+                <i class="fas fa-map-marker-alt mr-2" style="color: var(--purple-primary);"></i>
+                {% if event.venue %}{{ event.venue }}{% if event.location %}, {% endif %}{% endif %}{{ event.location or '' }}
+            </p>
+            {% endif %}
+        </div>
+        <p class="text-sm text-gray-600 mt-3 line-clamp-3">{{ event.short_description() }}</p>
+        {% if event.registration_link %}
+        <a href="{{ event.registration_link }}" target="_blank" rel="noopener noreferrer" class="btn-gold-nav inline-block mt-4 px-4 py-2 rounded-xl text-sm font-bold">
+            Register <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+        </a>
+        {% endif %}
+    </div>
+</article>

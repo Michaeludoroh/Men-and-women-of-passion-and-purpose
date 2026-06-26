@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | MWPP{% endblock %}
+{% block content %}
+<section class="mb-8 max-w-7xl mx-auto px-4">
+    <h1 class="text-3xl font-bold section-heading">Admin Dashboard</h1>
+    <p class="text-gray-600">Manage users, sermons, donations, prayer requests, gallery, leaders, and more.</p>
+</section>
+
+<section class="grid md:grid-cols-4 gap-4 mb-8 max-w-7xl mx-auto px-4">
+    <div class="card text-center p-4"><p class="text-sm">Users</p><p class="text-2xl font-bold">{{ stats.users }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Sermons</p><p class="text-2xl font-bold">{{ stats.sermons }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Prayer Requests</p><p class="text-2xl font-bold">{{ stats.prayers }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Contact Messages</p><p class="text-2xl font-bold">{{ stats.contacts }}{% if stats.unread_contacts %} <span class="text-sm text-brand-gold">({{ stats.unread_contacts }} unread)</span>{% endif %}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Donations</p><p class="text-2xl font-bold">{{ stats.donations }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Courses</p><p class="text-2xl font-bold">{{ stats.courses }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Assignments</p><p class="text-2xl font-bold">{{ stats.assignments }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Leaders</p><p class="text-2xl font-bold">{{ stats.leaders }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Gallery Images</p><p class="text-2xl font-bold">{{ stats.gallery }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Events</p><p class="text-2xl font-bold">{{ stats.events }} <span class="text-sm text-gray-500">({{ stats.published_events }} live)</span></p></div>
+</section>
+
+<section class="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_users') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Users</a>
+    <a href="{{ url_for('admin.manage_sermons') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Sermons</a>
+    <a href="{{ url_for('admin.manage_prayers') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Prayer Requests</a>
+    <a href="{{ url_for('admin.manage_contacts') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Contact Inbox{% if stats.unread_contacts %} <span class="badge-unread ml-1">{{ stats.unread_contacts }}</span>{% endif %}</a>
+    <a href="{{ url_for('admin.manage_donations') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Donations</a>
+    <a href="{{ url_for('admin.manage_classes') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Classes</a>
+    <a href="{{ url_for('admin.manage_assignments') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Assignments</a>
+    <a href="{{ url_for('admin.manage_leaders') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Leaders</a>
+    <a href="{{ url_for('admin.manage_gallery') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Gallery</a>
+    <a href="{{ url_for('admin.manage_events') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Events</a>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
+{% block content %}
+<section class="mb-8">
+    <h1 class="text-xl md:text-2xl lg:text-3xl font-bold text-purple-900 mb-3">Member Dashboard</h1>
+    <p class="text-xs md:text-sm text-gray-600 mt-1 leading-relaxed">Welcome back, {{ current_user.name }}. Access sermons, classes, and ministry updates.</p>
+</section>
+
+<section class="grid md:grid-cols-3 gap-4 md:gap-6 mb-10">
+    <a href="{{ url_for('sermon.sermons') }}" class="card p-4 md:p-6 h-32 md:h-40 flex flex-col justify-between hover:-translate-y-1 transition">
+        <h3 class="font-bold text-sm md:text-base line-clamp-1">Sermons</h3>
+        <p class="text-xs md:text-sm line-clamp-2 flex-1">Watch and revisit ministry teachings.</p>
+    </a>
+    <a href="{{ url_for('classes.classes_home') }}" class="card p-4 md:p-6 h-32 md:h-40 flex flex-col justify-between hover:-translate-y-1 transition">
+        <h3 class="font-bold text-sm md:text-base line-clamp-1">Classes & Assignments</h3>
+        <p class="text-xs md:text-sm line-clamp-2 flex-1">Continue your discipleship training journey.</p>
+    </a>
+    <a href="{{ url_for('main.profile') }}" class="card p-4 md:p-6 h-32 md:h-40 flex flex-col justify-between hover:-translate-y-1 transition">
+        <h3 class="font-bold text-sm md:text-base line-clamp-1">Profile</h3>
+        <p class="text-xs md:text-sm line-clamp-2 flex-1">Update your member profile information.</p>
+    </a>
+</section>
+
+<section>
+    <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-purple-900 mb-4">Latest Sermons</h2>
+    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+        {% for sermon in sermons %}
+            <div class="card p-4">
+                <h3 class="font-semibold text-xs md:text-sm mb-1 line-clamp-1">{{ sermon.title }}</h3>
+                <p class="text-xs text-purple-700 mb-1">{{ sermon.category }}</p>
+                <p class="text-xs leading-tight line-clamp-2">{{ sermon.description[:100] }}{% if sermon.description|length > 100 %}...{% endif %}</p>
+            </div>
+        {% else %}
+            <div class="card md:col-span-3 p-12 text-center">
+                <h3 class="text-base md:text-lg font-bold text-gray-600 mb-2">No sermons available yet.</h3>
+                <p class="text-sm text-gray-500">Latest messages will appear here.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

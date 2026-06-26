@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Manage Classes | Admin{% endblock %}
+{% block content %}
+<section class="mb-8">
+    <h1 class="text-3xl font-bold text-purple-900 mb-4">Manage Classes</h1>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary mb-4">← Back to Dashboard</a>
+</section>
+
+<!-- Create Form -->
+<section class="card mb-8 p-6">
+    <h2 class="text-2xl font-bold mb-4">Create New Class</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="grid md:grid-cols-3 gap-4 mb-4">
+            <div>
+                {{ form.title.label(class="block text-sm font-medium mb-1") }}
+                {{ form.title(class="w-full p-2 border rounded") }}
+            </div>
+            <div>
+                {{ form.tutor.label(class="block text-sm font-medium mb-1") }}
+                {{ form.tutor(class="w-full p-2 border rounded") }}
+            </div>
+        </div>
+        <div class="mb-4">
+            {{ form.description.label(class="block text-sm font-medium mb-1") }}
+            {{ form.description(class="w-full p-2 border rounded h-24") }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</section>
+
+<!-- Classes Table -->
+<section class="card p-6">
+    <h2 class="text-2xl font-bold mb-4">Classes ({{ courses|length }})</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="p-3 text-left">ID</th>
+                    <th class="p-3 text-left">Title</th>
+                    <th class="p-3 text-left">Tutor</th>
+                    <th class="p-3 text-left">Description</th>
+                    <th class="p-3 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr class="border-t">
+                    <td class="p-3">{{ course.id }}</td>
+                    <td class="p-3 font-medium">{{ course.title }}</td>
+                    <td class="p-3">{{ course.tutor }}</td>
+                    <td class="p-3 max-w-xs truncate">{{ course.description }}</td>
+                    <td class="p-3">
+                        <form method="POST" action="{{ url_for('admin.delete_course', course_id=course.id) }}" class="inline" onsubmit="return confirm('Delete {{ course.title }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

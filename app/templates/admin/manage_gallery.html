@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Manage Gallery | Admin{% endblock %}
+{% block content %}
+<section class="mb-6 max-w-7xl mx-auto px-4">
+    <h1 class="text-3xl font-bold section-heading mb-3">Manage Gallery</h1>
+    <form method="POST" enctype="multipart/form-data" class="card space-y-3 mb-6 p-6">
+        {{ form.hidden_tag() }}
+        <div><label class="label">{{ form.title.label }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label">{{ form.description.label }}</label>{{ form.description(class="input-field", rows="3") }}</div>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="label">{{ form.category.label }}</label>{{ form.category(class="input-field") }}</div>
+            <div><label class="label">{{ form.is_featured.label }}</label>{{ form.is_featured(class="input-field") }}</div>
+        </div>
+        <div><label class="label">{{ form.image.label }}</label>{{ form.image(class="input-field") }}</div>
+        <div>{{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}</div>
+    </form>
+</section>
+
+<section class="gallery-masonry max-w-7xl mx-auto px-4 pb-12">
+    {% for image in images %}
+    <article class="gallery-masonry-item gallery-card">
+        <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}">
+        <div class="p-4 flex justify-between items-start gap-3">
+            <div>
+                <h3 class="font-semibold">{{ image.title }}</h3>
+                <p class="text-sm text-gray-600">{{ image.category }}{% if image.is_featured %} · Featured{% endif %}</p>
+            </div>
+            <div class="flex flex-col gap-2">
+                <form method="POST" action="{{ url_for('admin.toggle_gallery_featured', image_id=image.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn-outline-gold text-xs px-3 py-1 rounded-lg">{{ 'Unfeature' if image.is_featured else 'Feature' }}</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.delete_gallery_image', image_id=image.id) }}" onsubmit="return confirm('Delete this image?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn-danger text-xs px-3 py-1 rounded-lg">Delete</button>
+                </form>
+            </div>
+        </div>
+    </article>
+    {% else %}
+    <div class="card p-6 col-span-full">No gallery images yet.</div>
+    {% endfor %}
+</section>
+{% endblock %}

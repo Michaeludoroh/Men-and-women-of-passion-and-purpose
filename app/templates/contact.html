@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Contact | {{ ministry.MINISTRY_NAME }}{% endblock %}
+
+{% block content %}
+<section class="page-hero mb-12 rounded-3xl">
+    <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Contact Us</h1>
+        <p class="text-lg md:text-xl opacity-95">We would love to hear from you. Reach out for prayer, partnership, or inquiries.</p>
+    </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Left: Contact Form -->
+        <div class="card p-8">
+            <h2 class="text-2xl font-black section-heading mb-6">Send a Message</h2>
+            <form method="POST" action="{{ url_for('main.contact') }}" class="space-y-5">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <label class="label" for="name">{{ form.name.label.text }}</label>
+                    {{ form.name(class="input-field", placeholder="Your full name") }}
+                    {% for error in form.name.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label class="label" for="email">{{ form.email.label.text }}</label>
+                    {{ form.email(class="input-field", placeholder="your@email.com") }}
+                    {% for error in form.email.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label class="label" for="phone">{{ form.phone.label.text }} <span class="text-gray-500 font-normal">(optional)</span></label>
+                    {{ form.phone(class="input-field", placeholder="+234 ...") }}
+                    {% for error in form.phone.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label class="label" for="subject">{{ form.subject.label.text }}</label>
+                    {{ form.subject(class="input-field", placeholder="What is this regarding?") }}
+                    {% for error in form.subject.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div class="form-group">
+                    <label class="label" for="message">{{ form.message.label.text }}</label>
+                    {{ form.message(class="input-field", rows="5", placeholder="Tell us how we can help...") }}
+                    {% for error in form.message.errors %}
+                        <p class="form-error">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn-hero-gold w-full py-4 rounded-2xl font-bold cursor-pointer") }}
+            </form>
+        </div>
+
+        <!-- Right: Ministry Info -->
+        <div class="space-y-6">
+            <div class="card p-8">
+                <h2 class="text-2xl font-black section-heading mb-6">Get In Touch</h2>
+                <div class="space-y-5">
+                    <div class="flex items-start gap-4">
+                        <div class="contact-icon-box">
+                            <i class="fas fa-envelope text-white"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900">Email</p>
+                            <a href="mailto:{{ ministry.MINISTRY_EMAIL }}" class="text-brand-purple hover:underline break-all">{{ ministry.MINISTRY_EMAIL }}</a>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="contact-icon-box">
+                            <i class="fas fa-phone text-white"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900">Phone</p>
+                            <p>{% if ministry.MINISTRY_PHONE %}{{ ministry.MINISTRY_PHONE }}{% else %}Contact us via email{% endif %}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="contact-icon-box">
+                            <i class="fas fa-map-marker-alt text-white"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900">Address</p>
+                            <p>{% if ministry.MINISTRY_ADDRESS %}{{ ministry.MINISTRY_ADDRESS }}{% else %}Reach out for location details{% endif %}</p>
+                        </div>
+                    </div>
+                    <p class="font-bold text-gray-900 mt-6 mb-3">Follow Us</p>
+                    {% with variant='contact' %}{% include 'includes/social_links.html' %}{% endwith %}
+                </div>
+            </div>
+
+            <div class="card p-8">
+                <h3 class="text-xl font-black section-heading mb-4">Ministry Office</h3>
+                <p class="text-gray-600 mb-4">Our team responds to messages during regular office hours. For urgent prayer needs, use our dedicated prayer line.</p>
+                <ul class="space-y-2 text-sm text-gray-600">
+                    <li><i class="fas fa-clock text-brand-gold mr-2"></i>Response time: 1–3 business days</li>
+                    <li><i class="fas fa-hands-praying text-brand-gold mr-2"></i>Prayer requests: 24/7 via prayer form</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Placeholder -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="card overflow-hidden">
+        <div class="map-placeholder p-12 md:p-16 text-center">
+            <i class="fas fa-map-marked-alt text-5xl text-brand-gold mb-4"></i>
+            <h3 class="text-xl font-bold section-heading mb-2">Ministry Location</h3>
+            <p class="text-gray-600 max-w-md mx-auto">
+                {% if ministry.MINISTRY_ADDRESS %}
+                    {{ ministry.MINISTRY_ADDRESS }}
+                {% else %}
+                    Map integration coming soon. Contact us for directions to our ministry office.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="app-download-section rounded-3xl p-10 md:p-14 text-center text-white relative">
+        <div class="relative z-10">
+            <h2 class="text-3xl md:text-4xl font-black section-heading-light mb-4">Ready to Connect?</h2>
+            <p class="text-lg opacity-95 mb-8 max-w-2xl mx-auto">Whether you need prayer, want to partner with us, or apply to a program — we are here for you.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('prayer.prayer_request') }}" class="btn-hero-gold py-4 px-8 rounded-2xl font-bold inline-flex items-center justify-center">
+                    <i class="fas fa-hands-praying mr-2"></i>Submit Prayer Request
+                </a>
+                <a href="{{ url_for('main.applications') }}" class="btn-hero-outline py-4 px-8 rounded-2xl font-bold inline-flex items-center justify-center">
+                    <i class="fas fa-file-alt mr-2"></i>Apply to a Program
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

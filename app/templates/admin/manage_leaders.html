@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Manage Leaders | Admin{% endblock %}
+{% block content %}
+<section class="mb-6">
+    <h1 class="text-3xl font-bold section-heading mb-3">Manage Leaders</h1>
+    <form method="POST" enctype="multipart/form-data" class="card space-y-3 mb-6 p-6">
+        {{ form.hidden_tag() }}
+        <div><label class="label">{{ form.name.label }}</label>{{ form.name(class="input-field") }}</div>
+        <div><label class="label">{{ form.role.label }}</label>{{ form.role(class="input-field") }}</div>
+        <div><label class="label">{{ form.title.label }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label">{{ form.bio.label }}</label>{{ form.bio(class="input-field", rows="4") }}</div>
+        <div><label class="label">{{ form.photo.label }}</label>{{ form.photo(class="input-field") }}</div>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="label">{{ form.is_founder.label }}</label>{{ form.is_founder(class="input-field") }}</div>
+            <div><label class="label">{{ form.display_order.label }}</label>{{ form.display_order(class="input-field") }}</div>
+        </div>
+        <div>{{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}</div>
+    </form>
+</section>
+
+<section class="grid gap-4">
+    {% for leader in leaders %}
+    <article class="card flex justify-between items-center p-4">
+        <div class="flex items-center gap-4">
+            {% if leader.photo %}
+            <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="w-16 h-16 rounded-xl object-cover">
+            {% endif %}
+            <div>
+                <h3 class="font-semibold">{{ leader.name }}{% if leader.is_founder %} <span class="founder-badge">Founder</span>{% endif %}</h3>
+                <p class="text-sm text-gray-600">{{ leader.role }}</p>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('admin.delete_leader', leader_id=leader.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn-danger">Delete</button>
+        </form>
+    </article>
+    {% else %}
+    <div class="card p-6">No leaders yet.</div>
+    {% endfor %}
+</section>
+{% endblock %}

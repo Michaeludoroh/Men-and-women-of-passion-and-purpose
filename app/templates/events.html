@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Events | Men and Women of Passion and Purpose{% endblock %}
+
+{% block content %}
+<section class="page-hero mb-12 rounded-3xl">
+    <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Ministry Events</h1>
+        <p class="text-lg md:text-xl opacity-95">Conferences, prayer gatherings, empowerment programs, and kingdom encounters.</p>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    {% if featured_event %}
+    <div class="mb-16">
+        <h2 class="text-3xl font-black section-heading mb-6">Featured Event</h2>
+        <div class="event-featured-card rounded-3xl overflow-hidden">
+            <div class="grid lg:grid-cols-2">
+                {% if featured_event.banner_image %}
+                <div class="event-featured-banner">
+                    <img src="{{ url_for('static', filename=featured_event.banner_image) }}" alt="{{ featured_event.title }}" loading="lazy">
+                </div>
+                {% else %}
+                <div class="event-featured-banner event-card-banner-placeholder">
+                    <i class="fas fa-star text-5xl" style="color: var(--gold-primary);"></i>
+                </div>
+                {% endif %}
+                <div class="p-8 lg:p-10 flex flex-col justify-center">
+                    <span class="event-badge-featured mb-3">Featured</span>
+                    <h3 class="text-2xl md:text-3xl font-black section-heading mb-4">{{ featured_event.title }}</h3>
+                    <div class="event-meta space-y-2 mb-4">
+                        <p class="text-gray-700">
+                            <i class="fas fa-calendar-day mr-2" style="color: var(--purple-primary);"></i>
+                            {{ featured_event.start_date.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                        {% if featured_event.location or featured_event.venue %}
+                        <p class="text-gray-700">
+                            <i class="fas fa-map-marker-alt mr-2" style="color: var(--purple-primary);"></i>
+                            {% if featured_event.venue %}{{ featured_event.venue }}{% if featured_event.location %}, {% endif %}{% endif %}{{ featured_event.location or '' }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    <p class="text-gray-600 leading-relaxed mb-6">{{ featured_event.short_description(220) }}</p>
+                    {% if featured_event.registration_link %}
+                    <a href="{{ featured_event.registration_link }}" target="_blank" rel="noopener noreferrer" class="btn-primary inline-block px-6 py-3 rounded-xl font-bold w-fit">
+                        Register Now <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mb-16">
+        <h2 class="text-3xl font-black section-heading mb-6">Upcoming Events</h2>
+        {% if upcoming_events %}
+        <div class="event-grid">
+            {% for event in upcoming_events %}
+            {% include "includes/event_card.html" %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center p-12">
+            <i class="fas fa-calendar-plus text-4xl mb-4" style="color: var(--gold-primary);"></i>
+            <h3 class="text-xl font-bold mb-2">No Upcoming Events</h3>
+            <p class="text-gray-600">Check back soon for new conferences, prayer nights, and empowerment gatherings.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        <h2 class="text-3xl font-black section-heading mb-6">Past Events</h2>
+        {% if past_events %}
+        <div class="event-grid">
+            {% for event in past_events %}
+            {% include "includes/event_card.html" %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center p-12">
+            <i class="fas fa-history text-4xl mb-4" style="color: var(--purple-primary);"></i>
+            <p class="text-gray-600">Past event highlights will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

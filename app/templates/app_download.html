@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}WOP App | Men and Women of Passion and Purpose{% endblock %}
+
+{% block meta_description %}Download the official WOP App and stay connected to ministry updates, events, empowerment programs, mentorship classes, and spiritual resources.{% endblock %}
+
+{% block og_title %}WOP App{% endblock %}
+{% block og_description %}Download the official WOP App and stay connected to ministry updates, events, empowerment programs, mentorship classes, and spiritual resources.{% endblock %}
+{% block og_image %}{{ og_image_url() }}{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="app-download-section py-20 md:py-28 text-white relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="text-center lg:text-left">
+                <span class="inline-block px-4 py-1 rounded-full text-sm font-bold mb-4" style="background: rgba(212,175,55,0.3); color: var(--gold-secondary);">Official Mobile App</span>
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-black mb-6 section-heading-light leading-tight">
+                    WOP App
+                </h1>
+                <p class="text-lg md:text-xl opacity-95 mb-8 leading-relaxed">
+                    Stay connected, inspired, empowered, and informed through the official WOP App.
+                </p>
+                {% include "includes/app_store_buttons.html" %}
+            </div>
+            <div class="flex justify-center">
+                <div class="app-phone-mockup">
+                    <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-mockup mx-auto mb-4">
+                    <h3 class="text-lg font-black text-center mb-1" style="color: var(--gold-primary);">WOP App</h3>
+                    <p class="text-sm text-center opacity-80">Men and Women of Passion and Purpose</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-black section-heading mb-4">WOP App Features</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">Everything you need to stay connected to Men and Women of Passion and Purpose — right from your phone.</p>
+        </div>
+        {% include "includes/app_features.html" %}
+    </div>
+</section>
+
+<!-- Screenshot Showcase -->
+<section class="py-20" style="background: var(--gray-light);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-black section-heading mb-4">Screenshot Showcase</h2>
+            <p class="text-gray-600">Preview the WOP App experience. Real screenshots coming soon.</p>
+        </div>
+
+        <!-- Desktop grid -->
+        <div class="hidden md:grid md:grid-cols-3 gap-8">
+            {% for screenshot in app_screenshots() %}
+            <div class="app-screenshot-card card overflow-hidden p-4">
+                <img src="{{ screenshot }}" alt="WOP App screenshot {{ loop.index }}" class="w-full rounded-2xl" loading="lazy">
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Mobile carousel -->
+        <div class="md:hidden" x-data="{ slide: 0, total: {{ app_screenshots()|length }} }">
+            <div class="relative overflow-hidden rounded-3xl">
+                {% for screenshot in app_screenshots() %}
+                <div x-show="slide === {{ loop.index0 }}" x-transition class="app-screenshot-card card p-4">
+                    <img src="{{ screenshot }}" alt="WOP App screenshot {{ loop.index }}" class="w-full max-w-xs mx-auto rounded-2xl">
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex justify-center items-center gap-4 mt-6">
+                <button @click="slide = slide > 0 ? slide - 1 : total - 1" class="btn-outline-gold w-10 h-10 rounded-full flex items-center justify-center" aria-label="Previous screenshot">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="flex gap-2">
+                    {% for screenshot in app_screenshots() %}
+                    <button @click="slide = {{ loop.index0 }}" class="w-2.5 h-2.5 rounded-full transition-all" :class="slide === {{ loop.index0 }} ? 'bg-brand-purple w-6' : 'bg-gray-300'" aria-label="Screenshot {{ loop.index }}"></button>
+                    {% endfor %}
+                </div>
+                <button @click="slide = slide < total - 1 ? slide + 1 : 0" class="btn-outline-gold w-10 h-10 rounded-full flex items-center justify-center" aria-label="Next screenshot">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- QR Code & Instructions -->
+<section class="py-20 bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-2 gap-10 items-center">
+            <div class="text-center">
+                <div class="card inline-block p-6">
+                    <img src="{{ app_qr_code_url() }}" alt="QR code linking to WOP App download page" class="w-48 h-48 mx-auto rounded-xl" loading="lazy">
+                    <p class="text-sm text-gray-500 mt-4">Scan to open the WOP App download page</p>
+                    <p class="text-xs text-gray-400 mt-1 break-all">{{ app_page_url() }}</p>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-2xl md:text-3xl font-black section-heading mb-6">How to Download the WOP App</h2>
+                <ol class="space-y-4">
+                    <li class="flex items-start gap-4">
+                        <span class="app-step-number">1</span>
+                        <div>
+                            <p class="font-bold text-gray-900">Scan the QR code or visit this page</p>
+                            <p class="text-gray-600 text-sm">Open the WOP App download page on your mobile device.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="app-step-number">2</span>
+                        <div>
+                            <p class="font-bold text-gray-900">Choose your app store</p>
+                            <p class="text-gray-600 text-sm">Tap <strong>Download on the App Store</strong> or <strong>Get it on Google Play</strong>.</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                        <span class="app-step-number">3</span>
+                        <div>
+                            <p class="font-bold text-gray-900">Install and stay connected</p>
+                            <p class="text-gray-600 text-sm">Access announcements, events, sermons, prayer, mentorship, and more through the WOP App.</p>
+                        </div>
+                    </li>
+                </ol>
+                {% if not ministry.APP_STORE_URL and not ministry.PLAY_STORE_URL %}
+                <div class="alert-info p-4 rounded-2xl mt-6 text-sm font-medium">
+                    <i class="fas fa-clock mr-2"></i>Coming Soon — App Store and Google Play links will be available shortly.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-16 text-center text-white" style="background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary));">
+    <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-3xl font-black mb-4">Ready to Download the WOP App?</h2>
+        <p class="text-lg opacity-95 mb-8">Take Men and Women of Passion and Purpose with you wherever you go.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            {% include "includes/app_store_buttons.html" %}
+        </div>
+        <a href="{{ url_for('main.index') }}" class="btn-hero-outline py-3 px-8 rounded-2xl font-bold inline-flex items-center">
+            <i class="fas fa-home mr-2"></i>Back to Home
+        </a>
+    </div>
+</section>
+{% endblock %}

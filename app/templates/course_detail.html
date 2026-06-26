@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }} | School | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
+{% block content %}
+<div class="page-hero">
+    <div class="page-hero-content text-center">
+        <i class="fas fa-graduation-cap page-hero-icon"></i>
+        <h1>{{ course.title }}</h1>
+        <p class="text-white/90 font-semibold"><i class="fas fa-clock mr-2"></i>{{ course.description }}</p>
+    </div>
+</div>
+
+<section class="max-w-4xl mx-auto py-16">
+    {% if current_user.is_enrolled(course.id) %}
+        <div class="success-banner rounded-2xl p-6 mb-8 text-center">
+            <i class="fas fa-check-circle text-3xl success-icon-lg mb-4"></i>
+            <h2 class="text-2xl font-bold text-brand-purple mb-2">Enrolled Successfully!</h2>
+            <p class="text-gray-700">You are enrolled in this school. Access your assignments below.</p>
+        </div>
+    {% endif %}
+
+    {% if current_user.role == 'admin' %}
+        <div class="card mb-8 p-6">
+            <h3 class="text-xl font-bold mb-4">Manage Assignments</h3>
+            <form method="POST" action="{{ url_for('classes.add_assignment', course_id=course.id) }}" enctype="multipart/form-data" class="space-y-4">
+                {{ assignment_form.hidden_tag() }}
+                <div>
+                    {{ assignment_form.title.label(class="label") }}
+                    {{ assignment_form.title(class="input-field") }}
+                </div>
+                <div>
+                    {{ assignment_form.file.label(class="label") }}
+                    {{ assignment_form.file(class="input-field") }}
+                </div>
+                {{ assignment_form.submit(class="btn-primary") }}
+            </form>
+        </div>
+    {% endif %}
+
+    <div class="space-y-4">
+        {% for assignment in course.assignments %}
+            <div class="card p-6">
+                <h4 class="font-bold text-lg mb-2">{{ assignment.title }}</h4>
+                {% if assignment.file %}
+                    <a href="{{ url_for('static', filename='uploads/assignments/' + assignment.file) }}" class="btn-gold-nav mb-4 inline-block" target="_blank">Download Assignment</a>
+                {% endif %}
+                {% if not current_user.is_enrolled(course.id) %}
+                    <p class="text-orange-600 font-semibold">Enroll first to submit assignments.</p>
+                {% else %}
+                    <form method="POST" action="{{ url_for('classes.submit_assignment', assignment_id=assignment.id) }}" enctype="multipart/form-data" class="space-y-3">
+                        <input type="file" name="answer_file" class="input-field" required>
+                        <button type="submit" class="btn-primary w-full">Submit Assignment</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+        {% if not course.assignments %}
+            <div class="card p-12 text-center">
+                <i class="fas fa-clipboard-list text-4xl text-gray-400 mb-4"></i>
+                <p class="text-gray-600 text-lg">No assignments yet. Check back later!</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+

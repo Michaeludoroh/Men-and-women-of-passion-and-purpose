@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Manage Prayers | Admin{% endblock %}
+{% block content %}
+<section>
+    <h1 class="text-3xl font-bold text-purple-900 mb-5">Prayer Requests</h1>
+    <div class="grid gap-4">
+        {% for prayer in prayers %}
+            <article class="card">
+                <h3 class="font-semibold">{{ prayer.name }} <span class="text-xs text-gray-500">({{ prayer.email }})</span></h3>
+                <p class="text-sm mt-2">{{ prayer.request }}</p>
+                <p class="text-xs text-gray-500 mt-2">{{ prayer.date.strftime('%Y-%m-%d %H:%M') }}</p>
+            </article>
+        {% else %}
+            <div class="card">No prayer requests yet.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

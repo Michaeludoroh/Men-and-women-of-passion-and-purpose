@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
+{% block content %}
+<section class="max-w-xl mx-auto">
+    <h1 class="text-3xl font-bold text-purple-900 mb-4">Login</h1>
+    <form method="POST" class="card space-y-4">
+        {{ form.hidden_tag() }}
+        <div>
+            <label class="label">{{ form.email.label }}</label>
+            {{ form.email(class="input-field") }}
+        </div>
+        <div>
+            <label class="label">{{ form.password.label }}</label>
+            {{ form.password(class="input-field") }}
+        </div>
+        <div>{{ form.submit(class="btn-primary w-full") }}</div>
+    </form>
+</section>
+{% endblock %}

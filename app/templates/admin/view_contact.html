@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}View Message | Admin{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 pb-12">
+    <div class="mb-6">
+        <a href="{{ url_for('admin.manage_contacts') }}" class="text-brand-purple hover:underline font-semibold text-sm">
+            <i class="fas fa-arrow-left mr-1"></i>Back to Inbox
+        </a>
+    </div>
+
+    <article class="card p-8">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold section-heading">{{ contact.subject }}</h1>
+                <p class="text-sm text-gray-500 mt-1">{{ contact.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+            </div>
+            {% if contact.is_read %}
+                <span class="badge-read">Read</span>
+            {% else %}
+                <span class="badge-unread">Unread</span>
+            {% endif %}
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 mb-8 p-5 rounded-2xl" style="background: var(--gray-light);">
+            <div>
+                <p class="label text-sm mb-1">From</p>
+                <p class="font-semibold">{{ contact.name }}</p>
+            </div>
+            <div>
+                <p class="label text-sm mb-1">Email</p>
+                <a href="mailto:{{ contact.email }}" class="text-brand-purple hover:underline break-all">{{ contact.email }}</a>
+            </div>
+            {% if contact.phone %}
+            <div>
+                <p class="label text-sm mb-1">Phone</p>
+                <p>{{ contact.phone }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-8">
+            <p class="label mb-2">Message</p>
+            <div class="p-5 rounded-2xl border-2 whitespace-pre-wrap" style="border-color: rgba(90, 24, 154, 0.15);">{{ contact.message }}</div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <form method="POST" action="{{ url_for('admin.toggle_contact_read', message_id=contact.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-gold py-2 px-5 rounded-lg font-semibold">
+                    {% if contact.is_read %}Mark as Unread{% else %}Mark as Read{% endif %}
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_contact', message_id=contact.id) }}" onsubmit="return confirm('Delete this message permanently?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-danger rounded-lg">Delete Message</button>
+            </form>
+        </div>
+    </article>
+</section>
+{% endblock %}

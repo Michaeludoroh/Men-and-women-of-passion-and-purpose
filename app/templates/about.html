@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}About | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
+
+{% block content %}
+<section class="py-24 bg-gradient-to-b from-gray-50 to-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Hero About Section -->
+        <div class="text-center mb-24">
+            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black mb-6 section-heading drop-shadow-2xl">About MWPP Ministry</h1>
+            <p class="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed">A Christ-centered community raising believers who live intentionally, lead boldly, and serve sacrificially through the Word, prayer, and purpose.</p>
+        </div>
+
+        <!-- Mission Vision Grid -->
+        <div class="grid md:grid-cols-2 gap-12 mb-24">
+            <div class="card-vision p-12 rounded-3xl shadow-2xl border backdrop-blur-sm bg-gradient-to-br from-white via-white/80 hover:shadow-3xl hover:-translate-y-4 transition-all duration-500" style="border-color: rgba(212, 175, 55, 0.3);">
+                <div class="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl" style="background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));">
+                    <i class="fas fa-bullseye text-3xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-black text-gray-900 mb-6 text-center">Our Mission</h2>
+                <ul class="space-y-4 text-gray-700 text-lg list-none">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-brand-gold mt-1 mr-4 text-xl flex-shrink-0"></i>
+                        <span>To build, empower, and establish men & women through the unfiltered Word of God.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-brand-gold mt-1 mr-4 text-xl flex-shrink-0"></i>
+                        <span>To help discover God-ordained purpose and ignite passion for destiny fulfillment.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-brand-gold mt-1 mr-4 text-xl flex-shrink-0"></i>
+                        <span>To activate grace through discipleship, prayer, and kingdom advancement.</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-vision p-12 rounded-3xl shadow-2xl border backdrop-blur-sm bg-gradient-to-br from-white via-white/80 hover:shadow-3xl hover:-translate-y-4 transition-all duration-500" style="border-color: rgba(90, 24, 154, 0.2);">
+                <div class="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl" style="background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));">
+                    <i class="fas fa-mountain text-3xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-black text-gray-900 mb-6 text-center">Our Vision</h2>
+                <p class="text-xl text-gray-700 leading-relaxed text-center mb-8">
+                    Raising a global community of confident, valued, impactful believers who fill their space and take their place through the Word, prayer, and divine purpose.
+                </p>
+                <div class="text-center">
+                    <a href="{{ url_for('main.about_minister_joy') }}" class="btn-hero-gold inline-flex items-center py-4 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-2 transition-all duration-300 uppercase tracking-wide font-bold">
+                        Meet Minister Joy <i class="fas fa-arrow-right ml-3"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activities Timeline -->
+        <div class="mb-24">
+            <h2 class="text-4xl md:text-5xl font-black mb-12 text-center section-heading">Weekly Schedule</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="activity-card activity-card-purple p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 activity-icon-purple rounded-2xl flex items-center justify-center text-white font-bold text-xl mr-4">
+                            MON
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-1">Foundation Class</h4>
+                            <p class="activity-text-purple font-semibold">9:00 PM Zoom</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-6">Building strong spiritual foundations.</p>
+                </div>
+                <div class="activity-card activity-card-gold p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 activity-icon-gold rounded-2xl flex items-center justify-center font-bold text-xl mr-4">
+                            TUE/FRI
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-1">Global Prayerline</h4>
+                            <p class="activity-text-gold font-semibold">9:00 PM YouTube</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-6">Join worldwide prayer army.</p>
+                </div>
+                <div class="activity-card activity-card-purple p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 activity-icon-purple rounded-2xl flex items-center justify-center text-white font-bold text-xl mr-4">
+                            WED
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-1">All-Night Prayers</h4>
+                            <p class="activity-text-purple font-semibold">10PM - 12AM Zoom</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-6">Intimate encounters with God.</p>
+                </div>
+                <div class="activity-card activity-card-gold p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 md:col-span-2 lg:col-span-1">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 activity-icon-gold rounded-2xl flex items-center justify-center font-bold text-xl mr-4">
+                            SAT
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-1">Ministry Schools</h4>
+                            <p class="activity-text-gold font-semibold">7PM Various</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-2 text-gray-600">
+                        <li>• School of Purpose (Mon)</li>
+                        <li>• School of Healing (Tue)</li>
+                        <li>• School of the Word (Wed)</li>
+                        <li>• School of the Spirit (Sat)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Social Media -->
+        <div class="mb-24 text-center">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 section-heading">Connect With Us</h2>
+            <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">Follow Men and Women of Passion and Purpose on social media for teachings, events, and ministry updates.</p>
+            {% with variant='about' %}{% include 'includes/social_links.html' %}{% endwith %}
+        </div>
+
+        <!-- Leadership CTA -->
+        <div class="text-center">
+            <a href="{{ url_for('main.about_minister_joy') }}" class="btn-hero-gold inline-flex items-center py-6 px-12 text-xl uppercase tracking-wider shadow-2xl hover:shadow-3xl hover:-translate-y-3 transition-all duration-500 rounded-3xl font-black">
+                <i class="fas fa-crown text-2xl mr-4"></i>Meet Our Leader
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

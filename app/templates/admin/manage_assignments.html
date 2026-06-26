@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Manage Assignments | Admin{% endblock %}
+{% block content %}
+<section class="mb-8">
+    <h1 class="text-3xl font-bold text-purple-900 mb-4">Manage Assignments</h1>
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary mb-4">← Back to Dashboard</a>
+</section>
+
+<!-- Create Form -->
+<section class="card mb-8 p-6">
+    <h2 class="text-2xl font-bold mb-4">Create New Assignment</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div>
+                {{ form.title.label(class="block text-sm font-medium mb-1") }}
+                {{ form.title(class="w-full p-2 border rounded") }}
+            </div>
+            <div>
+                {{ form.file.label(class="block text-sm font-medium mb-1") }}
+                {{ form.file(class="w-full p-2 border rounded") }}
+            </div>
+        </div>
+        <p class="text-sm text-gray-500 mb-4">Note: Assigns to first course. Update AssignmentForm for course select.</p>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</section>
+
+<!-- Assignments Table -->
+<section class="card p-6">
+    <h2 class="text-2xl font-bold mb-4">Assignments ({{ assignments|length }})</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="p-3 text-left">ID</th>
+                    <th class="p-3 text-left">Course</th>
+                    <th class="p-3 text-left">Title</th>
+                    <th class="p-3 text-left">File</th>
+                    <th class="p-3 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment in assignments %}
+                <tr class="border-t">
+                    <td class="p-3">{{ assignment.assignment.id }}</td>
+                    <td class="p-3 font-medium">{{ assignment.course.title }}</td>
+                    <td class="p-3">{{ assignment.assignment.title }}</td>
+                    <td class="p-3">{{ assignment.assignment.file or 'No file' }}</td>
+                    <td class="p-3">
+                        <form method="POST" action="{{ url_for('admin.delete_assignment', assignment_id=assignment.assignment.id) }}" class="inline" onsubmit="return confirm('Delete {{ assignment.assignment.title }}?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="text-red-600 hover:text-red-800">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

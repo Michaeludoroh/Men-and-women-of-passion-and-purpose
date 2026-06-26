@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="{% block meta_description %}Men and Women of Passion and Purpose - A Christ-centered ministry raising believers through the Word, prayer, and purpose.{% endblock %}" />
+    <meta name="keywords" content="ministry, sermons, prayer, giving, discipleship, christian community, MWPP, mobile app" />
+    <meta name="author" content="MWPP Ministry" />
+    <meta property="og:title" content="{% block og_title %}Men and Women of Passion and Purpose{% endblock %}" />
+    <meta property="og:description" content="{% block og_description %}Men and Women of Passion and Purpose - A Christ-centered ministry raising believers through the Word, prayer, and purpose.{% endblock %}" />
+    <meta property="og:image" content="{% block og_image %}{{ og_image_url() }}{% endblock %}" />
+    <meta property="og:type" content="website" />
+    <title>{% block title %}Men and Women of Passion and Purpose{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#D4AF37',
+                            purple: '#5A189A',
+                            white: '#FFFFFF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ favicon_url() }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ favicon_16_url() }}" type="image/png" sizes="16x16">
+    <link rel="apple-touch-icon" href="{{ apple_touch_icon_url() }}" sizes="180x180">
+</head>
+<body class="font-poppins bg-white text-gray-900 antialiased scroll-smooth">
+    <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" x-data="{ open: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-3 sm:py-4">
+                <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3 group">
+                    <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo">
+                    <span class="hidden sm:block text-sm font-black brand-text leading-tight">MEN & WOMEN OF<br>PASSION & PURPOSE</span>
+                </a>
+
+                <div class="hidden lg:flex items-center space-x-5">
+                    <a href="{{ url_for('main.index') }}" class="nav-link py-2 text-sm font-semibold">Home</a>
+                    <a href="{{ url_for('main.about') }}" class="nav-link py-2 text-sm font-semibold">About</a>
+                    <a href="{{ url_for('main.leadership') }}" class="nav-link py-2 text-sm font-semibold">Leadership</a>
+                    <a href="{{ url_for('main.gallery') }}" class="nav-link py-2 text-sm font-semibold">Gallery</a>
+                    <a href="{{ url_for('main.events') }}" class="nav-link py-2 text-sm font-semibold">Events</a>
+                    <a href="{{ url_for('sermon.sermons') }}" class="nav-link py-2 text-sm font-semibold">Sermons</a>
+                    <a href="{{ url_for('prayer.prayer_request') }}" class="nav-link py-2 text-sm font-semibold">Prayer</a>
+                    <a href="{{ url_for('classes.classes_home') }}" class="nav-link py-2 text-sm font-semibold">School</a>
+                    <a href="{{ url_for('main.contact') }}" class="nav-link py-2 text-sm font-semibold">Contact</a>
+                    <a href="{{ url_for('main.app_download') }}" class="nav-link py-2 text-sm font-semibold">WOP App</a>
+                    <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav py-2 px-5 rounded-xl text-sm uppercase tracking-wide">Give</a>
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.dashboard') }}" class="nav-link py-2 text-sm font-semibold">Dashboard</a>
+                        {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link py-2 text-sm font-semibold">Admin</a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold py-2 px-4 text-sm rounded-lg">Logout</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn-outline-gold py-2 px-4 text-sm rounded-lg">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn-gold-nav py-2 px-5 rounded-xl text-sm uppercase tracking-wide">Join</a>
+                    {% endif %}
+                </div>
+
+                <button @click="open = !open" class="lg:hidden p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas" :class="open ? 'fa-times' : 'fa-bars'" class="text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="open" @click.away="open = false" x-transition class="lg:hidden bg-white border-t shadow-xl">
+            <div class="px-4 py-4 space-y-1">
+                <a href="{{ url_for('main.index') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Home</a>
+                <a href="{{ url_for('main.about') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">About</a>
+                <a href="{{ url_for('main.leadership') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Leadership</a>
+                <a href="{{ url_for('main.gallery') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Gallery</a>
+                <a href="{{ url_for('main.events') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Events</a>
+                <a href="{{ url_for('sermon.sermons') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Sermons</a>
+                <a href="{{ url_for('prayer.prayer_request') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Prayer</a>
+                <a href="{{ url_for('classes.classes_home') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">School</a>
+                <a href="{{ url_for('main.contact') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Contact</a>
+                <a href="{{ url_for('main.app_download') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">WOP App</a>
+                <div class="pt-4 pb-2 border-t border-gray-100">
+                    {% with variant='compact' %}{% include 'includes/social_links.html' %}{% endwith %}
+                </div>
+                <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav block p-3 text-center rounded-xl mt-2">Give Now</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('main.dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Dashboard</a>
+                    {% if current_user.role == 'admin' %}
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold block p-3 text-center rounded-lg mt-2">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn-outline-gold block p-3 text-center rounded-lg mt-2">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn-gold-nav block p-3 text-center rounded-xl mt-2">Join Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-20 min-h-screen">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-2xl shadow text-sm font-medium {% if category == 'success' %}alert-success{% elif category == 'danger' %}alert-danger{% elif category == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="text-white py-16 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo">
+                        <h3 class="text-lg font-black" style="color: var(--gold-primary);">MWPP Ministry</h3>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed mb-4">Raising purpose-driven believers through the Word, prayer, worship, and kingdom impact.</p>
+                    <h4 class="text-sm font-bold uppercase tracking-wider mb-3" style="color: var(--gold-primary);">Follow Us</h4>
+                    {% with variant='footer' %}{% include 'includes/social_links.html' %}{% endwith %}
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4" style="color: var(--gold-primary);">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-300 text-sm">
+                        <li><a href="{{ url_for('main.gallery') }}" class="hover:text-brand-gold transition">Gallery</a></li>
+                        <li><a href="{{ url_for('main.events') }}" class="hover:text-brand-gold transition">Events</a></li>
+                        <li><a href="{{ url_for('main.leadership') }}" class="hover:text-brand-gold transition">Leadership</a></li>
+                        <li><a href="{{ url_for('sermon.sermons') }}" class="hover:text-brand-gold transition">Sermons</a></li>
+                        <li><a href="{{ url_for('classes.classes_home') }}" class="hover:text-brand-gold transition">Ministry School</a></li>
+                        <li><a href="{{ url_for('giving.giving_page') }}" class="hover:text-brand-gold transition">Give Online</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4" style="color: var(--gold-primary);">Ministry</h4>
+                    <ul class="space-y-2 text-gray-300 text-sm">
+                        <li><a href="{{ url_for('main.about') }}" class="hover:text-brand-gold transition">About Us</a></li>
+                        <li><a href="{{ url_for('main.about_minister_joy') }}" class="hover:text-brand-gold transition">Minister Joy</a></li>
+                        <li><a href="{{ url_for('main.applications') }}" class="hover:text-brand-gold transition">Apply Now</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="hover:text-brand-gold transition">Contact</a></li>
+                        <li><a href="{{ url_for('main.app_download') }}" class="hover:text-brand-gold transition">WOP App</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4" style="color: var(--gold-primary);">Contact</h4>
+                    <div class="space-y-2 text-gray-300 text-sm">
+                        <p><i class="fas fa-envelope mr-2" style="color: var(--gold-primary);"></i>womenofpassionandpurpose2024@gmail.com</p>
+                        <a href="{{ url_for('prayer.prayer_request') }}" class="inline-block mt-4 btn-gold-nav py-3 px-6 rounded-xl text-sm font-bold">Prayer Request</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/20 pt-8 text-center text-gray-400 text-sm">
+                &copy; 2026 Men and Women of Passion and Purpose. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

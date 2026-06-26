@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Ministry School | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<div class="page-hero">
+    <div class="page-hero-content text-center animate-fade-in">
+        <i class="fas fa-graduation-cap page-hero-icon"></i>
+        <h1 class="mb-4">Ministry School</h1>
+        <p class="mx-auto max-w-2xl leading-relaxed">Equip yourself with divine purpose. Choose a school, enroll, access courses, assignments, and grow in kingdom impact.</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 -mt-12 relative z-10">
+    <div class="text-center mb-12 max-w-3xl mx-auto">
+        <h2 class="text-3xl md:text-4xl lg:text-5xl font-black mb-4 bg-gradient-to-r from-purple-600 via-purple-400 to-yellow-500 bg-clip-text text-transparent">
+            Discover Your Purpose-Driven School
+        </h2>
+        <p class="text-xl md:text-2xl text-gray-600 leading-relaxed">Register for transformative classes, complete assignments, and submit your work for kingdom advancement.</p>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.role == "admin" %}
+    <!-- Admin Create Course Form -->
+    <div class="card max-w-2xl mx-auto mb-16 p-8 lg:p-12 shadow-2xl">
+        <h2 class="text-2xl lg:text-3xl font-black mb-8 bg-gradient-to-r from-purple-600 to-yellow-500 bg-clip-text text-transparent text-center">
+            <i class="fas fa-plus-circle mr-3"></i>Create New School
+        </h2>
+        <form method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {{ form.hidden_tag() }}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.title.label.text }}</label>
+                {{ form.title(class="input-field w-full") }}
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.description.label.text }}</label>
+                {{ form.description(class="input-field w-full", rows="3") }}
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">{{ form.tutor.label.text }}</label>
+                {{ form.tutor(class="input-field w-full") }}
+            </div>
+            <div class="md:col-span-3">
+                {{ form.submit(class="btn-hero-gold w-full py-4 text-lg font-bold") }}
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Schools Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for course in courses %}
+        <div class="group school-card card overflow-hidden hover:scale-[1.02] transition-all duration-500 relative bg-white/90 backdrop-blur-xl border border-purple-100 shadow-xl hover:shadow-2xl hover:border-purple-200">
+            <!-- Top Gradient Bar -->
+            <div class="h-2 bg-gradient-to-r from-purple-500 to-yellow-500"></div>
+            <div class="p-8 lg:p-10 text-center relative z-10">
+                <!-- School Icon -->
+                <div class="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-purple-100 to-yellow-100 rounded-3xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-school text-4xl text-purple-600 group-hover:text-purple-700 transition-colors"></i>
+                </div>
+                
+                <!-- School Title -->
+                <h3 class="text-2xl lg:text-3xl font-black mb-4 line-clamp-2 bg-gradient-to-r from-gray-900 via-purple-600 to-yellow-500 bg-clip-text text-transparent group-hover:scale-[1.02] transition-all">
+                    {{ course.title }}
+                </h3>
+                
+                <!-- Schedule -->
+                <p class="text-lg font-semibold text-purple-700 mb-8 opacity-90">
+                    <i class="fas fa-clock mr-2"></i>{{ course.description }}
+                </p>
+                
+                <!-- Action Buttons -->
+                <div class="space-y-3 pt-6 border-t border-gray-100">
+                    {% set enrolled = current_user.is_enrolled(course.id) %}
+                    {% if enrolled %}
+                        <a href="{{ url_for('classes.course_detail', course_id=course.id) }}" class="block btn-hero-gold py-4 text-lg font-bold shadow-xl hover:shadow-2xl">
+                            <i class="fas fa-book-open mr-2"></i>View School & Assignments
+                        </a>
+                        <span class="inline-flex items-center justify-center px-6 py-2 rounded-2xl text-sm font-bold enrolled-badge shadow-md">
+                            <i class="fas fa-check-circle mr-2"></i>Enrolled
+                        </span>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('classes.register_school', course_id=course.id) }}" class="inline-block w-full">
+                            {{ reg_form.hidden_tag() }}
+                            {{ reg_form.submit(class="btn-hero-gold w-full py-4 text-lg font-bold shadow-xl hover:shadow-2xl") }}
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Hover Glow Effect -->
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-transparent to-yellow-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl -m-1"></div>
+        </div>
+        {% else %}
+        <div class="col-span-full card p-20 lg:p-32 text-center backdrop-blur-xl shadow-2xl border-2 border-dashed border-gray-200">
+            <i class="fas fa-schools text-7xl text-gray-300 mb-8 mx-auto"></i>
+            <h3 class="text-4xl lg:text-5xl font-black text-gray-400 mb-6">No Schools Available Yet</h3>
+            <p class="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">Exciting schools coming soon! Check back later or contact the administrator.</p>
+            {% if current_user.is_authenticated and current_user.role == "admin" %}
+            <a href="#create-school" class="btn-hero-gold px-12 py-4 text-xl font-bold">Create First School</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Leadership | Men and Women of Passion and Purpose{% endblock %}
+
+{% block content %}
+<section class="page-hero mb-12 rounded-3xl">
+    <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+        <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-lg mx-auto mb-6">
+        <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Our Leadership</h1>
+        <p class="text-lg md:text-xl opacity-95">Meet the founders and leaders guiding Men and Women of Passion and Purpose.</p>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    {% if leaders %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for leader in leaders %}
+        <article class="leader-card rounded-3xl overflow-hidden shadow-xl">
+            {% if leader.photo %}
+            <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="leader-photo">
+            {% else %}
+            <div class="leader-photo-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            {% endif %}
+            <div class="p-6">
+                <div class="flex items-center gap-2 mb-2">
+                    <h2 class="text-xl font-black text-gray-900">{{ leader.name }}</h2>
+                    {% if leader.is_founder %}
+                    <span class="founder-badge">Founder</span>
+                    {% endif %}
+                </div>
+                <p class="text-sm font-bold text-purple-700 mb-1">{{ leader.role }}</p>
+                {% if leader.title %}
+                <p class="text-sm text-gold-600 font-semibold mb-3" style="color: var(--gold-dark);">{{ leader.title }}</p>
+                {% endif %}
+                <p class="text-gray-600 leading-relaxed text-sm">{{ leader.bio }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card text-center p-16">
+        <i class="fas fa-users text-5xl mb-4" style="color: var(--purple-primary);"></i>
+        <h3 class="text-2xl font-bold mb-2">Leadership Profiles Coming Soon</h3>
+        <p class="text-gray-600">Our leadership team profiles will be available shortly.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
