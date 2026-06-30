@@ -110,7 +110,7 @@ def create_og_share(logo):
         title_font = ImageFont.load_default()
         sub_font = ImageFont.load_default()
 
-    draw.text((320, h // 2 - 55), "WOP App", fill=GOLD[:3], font=title_font)
+    draw.text((320, h // 2 - 55), "WOPP App", fill=GOLD[:3], font=title_font)
     draw.text((320, h // 2 + 5), "Men and Women of", fill=WHITE[:3], font=sub_font)
     draw.text((320, h // 2 + 45), "Passion and Purpose", fill=WHITE[:3], font=sub_font)
 

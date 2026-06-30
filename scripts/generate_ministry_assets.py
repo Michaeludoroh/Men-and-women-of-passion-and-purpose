@@ -114,7 +114,7 @@ def create_app_screenshot(index, label):
         font = ImageFont.load_default()
         small = ImageFont.load_default()
 
-    draw.text((w // 2, 210), "WOP App", fill=GOLD, font=font, anchor="mm")
+    draw.text((w // 2, 210), "WOPP App", fill=GOLD, font=font, anchor="mm")
     draw.text((w // 2, 250), label, fill=WHITE, font=small, anchor="mm")
 
     for i, color in enumerate([GOLD_DARK[:3], PURPLE[:3], (123, 44, 191)]):

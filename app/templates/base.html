@@ -42,7 +42,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-3 sm:py-4">
                 <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3 group">
-                    <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo">
+                    <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo">
                     <span class="hidden sm:block text-sm font-black brand-text leading-tight">MEN & WOMEN OF<br>PASSION & PURPOSE</span>
                 </a>
 
@@ -56,7 +56,7 @@
                     <a href="{{ url_for('prayer.prayer_request') }}" class="nav-link py-2 text-sm font-semibold">Prayer</a>
                     <a href="{{ url_for('classes.classes_home') }}" class="nav-link py-2 text-sm font-semibold">School</a>
                     <a href="{{ url_for('main.contact') }}" class="nav-link py-2 text-sm font-semibold">Contact</a>
-                    <a href="{{ url_for('main.app_download') }}" class="nav-link py-2 text-sm font-semibold">WOP App</a>
+                    <a href="{{ url_for('main.app_download') }}" class="nav-link py-2 text-sm font-semibold">WOPP App</a>
                     <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav py-2 px-5 rounded-xl text-sm uppercase tracking-wide">Give</a>
                     {% if current_user.is_authenticated %}
                         <a href="{{ url_for('main.dashboard') }}" class="nav-link py-2 text-sm font-semibold">Dashboard</a>
@@ -87,7 +87,7 @@
                 <a href="{{ url_for('prayer.prayer_request') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Prayer</a>
                 <a href="{{ url_for('classes.classes_home') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">School</a>
                 <a href="{{ url_for('main.contact') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Contact</a>
-                <a href="{{ url_for('main.app_download') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">WOP App</a>
+                <a href="{{ url_for('main.app_download') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">WOPP App</a>
                 <div class="pt-4 pb-2 border-t border-gray-100">
                     {% with variant='compact' %}{% include 'includes/social_links.html' %}{% endwith %}
                 </div>
@@ -126,7 +126,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo">
+                        <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo">
                         <h3 class="text-lg font-black" style="color: var(--gold-primary);">MWPP Ministry</h3>
                     </div>
                     <p class="text-gray-300 leading-relaxed mb-4">Raising purpose-driven believers through the Word, prayer, worship, and kingdom impact.</p>
@@ -151,7 +151,7 @@
                         <li><a href="{{ url_for('main.about_minister_joy') }}" class="hover:text-brand-gold transition">Minister Joy</a></li>
                         <li><a href="{{ url_for('main.applications') }}" class="hover:text-brand-gold transition">Apply Now</a></li>
                         <li><a href="{{ url_for('main.contact') }}" class="hover:text-brand-gold transition">Contact</a></li>
-                        <li><a href="{{ url_for('main.app_download') }}" class="hover:text-brand-gold transition">WOP App</a></li>
+                        <li><a href="{{ url_for('main.app_download') }}" class="hover:text-brand-gold transition">WOPP App</a></li>
                     </ul>
                 </div>
                 <div>

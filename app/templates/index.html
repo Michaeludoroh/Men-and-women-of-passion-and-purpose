@@ -8,7 +8,7 @@
     <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, #D4AF37 0%, transparent 50%), radial-gradient(circle at 80% 50%, #7B2CBF 0%, transparent 50%);"></div>
 
     <div class="relative z-20 text-center text-white px-4 max-w-5xl mx-auto animate-fade-in py-24">
-        <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-lg mx-auto mb-8">
+        <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo-lg mx-auto mb-8">
         <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-6 leading-tight">
             <span class="block" style="color: #D4AF37;">MEN & WOMEN OF</span>
             <span class="block">PASSION & PURPOSE</span>
@@ -103,8 +103,8 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-                <span class="inline-block px-4 py-1 rounded-full text-sm font-bold mb-4" style="background: rgba(212,175,55,0.3); color: #E8C547;">WOP App</span>
-                <h2 class="text-4xl md:text-5xl font-black mb-6 section-heading-light">Download the WOP App</h2>
+                <span class="inline-block px-4 py-1 rounded-full text-sm font-bold mb-4" style="background: rgba(212,175,55,0.3); color: #E8C547;">WOPP App</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-6 section-heading-light">Download the WOPP App</h2>
                 <p class="text-lg opacity-90 mb-6 leading-relaxed">
                     Access announcements, events, sermons, prayer resources, mentorship programs, empowerment initiatives, and ministry updates directly from your mobile device.
                 </p>
@@ -121,27 +121,27 @@
                 {% include "includes/app_store_buttons.html" %}
 
                 <a href="{{ url_for('main.app_download') }}" class="inline-block mt-6 font-bold underline opacity-90 hover:opacity-100">
-                    Explore the WOP App <i class="fas fa-arrow-right ml-1"></i>
+                    Explore the WOPP App <i class="fas fa-arrow-right ml-1"></i>
                 </a>
             </div>
             <div class="flex flex-col items-center gap-6">
                 <div class="app-phone-mockup">
-                    <img src="{{ logo_url() }}" alt="WOP App Logo" class="brand-logo-mockup mb-6">
-                    <h3 class="text-xl font-black mb-2" style="color: var(--gold-primary);">WOP App</h3>
+                    <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo-mockup mb-6">
+                    <h3 class="text-xl font-black mb-2" style="color: var(--gold-primary);">WOPP App</h3>
                     <p class="text-sm opacity-80">Announcements · Events · Sermons · Prayer</p>
                 </div>
 
                 <!-- Screenshot preview strip -->
                 <div class="flex gap-3 overflow-x-auto max-w-full pb-2 app-screenshot-strip">
                     {% for screenshot in app_screenshots() %}
-                    <img src="{{ screenshot }}" alt="WOP App preview {{ loop.index }}" class="app-screenshot-thumb rounded-xl flex-shrink-0" loading="lazy">
+                    <img src="{{ screenshot }}" alt="WOPP App preview {{ loop.index }}" class="app-screenshot-thumb rounded-xl flex-shrink-0" loading="lazy">
                     {% endfor %}
                 </div>
 
                 <!-- QR code linking to /app -->
                 <div class="card p-4 text-center" style="background: rgba(255,255,255,0.1); border: none;">
-                    <img src="{{ app_qr_code_url() }}" alt="QR code for WOP App download page" class="w-24 h-24 mx-auto rounded-lg mb-2" loading="lazy">
-                    <p class="text-xs opacity-80">Scan for WOP App</p>
+                    <img src="{{ app_qr_code_url() }}" alt="QR code for WOPP App download page" class="w-24 h-24 mx-auto rounded-lg mb-2" loading="lazy">
+                    <p class="text-xs opacity-80">Scan for WOPP App</p>
                 </div>
             </div>
         </div>
