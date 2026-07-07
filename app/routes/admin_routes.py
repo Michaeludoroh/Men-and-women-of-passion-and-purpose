@@ -9,7 +9,6 @@ from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryI
 from ..extensions import db
 from ..services.upload import save_upload
 from ..utils.events import unique_slug, parse_datetime_local, format_datetime_local
-from ..utils.app_admin_url import app_admin_url
 from ..services.website_settings import get_ministry_context, get_about_intro
 
 admin = Blueprint("admin", __name__)
@@ -59,7 +58,6 @@ def admin_dashboard():
     return render_template(
         "admin/admin_dashboard.html",
         stats=_admin_stats(),
-        app_admin_url=app_admin_url(),
     )
 
 

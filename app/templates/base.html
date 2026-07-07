@@ -62,7 +62,7 @@
                         <a href="{{ url_for('main.dashboard') }}" class="nav-link py-2 text-sm font-semibold">Dashboard</a>
                         {% if current_user.role == 'admin' %}
                             <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link py-2 text-sm font-semibold">Website Admin</a>
-                            <a href="{{ app_admin_url() }}" target="_blank" rel="noopener noreferrer" class="nav-link py-2 text-sm font-semibold">App Admin</a>
+                            <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="nav-link py-2 text-sm font-semibold">App Admin</a>
                         {% endif %}
                         <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold py-2 px-4 text-sm rounded-lg">Logout</a>
                     {% else %}
@@ -97,7 +97,7 @@
                     <a href="{{ url_for('main.dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Dashboard</a>
                     {% if current_user.role == 'admin' %}
                         <a href="{{ url_for('admin.admin_dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Website Admin</a>
-                        <a href="{{ app_admin_url() }}" target="_blank" rel="noopener noreferrer" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">App Admin</a>
+                        <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">App Admin</a>
                     {% endif %}
                     <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold block p-3 text-center rounded-lg mt-2">Logout</a>
                 {% else %}

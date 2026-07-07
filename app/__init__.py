@@ -77,7 +77,7 @@ def create_app():
             "app_features": APP_FEATURES,
             "social_links": get_social_links(),
             "contact_social_backgrounds": CONTACT_ICON_BACKGROUNDS,
-            "app_admin_url": app_admin_url,
+            "app_admin_url": app_admin_url(),
             "ministry": get_ministry_context(),
         }
 
