@@ -4,11 +4,13 @@ from datetime import datetime
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, Response
 from flask_login import login_required, current_user
-from ..models import User, Sermon, PrayerRequest, ContactMessage, Donation, Course, Assignment, Leader, GalleryImage, Event
-from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryImageForm, EventForm
+from ..models import User, Sermon, PrayerRequest, ContactMessage, Donation, Course, Assignment, Leader, GalleryImage, Event, Application, WebsiteSettings
+from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryImageForm, EventForm, WebsiteSettingsForm
 from ..extensions import db
 from ..services.upload import save_upload
 from ..utils.events import unique_slug, parse_datetime_local, format_datetime_local
+from ..utils.app_admin_url import app_admin_url
+from ..services.website_settings import get_ministry_context, get_about_intro
 
 admin = Blueprint("admin", __name__)
 
@@ -17,7 +19,7 @@ def admin_required(view_func):
     @wraps(view_func)
     def wrapped(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login", next=request.path))
         if current_user.role != "admin":
             flash("Access denied: Admins only.", "danger")
             return redirect(url_for("main.index"))
@@ -26,31 +28,39 @@ def admin_required(view_func):
     return wrapped
 
 
+def _admin_stats():
+    return {
+        "sermons": Sermon.query.count(),
+        "prayers": PrayerRequest.query.count(),
+        "applications": Application.query.count(),
+        "unread_applications": Application.query.filter_by(is_read=False).count(),
+        "contacts": ContactMessage.query.count(),
+        "unread_contacts": ContactMessage.query.filter_by(is_read=False).count(),
+        "donations": Donation.query.count(),
+        "leaders": Leader.query.count(),
+        "gallery": GalleryImage.query.count(),
+        "events": Event.query.count(),
+        "published_events": Event.query.filter_by(is_published=True).count(),
+        "courses": Course.query.count(),
+        "assignments": Assignment.query.count(),
+    }
+
+
 @admin.route("/")
 @login_required
 @admin_required
 def admin_dashboard():
     current_app.logger.info(
-        "Admin dashboard viewed user_id=%s email=%s ip=%s",
+        "Website admin dashboard viewed user_id=%s email=%s ip=%s",
         current_user.id,
         current_user.email,
         request.remote_addr,
     )
-    stats = {
-        "users": User.query.count(),
-        "sermons": Sermon.query.count(),
-        "prayers": PrayerRequest.query.count(),
-        "contacts": ContactMessage.query.count(),
-        "unread_contacts": ContactMessage.query.filter_by(is_read=False).count(),
-        "donations": Donation.query.count(),
-        "courses": Course.query.count(),
-        "assignments": Assignment.query.count(),
-        "leaders": Leader.query.count(),
-        "gallery": GalleryImage.query.count(),
-        "events": Event.query.count(),
-        "published_events": Event.query.filter_by(is_published=True).count(),
-    }
-    return render_template("admin/admin_dashboard.html", stats=stats)
+    return render_template(
+        "admin/admin_dashboard.html",
+        stats=_admin_stats(),
+        app_admin_url=app_admin_url(),
+    )
 
 
 @admin.route("/users")
@@ -79,6 +89,90 @@ def manage_prayers():
     )
     prayers = PrayerRequest.query.order_by(PrayerRequest.date.desc()).all()
     return render_template("admin/manage_prayers.html", prayers=prayers)
+
+
+@admin.route("/applications")
+@login_required
+@admin_required
+def manage_applications():
+    filter_status = request.args.get("status", "all")
+    applications_query = Application.query.order_by(Application.created_at.desc())
+    if filter_status == "unread":
+        applications_query = applications_query.filter_by(is_read=False)
+    elif filter_status == "read":
+        applications_query = applications_query.filter_by(is_read=True)
+    applications = applications_query.all()
+    return render_template(
+        "admin/manage_applications.html",
+        applications=applications,
+        filter_status=filter_status,
+    )
+
+
+@admin.route("/applications/<int:application_id>")
+@login_required
+@admin_required
+def view_application(application_id):
+    application = Application.query.get_or_404(application_id)
+    if not application.is_read:
+        application.is_read = True
+        db.session.commit()
+    return render_template("admin/view_application.html", application=application)
+
+
+@admin.route("/applications/<int:application_id>/toggle-read", methods=["POST"])
+@login_required
+@admin_required
+def toggle_application_read(application_id):
+    application = Application.query.get_or_404(application_id)
+    application.is_read = not application.is_read
+    db.session.commit()
+    flash("Application status updated.", "success")
+    return redirect(request.referrer or url_for("admin.manage_applications"))
+
+
+@admin.route("/applications/<int:application_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_application(application_id):
+    application = Application.query.get_or_404(application_id)
+    db.session.delete(application)
+    db.session.commit()
+    flash("Application deleted.", "info")
+    return redirect(url_for("admin.manage_applications"))
+
+
+@admin.route("/site-settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def manage_site_settings():
+    settings = WebsiteSettings.get_singleton()
+    ministry = get_ministry_context()
+    form = WebsiteSettingsForm(
+        about_intro=settings.about_intro or get_about_intro(),
+        tagline=settings.tagline or ministry["MINISTRY_TAGLINE"],
+        mission=settings.mission or ministry["MINISTRY_MISSION"],
+        vision=settings.vision or ministry["MINISTRY_VISION"],
+        ministry_email=settings.ministry_email or ministry["MINISTRY_EMAIL"],
+        ministry_phone=settings.ministry_phone or ministry["MINISTRY_PHONE"],
+        ministry_address=settings.ministry_address or ministry["MINISTRY_ADDRESS"],
+        app_store_url=settings.app_store_url or ministry["APP_STORE_URL"],
+        play_store_url=settings.play_store_url or ministry["PLAY_STORE_URL"],
+    )
+    if form.validate_on_submit():
+        settings.about_intro = form.about_intro.data.strip()
+        settings.tagline = form.tagline.data.strip()
+        settings.mission = form.mission.data.strip()
+        settings.vision = form.vision.data.strip()
+        settings.ministry_email = form.ministry_email.data.strip()
+        settings.ministry_phone = (form.ministry_phone.data or "").strip() or None
+        settings.ministry_address = (form.ministry_address.data or "").strip() or None
+        settings.app_store_url = (form.app_store_url.data or "").strip() or None
+        settings.play_store_url = (form.play_store_url.data or "").strip() or None
+        db.session.commit()
+        flash("Website settings saved.", "success")
+        return redirect(url_for("admin.manage_site_settings"))
+    return render_template("admin/manage_site_settings.html", form=form)
 
 
 @admin.route("/donations")

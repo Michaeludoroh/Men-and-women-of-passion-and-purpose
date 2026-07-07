@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}View Application | Website Admin{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_applications') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Applications</a>
+    <div class="card p-6 space-y-4">
+        <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-2xl font-bold section-heading">{{ application.name }}</h1>
+            {% if application.is_read %}
+                <span class="badge-read">Read</span>
+            {% else %}
+                <span class="badge-unread">Unread</span>
+            {% endif %}
+        </div>
+        <p class="text-gray-600"><strong>Email:</strong> {{ application.email }}</p>
+        <p class="text-gray-600"><strong>Program:</strong> {{ application.program_type }}</p>
+        <p class="text-gray-600"><strong>Submitted:</strong> {{ application.created_at.strftime('%Y-%m-%d %H:%M') if application.created_at else '—' }}</p>
+        <div>
+            <p class="font-semibold mb-2">Message</p>
+            <p class="text-gray-700 whitespace-pre-wrap">{{ application.message }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2 pt-4">
+            <form method="POST" action="{{ url_for('admin.toggle_application_read', application_id=application.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-gold py-2 px-4 rounded-lg text-sm font-semibold">
+                    {% if application.is_read %}Mark Unread{% else %}Mark Read{% endif %}
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_application', application_id=application.id) }}" onsubmit="return confirm('Delete this application permanently?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-danger rounded-lg text-sm">Delete</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

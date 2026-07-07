@@ -19,6 +19,8 @@ from .utils.media import (
 )
 from .utils.urls import cors_allow_origin
 from .utils.social import get_social_links, CONTACT_ICON_BACKGROUNDS
+from .utils.app_admin_url import app_admin_url
+from .services.website_settings import get_ministry_context
 
 
 def create_app():
@@ -75,6 +77,8 @@ def create_app():
             "app_features": APP_FEATURES,
             "social_links": get_social_links(),
             "contact_social_backgrounds": CONTACT_ICON_BACKGROUNDS,
+            "app_admin_url": app_admin_url,
+            "ministry": get_ministry_context(),
         }
 
     @app.after_request

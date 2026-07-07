@@ -183,3 +183,27 @@ class EventForm(FlaskForm):
         validators=[DataRequired()],
     )
     submit = SubmitField("Save Event")
+
+
+class WebsiteSettingsForm(FlaskForm):
+    about_intro = TextAreaField(
+        "About Page Intro",
+        validators=[DataRequired(), Length(min=10, max=2000)],
+        description="Hero paragraph on the About page.",
+    )
+    tagline = TextAreaField(
+        "Homepage Tagline",
+        validators=[DataRequired(), Length(min=10, max=500)],
+    )
+    mission = TextAreaField(
+        "Mission",
+        validators=[DataRequired(), Length(min=10, max=3000)],
+        description="One bullet per line for the About page; also shown on the homepage.",
+    )
+    vision = TextAreaField("Vision", validators=[DataRequired(), Length(min=10, max=2000)])
+    ministry_email = StringField("Public Email", validators=[DataRequired(), Email(), Length(max=255)])
+    ministry_phone = StringField("Public Phone", validators=[Optional(), Length(max=50)])
+    ministry_address = TextAreaField("Public Address", validators=[Optional(), Length(max=500)])
+    app_store_url = StringField("App Store URL", validators=[Optional(), Length(max=500)])
+    play_store_url = StringField("Google Play URL", validators=[Optional(), Length(max=500)])
+    submit = SubmitField("Save Website Settings")

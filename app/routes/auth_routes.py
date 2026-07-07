@@ -50,6 +50,11 @@ def register():
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
+        next_page = request.args.get("next")
+        if next_page and is_safe_redirect_url(next_page):
+            return redirect(next_page)
+        if current_user.role == "admin":
+            return redirect(url_for("admin.admin_dashboard"))
         return redirect(url_for("main.dashboard"))
 
     form = LoginForm()
@@ -69,6 +74,8 @@ def login():
             flash("Welcome back!", "success")
             if next_page and is_safe_redirect_url(next_page):
                 return redirect(next_page)
+            if user.role == "admin":
+                return redirect(url_for("admin.admin_dashboard"))
             return redirect(url_for("main.dashboard"))
 
         current_app.logger.warning(

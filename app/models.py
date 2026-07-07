@@ -124,6 +124,32 @@ class Application(db.Model):
     program_type = db.Column(db.String(120), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+
+
+class WebsiteSettings(db.Model):
+    """Editable website copy and contact details (single row)."""
+    id = db.Column(db.Integer, primary_key=True)
+    about_intro = db.Column(db.Text)
+    mission = db.Column(db.Text)
+    vision = db.Column(db.Text)
+    tagline = db.Column(db.Text)
+    ministry_email = db.Column(db.String(255))
+    ministry_phone = db.Column(db.String(50))
+    ministry_address = db.Column(db.Text)
+    app_store_url = db.Column(db.String(500))
+    play_store_url = db.Column(db.String(500))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @classmethod
+    def get_singleton(cls):
+        row = cls.query.first()
+        if row:
+            return row
+        row = cls()
+        db.session.add(row)
+        db.session.commit()
+        return row
 
 
 GALLERY_CATEGORIES = [

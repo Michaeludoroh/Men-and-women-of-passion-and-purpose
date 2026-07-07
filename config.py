@@ -66,6 +66,9 @@ class Config:
     SITE_URL = os.environ.get("SITE_URL", "").rstrip("/")
     ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", "")
 
+    # External WOPP App Admin URL (separate system at admin.woppandmopp.com)
+    APP_ADMIN_URL = os.environ.get("APP_ADMIN_URL", "").rstrip("/")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

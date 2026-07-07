@@ -1,34 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Admin Dashboard | MWPP{% endblock %}
+{% block title %}Website Admin | MWPP{% endblock %}
 {% block content %}
 <section class="mb-8 max-w-7xl mx-auto px-4">
-    <h1 class="text-3xl font-bold section-heading">Admin Dashboard</h1>
-    <p class="text-gray-600">Manage users, sermons, donations, prayer requests, gallery, leaders, and more.</p>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">Website Admin</span>
+            <h1 class="text-3xl font-bold section-heading">Website Content</h1>
+            <p class="text-gray-600">Manage everything on <strong>woppandmopp.com</strong> from one place.</p>
+        </div>
+        {% if app_admin_url %}
+        <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="btn-outline-gold py-2 px-5 rounded-xl text-sm font-semibold whitespace-nowrap">
+            Open App Admin →
+        </a>
+        {% endif %}
+    </div>
 </section>
 
-<section class="grid md:grid-cols-4 gap-4 mb-8 max-w-7xl mx-auto px-4">
-    <div class="card text-center p-4"><p class="text-sm">Users</p><p class="text-2xl font-bold">{{ stats.users }}</p></div>
+<section class="grid md:grid-cols-4 gap-4 mb-10 max-w-7xl mx-auto px-4">
     <div class="card text-center p-4"><p class="text-sm">Sermons</p><p class="text-2xl font-bold">{{ stats.sermons }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Leaders</p><p class="text-2xl font-bold">{{ stats.leaders }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Gallery</p><p class="text-2xl font-bold">{{ stats.gallery }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Events</p><p class="text-2xl font-bold">{{ stats.events }} <span class="text-sm text-gray-500">({{ stats.published_events }} live)</span></p></div>
     <div class="card text-center p-4"><p class="text-sm">Prayer Requests</p><p class="text-2xl font-bold">{{ stats.prayers }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Applications</p><p class="text-2xl font-bold">{{ stats.applications }}{% if stats.unread_applications %} <span class="text-sm text-brand-gold">({{ stats.unread_applications }} new)</span>{% endif %}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Contact Messages</p><p class="text-2xl font-bold">{{ stats.contacts }}{% if stats.unread_contacts %} <span class="text-sm text-brand-gold">({{ stats.unread_contacts }} unread)</span>{% endif %}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Donations</p><p class="text-2xl font-bold">{{ stats.donations }}</p></div>
-    <div class="card text-center p-4"><p class="text-sm">Courses</p><p class="text-2xl font-bold">{{ stats.courses }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">School Courses</p><p class="text-2xl font-bold">{{ stats.courses }}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Assignments</p><p class="text-2xl font-bold">{{ stats.assignments }}</p></div>
-    <div class="card text-center p-4"><p class="text-sm">Leaders</p><p class="text-2xl font-bold">{{ stats.leaders }}</p></div>
-    <div class="card text-center p-4"><p class="text-sm">Gallery Images</p><p class="text-2xl font-bold">{{ stats.gallery }}</p></div>
-    <div class="card text-center p-4"><p class="text-sm">Events</p><p class="text-2xl font-bold">{{ stats.events }} <span class="text-sm text-gray-500">({{ stats.published_events }} live)</span></p></div>
 </section>
 
-<section class="grid md:grid-cols-3 gap-4 max-w-7xl mx-auto px-4 pb-12">
-    <a href="{{ url_for('admin.manage_users') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Users</a>
-    <a href="{{ url_for('admin.manage_sermons') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Sermons</a>
-    <a href="{{ url_for('admin.manage_prayers') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Prayer Requests</a>
-    <a href="{{ url_for('admin.manage_contacts') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Contact Inbox{% if stats.unread_contacts %} <span class="badge-unread ml-1">{{ stats.unread_contacts }}</span>{% endif %}</a>
-    <a href="{{ url_for('admin.manage_donations') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Donations</a>
-    <a href="{{ url_for('admin.manage_classes') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Classes</a>
-    <a href="{{ url_for('admin.manage_assignments') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Assignments</a>
-    <a href="{{ url_for('admin.manage_leaders') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Leaders</a>
-    <a href="{{ url_for('admin.manage_gallery') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Gallery</a>
-    <a href="{{ url_for('admin.manage_events') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Events</a>
+<section class="max-w-7xl mx-auto px-4 pb-6">
+    <h2 class="text-lg font-bold section-heading mb-4">Pages &amp; Content</h2>
+    <div class="grid md:grid-cols-3 gap-4">
+        <a href="{{ url_for('admin.manage_site_settings') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">About &amp; Site Settings</a>
+        <a href="{{ url_for('admin.manage_sermons') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Sermons</a>
+        <a href="{{ url_for('admin.manage_leaders') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Leadership</a>
+        <a href="{{ url_for('admin.manage_gallery') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Gallery</a>
+        <a href="{{ url_for('admin.manage_events') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Events</a>
+    </div>
 </section>
+
+<section class="max-w-7xl mx-auto px-4 pb-6">
+    <h2 class="text-lg font-bold section-heading mb-4">Submissions &amp; Giving</h2>
+    <div class="grid md:grid-cols-3 gap-4">
+        <a href="{{ url_for('admin.manage_prayers') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Prayer Requests</a>
+        <a href="{{ url_for('admin.manage_applications') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Applications{% if stats.unread_applications %} <span class="badge-unread ml-1">{{ stats.unread_applications }}</span>{% endif %}</a>
+        <a href="{{ url_for('admin.manage_contacts') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Contact Inbox{% if stats.unread_contacts %} <span class="badge-unread ml-1">{{ stats.unread_contacts }}</span>{% endif %}</a>
+        <a href="{{ url_for('admin.manage_donations') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Donations</a>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-4 pb-12">
+    <h2 class="text-lg font-bold section-heading mb-4">Ministry School (Website)</h2>
+    <div class="grid md:grid-cols-3 gap-4">
+        <a href="{{ url_for('admin.manage_classes') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Classes</a>
+        <a href="{{ url_for('admin.manage_assignments') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Assignments</a>
+    </div>
+</section>
+
+{% if app_admin_url %}
+<section class="max-w-7xl mx-auto px-4 pb-12">
+    <div class="card p-6 border-l-4" style="border-color: var(--gold-primary);">
+        <h2 class="font-bold section-heading mb-2">WOPP App Admin (separate system)</h2>
+        <p class="text-sm text-gray-600 mb-3">Clips, eBooks, Subscriptions, Programs, Mentorship, Notifications, and Analytics are managed at <strong>admin.woppandmopp.com</strong>.</p>
+        <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="btn-primary inline-block py-2 px-5 rounded-xl text-sm font-semibold">Go to App Admin</a>
+    </div>
+</section>
+{% endif %}
 {% endblock %}

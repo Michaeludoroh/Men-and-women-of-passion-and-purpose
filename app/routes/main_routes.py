@@ -6,6 +6,7 @@ from ..forms import ApplicationForm, ContactForm
 from ..models import ContactMessage
 from ..extensions import db
 from ..utils.events import published_upcoming_query, published_past_query
+from ..services.website_settings import get_about_intro, mission_bullets
 
 main = Blueprint("main", __name__)
 
@@ -35,14 +36,17 @@ def index():
         featured_gallery=featured_gallery,
         featured_events=featured_events,
         founders=founders,
-        ministry=current_app.config,
         category_labels=dict(GALLERY_CATEGORIES),
     )
 
 
 @main.route("/about")
 def about():
-    return render_template("about.html", ministry=current_app.config)
+    return render_template(
+        "about.html",
+        about_intro=get_about_intro(),
+        mission_bullets=mission_bullets(),
+    )
 
 
 @main.route("/about-minister-joy")
@@ -110,7 +114,7 @@ def events():
 
 @main.route("/app")
 def app_download():
-    return render_template("app_download.html", ministry=current_app.config)
+    return render_template("app_download.html")
 
 
 @main.route("/contact", methods=["GET", "POST"])
@@ -128,7 +132,7 @@ def contact():
         db.session.commit()
         flash("Your message has been sent successfully. We will get back to you soon.", "success")
         return redirect(url_for("main.contact"))
-    return render_template("contact.html", ministry=current_app.config, form=form)
+    return render_template("contact.html", form=form)
 
 
 @main.route("/dashboard")
