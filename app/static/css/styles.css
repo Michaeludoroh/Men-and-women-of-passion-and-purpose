@@ -345,6 +345,89 @@ nav {
   background: transparent;
   cursor: zoom-in;
   display: block;
+  position: relative;
+}
+
+.gallery-video-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+}
+
+.gallery-video-thumb img,
+.gallery-video-thumb video {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 46, 0.35);
+  color: var(--white-primary);
+  pointer-events: none;
+}
+
+.gallery-play-overlay i {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+  color: var(--gray-dark);
+  font-size: 1.1rem;
+  margin-left: 0.15rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.gallery-admin-thumb {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+}
+
+.gallery-admin-thumb img,
+.gallery-admin-video-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-media-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gallery-media-badge-video {
+  background: rgba(90, 24, 154, 0.92);
+  color: var(--white-primary);
+}
+
+.gallery-media-badge-image {
+  background: rgba(212, 175, 55, 0.95);
+  color: var(--purple-dark);
 }
 
 .gallery-lightbox-trigger {
@@ -388,6 +471,17 @@ body.gallery-lightbox-open {
   max-width: 100%;
   margin: 0 auto;
   border-radius: 1rem;
+  box-shadow: var(--shadow-heavy);
+}
+
+.gallery-lightbox-content video {
+  max-height: 75vh;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  border-radius: 1rem;
+  background: #000;
+  display: block;
   box-shadow: var(--shadow-heavy);
 }
 
@@ -512,6 +606,130 @@ body.gallery-lightbox-open {
   background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary));
   color: var(--white-primary);
   font-size: 4rem;
+}
+
+.leader-video-wrap {
+  width: 100%;
+}
+
+.leader-video,
+.leader-admin-video {
+  width: 100%;
+  display: block;
+  border-radius: 1rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+  box-shadow: 0 8px 24px var(--purple-glow);
+}
+
+.leader-admin-video-preview.hidden {
+  display: none !important;
+}
+
+.leader-bio {
+  margin-top: 0.25rem;
+}
+
+.leader-bio-content {
+  color: var(--gray-medium);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  max-height: calc(1.7em * 5);
+  transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.leader-bio.is-expanded .leader-bio-content {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  max-height: 2000px;
+}
+
+.leader-bio-toggle {
+  margin-top: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--purple-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.leader-bio-toggle:hover,
+.leader-bio-toggle:focus-visible {
+  color: var(--gold-dark);
+  outline: none;
+}
+
+.leader-bio-toggle:focus-visible {
+  box-shadow: 0 0 0 3px var(--gold-glow);
+  border-radius: 0.25rem;
+}
+
+.leader-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leader-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--purple-primary);
+  font-weight: 600;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.leader-contact-link:hover,
+.leader-contact-link:focus-visible {
+  color: var(--gold-dark);
+  outline: none;
+}
+
+.leader-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.leader-social-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.leader-social-icon:hover,
+.leader-social-icon:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--gold-glow);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leader-bio-content {
+    transition: none;
+  }
 }
 
 .founder-badge {
@@ -1020,4 +1238,368 @@ footer {
 .badge-featured {
   background: rgba(212, 175, 55, 0.2);
   color: var(--gold-dark);
+}
+
+/* Sermon preview video — autoplay background, click opens social */
+.sermon-preview {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sermon-preview:focus-visible {
+  box-shadow: 0 0 0 3px var(--gold-primary), 0 0 0 6px var(--purple-glow);
+}
+
+.sermon-preview-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+  /* Reserve space to prevent layout shift while media loads */
+  min-height: 0;
+}
+
+.sermon-preview-video,
+.sermon-preview-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
+  transform: scale(1);
+  filter: brightness(0.78);
+}
+
+.sermon-preview-video {
+  z-index: 0;
+  /* Hide native media UI across browsers */
+  -webkit-media-controls: none !important;
+}
+
+.sermon-preview-video::-webkit-media-controls,
+.sermon-preview-video::-webkit-media-controls-enclosure,
+.sermon-preview-video::-webkit-media-controls-panel,
+.sermon-preview-video::-webkit-media-controls-start-playback-button,
+.sermon-preview-video::-webkit-media-controls-play-button,
+.sermon-preview-video::-webkit-media-controls-timeline,
+.sermon-preview-video::-webkit-media-controls-current-time-display,
+.sermon-preview-video::-webkit-media-controls-time-remaining-display,
+.sermon-preview-video::-webkit-media-controls-mute-button,
+.sermon-preview-video::-webkit-media-controls-volume-slider,
+.sermon-preview-video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Firefox / standard media controls */
+.sermon-preview-video::-moz-media-controls {
+  display: none !important;
+}
+
+.sermon-preview-poster[hidden] {
+  display: none !important;
+}
+
+.sermon-preview-poster.is-visible {
+  display: block !important;
+  z-index: 1;
+}
+
+.sermon-preview-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 0.15) 0%,
+    rgba(90, 24, 154, 0.35) 100%
+  );
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+
+.sermon-preview-play {
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+  color: var(--gray-dark);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(255, 255, 255, 0.2);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+}
+
+.sermon-preview-play i {
+  font-size: 1.35rem;
+  margin-left: 0.15rem;
+}
+
+.sermon-preview:hover .sermon-preview-video,
+.sermon-preview:hover .sermon-preview-poster,
+.sermon-preview:focus-visible .sermon-preview-video,
+.sermon-preview:focus-visible .sermon-preview-poster {
+  transform: scale(1.06);
+  filter: brightness(0.55);
+}
+
+.sermon-preview:hover .sermon-preview-overlay,
+.sermon-preview:focus-visible .sermon-preview-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 0.35) 0%,
+    rgba(60, 15, 110, 0.65) 100%
+  );
+}
+
+.sermon-preview:hover .sermon-preview-play,
+.sermon-preview:focus-visible .sermon-preview-play {
+  transform: scale(1.12);
+  box-shadow: 0 14px 36px rgba(212, 175, 55, 0.45), 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+.sermon-preview.is-fallback .sermon-preview-video {
+  visibility: hidden;
+}
+
+.sermon-preview.is-playing .sermon-preview-poster {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sermon-card .sermon-preview {
+  border-radius: 0;
+}
+
+@media (max-width: 640px) {
+  .sermon-preview-play {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .sermon-preview-play i {
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sermon-preview-video,
+  .sermon-preview-poster,
+  .sermon-preview-play,
+  .sermon-preview-overlay {
+    transition: none;
+  }
+
+  .sermon-preview:hover .sermon-preview-video,
+  .sermon-preview:hover .sermon-preview-poster,
+  .sermon-preview:focus-visible .sermon-preview-video,
+  .sermon-preview:focus-visible .sermon-preview-poster {
+    transform: none;
+  }
+
+  .sermon-preview:hover .sermon-preview-play,
+  .sermon-preview:focus-visible .sermon-preview-play {
+    transform: none;
+  }
+}
+
+/* Form inputs — unified styling */
+.form-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--gray-dark);
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid rgba(90, 24, 154, 0.15);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: var(--transition-fast);
+  background: var(--white-primary);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--purple-primary);
+  box-shadow: 0 0 0 4px var(--purple-glow);
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-verified, .status-active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #15803d;
+}
+
+.status-pending, .status-paused {
+  background: rgba(234, 179, 8, 0.15);
+  color: #a16207;
+}
+
+.status-failed, .status-cancelled {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.status-manual {
+  background: rgba(90, 24, 154, 0.12);
+  color: var(--purple-primary);
+}
+
+/* Giving category cards */
+.giving-category-card {
+  border: 1px solid rgba(90, 24, 154, 0.08);
+  transition: var(--transition-fast);
+}
+
+.giving-category-card:hover {
+  border-color: var(--gold-primary);
+}
+
+/* Organization chart */
+.org-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.org-chart-level {
+  width: 100%;
+  text-align: center;
+}
+
+.org-chart-level-label {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+  color: var(--white-primary);
+  margin-bottom: 1.5rem;
+}
+
+.org-chart-members {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.org-chart-node {
+  background: var(--white-primary);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  min-width: 160px;
+  max-width: 200px;
+  box-shadow: var(--shadow-light);
+  transition: var(--transition-fast);
+}
+
+.org-chart-node:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-heavy);
+  border-color: var(--gold-primary);
+}
+
+.org-chart-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 0.75rem;
+  display: block;
+  border: 3px solid var(--gold-primary);
+}
+
+.org-chart-photo-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary));
+  color: var(--white-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin: 0 auto 0.75rem;
+}
+
+.org-chart-name {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--gray-dark);
+  margin-bottom: 0.25rem;
+}
+
+.org-chart-role {
+  font-size: 0.75rem;
+  color: var(--purple-primary);
+  font-weight: 600;
+}
+
+.org-chart-connector {
+  color: var(--gold-primary);
+  font-size: 1.25rem;
+  padding: 0.75rem 0;
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .org-chart-members {
+    gap: 1rem;
+  }
+  .org-chart-node {
+    min-width: 140px;
+    max-width: 160px;
+    padding: 1rem;
+  }
+}
+
+/* Payment method radio cards */
+.payment-method-option .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }

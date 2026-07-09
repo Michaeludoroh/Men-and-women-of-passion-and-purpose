@@ -1,136 +1,131 @@
 {% extends "base.html" %}
-{% block title %}Give Online - MWPP Ministry{% endblock %}
+{% block title %}Give Online | WOPP Ministry{% endblock %}
 
 {% block content %}
-<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
-  <div class="max-w-2xl mx-auto">
-    <!-- Header -->
-    <div class="text-center mb-12">
-      <i class="fas fa-heart text-5xl text-purple-primary mb-6 block mx-auto"></i>
-      <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-primary to-gold-primary bg-clip-text text-transparent">
-        Give Online
-      </h1>
-      <p class="text-xl text-gray-700 max-w-lg mx-auto leading-relaxed">
-        Partner with our ministry through secure online giving. Your gift makes a difference.
-      </p>
-    </div>
+<section class="page-hero mb-12 rounded-3xl">
+  <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+    <i class="fas fa-heart text-5xl text-brand-gold mb-6 block mx-auto"></i>
+    <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Give Online</h1>
+    <p class="text-lg md:text-xl opacity-95">Partner with our ministry through secure, multi-currency giving. Every seed makes a kingdom impact.</p>
+  </div>
+</section>
 
-    <!-- Form Card -->
-    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 md:p-12 giving-card">
-      <form method="POST" id="giving-form">
-        {{ form.hidden_tag() }}
-        
-        <div class="mb-8">
-          <label class="block text-xl font-bold mb-4 text-gray-900">{{ form.name.label(class_="font-bold") }}</label>
-          {{ form.name(class="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-purple-primary focus:ring-4 focus:ring-purple-primary/20 transition-all text-lg placeholder-gray-400", placeholder="Full Name") | safe }}
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+  <h2 class="text-2xl font-black section-heading mb-6 text-center">Giving Categories</h2>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+    {% for key, cat in categories.items() %}
+    <a href="{{ url_for('giving.giving_page', category=key) }}#give-form"
+       class="giving-category-card card p-5 hover:-translate-y-1 transition-all {% if selected_category == key %}ring-2 ring-brand-gold{% endif %}">
+      <h3 class="font-bold text-lg mb-2" style="color: var(--purple-primary);">{{ cat.label }}</h3>
+      <p class="text-sm text-gray-600 mb-2">{{ cat.description }}</p>
+      {% if cat.scripture %}
+      <p class="text-xs font-semibold" style="color: var(--gold-dark);"><i class="fas fa-book-open mr-1"></i>{{ cat.scripture }}</p>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section id="give-form" class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+  <div class="card p-8 md:p-12 giving-card">
+    <h2 class="text-2xl font-black section-heading mb-2 text-center">
+      {% if selected_category in categories %}{{ categories[selected_category].label }}{% else %}Make a Gift{% endif %}
+    </h2>
+    <p class="text-center text-gray-600 mb-8">Select your amount, currency, and payment method.</p>
+
+    <form method="POST" id="giving-form">
+      {{ form.hidden_tag() }}
+
+      <div class="mb-6">
+        <label class="form-label">{{ form.name.label.text }}</label>
+        {{ form.name(class="form-input", placeholder="Full Name") }}
+      </div>
+
+      <div class="mb-6">
+        <label class="form-label">{{ form.email.label.text }}</label>
+        {{ form.email(class="form-input", placeholder="Email Address") }}
+      </div>
+
+      <div class="mb-6">
+        <label class="form-label">{{ form.category.label.text }}</label>
+        {{ form.category(class="form-input") }}
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="form-label">{{ form.currency.label.text }}</label>
+          {{ form.currency(class="form-input", id="currency-select", onchange="updateCurrencyDisplay()") }}
         </div>
-
-        <div class="mb-8">
-          <label class="block text-xl font-bold mb-4 text-gray-900">{{ form.email.label(class_="font-bold") }}</label>
-          {{ form.email(class="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-purple-primary focus:ring-4 focus:ring-purple-primary/20 transition-all text-lg placeholder-gray-400", placeholder="Email Address") | safe }}
+        <div>
+          <label class="form-label">{{ form.amount.label.text }}</label>
+          {{ form.amount(class="form-input", id="amount-field", placeholder="Amount", step="0.01") }}
         </div>
+      </div>
 
-        <div class="mb-8">
-          <label class="block text-xl font-bold mb-4 text-gray-900">{{ form.amount.label(class_="font-bold") }}</label>
-          {{ form.amount(class="hidden", id="amount-field") }}
-          <div class="space-y-4">
-            <!-- Quick Amounts -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              <label class="p-4 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-xl cursor-pointer text-center transition-all hover:shadow-md" onclick="setAmount(1000)">
-                <div class="font-bold text-xl text-purple-primary">₦1,000</div>
-                <div class="text-sm text-gray-600">Seed</div>
-              </label>
-              <label class="p-4 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-xl cursor-pointer text-center transition-all hover:shadow-md" onclick="setAmount(5000)">
-                <div class="font-bold text-xl text-purple-primary">₦5,000</div>
-                <div class="text-sm text-gray-600">Tithe</div>
-              </label>
-              <label class="p-4 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-xl cursor-pointer text-center transition-all hover:shadow-md" onclick="setAmount(10000)">
-                <div class="font-bold text-xl text-purple-primary">₦10,000</div>
-                <div class="text-sm text-gray-600">Offering</div>
-              </label>
-              <label class="p-4 bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-xl cursor-pointer text-center transition-all hover:shadow-md" onclick="setAmount(50000)">
-                <div class="font-bold text-xl text-purple-primary">₦50,000</div>
-                <div class="text-sm text-gray-600">Blessing</div>
-              </label>
+      <div class="mb-6">
+        <label class="form-label">{{ form.gateway.label.text }}</label>
+        <div class="grid sm:grid-cols-2 gap-3">
+          {% for value, label in form.gateway.choices %}
+          <label class="payment-method-option">
+            <input type="radio" name="gateway" value="{{ value }}" {% if form.gateway.data == value or loop.first %}checked{% endif %} class="sr-only peer">
+            <div class="p-4 border-2 border-gray-200 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 transition-all cursor-pointer text-center">
+              <span class="font-semibold text-sm">{{ label }}</span>
             </div>
-            <!-- Custom Amount -->
-            <div class="p-6 bg-gradient-to-r from-purple-50 to-gold-50 rounded-2xl border-2 border-purple-100">
-              <label class="block text-lg font-semibold mb-3 text-gray-800 text-center">Custom Amount</label>
-              <input type="range" id="amount-slider" min="500" max="100000" step="500" class="w-full h-2 bg-gray-200 rounded-full cursor-pointer accent-purple-primary hover:accent-gold-primary" onchange="updateAmountSlider()">
-              <div class="flex justify-between text-sm text-gray-500 mt-2">
-                <span>₦500</span>
-                <span>₦100,000</span>
-              </div>
-              <div id="slider-value" class="text-3xl font-bold text-center mt-4 text-purple-primary">₦1,000</div>
-            </div>
-          </div>
+          </label>
+          {% endfor %}
         </div>
+      </div>
 
-        <div class="mb-8">
-          <label class="block text-xl font-bold mb-4 text-gray-900">{{ form.gateway.label(class_="font-bold") }}</label>
-          <div class="grid grid-cols-2 gap-4">
-            <label class="flex items-center p-5 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-primary hover:shadow-lg transition-all">
-              <i class="fas fa-credit-card text-2xl text-purple-primary mr-3"></i>
-              <div>
-                <div class="font-bold text-lg">Paystack</div>
-                <div class="text-sm text-gray-600">Instant & Secure</div>
-              </div>
-              {{ form.gateway(class="hidden", id="gateway-paystack", value="paystack") }}
-            </label>
-            <label class="flex items-center p-5 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-brand-gold hover:shadow-lg transition-all" style="--tw-border-opacity: 1;">
-              <i class="fas fa-globe text-2xl text-brand-gold mr-3"></i>
-              <div>
-                <div class="font-bold text-lg">Flutterwave</div>
-                <div class="text-sm text-gray-600">Global Reach</div>
-              </div>
-              {{ form.gateway(class="hidden", id="gateway-flutterwave", value="flutterwave") }}
-            </label>
-          </div>
-        </div>
+      <button type="submit" class="btn-primary w-full py-4 text-lg font-bold rounded-2xl">
+        <i class="fas fa-lock mr-2"></i> Proceed to Secure Payment
+      </button>
+    </form>
 
-        {{ form.submit(class="w-full py-4 px-8 text-xl font-bold bg-gradient-to-r from-purple-primary to-gold-primary hover:from-purple-dark hover:to-gold-dark text-white rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-wide block mx-auto cursor-pointer focus:ring-4 focus:ring-purple-primary/50 focus:outline-none") | safe }}
-
-        <!-- Secure Note -->
-        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-          <i class="fas fa-lock text-brand-gold text-2xl mb-2 block"></i>
-          <p class="text-sm text-gray-600">100% Secure • SSL Protected • Verified Gateways</p>
-        </div>
-      </form>
+    <div class="mt-6 pt-6 border-t border-gray-100 text-center">
+      <i class="fas fa-shield-alt text-brand-gold text-xl mb-2 block"></i>
+      <p class="text-sm text-gray-600">100% Secure &bull; SSL Protected &bull; Verified Gateways</p>
     </div>
   </div>
-</div>
+</section>
+
+{% if donation_history %}
+<section class="max-w-3xl mx-auto px-4 pb-16">
+  <h2 class="text-xl font-bold section-heading mb-4">Your Giving History</h2>
+  <div class="card overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="py-3 px-4 text-left">Date</th>
+          <th class="py-3 px-4 text-left">Category</th>
+          <th class="py-3 px-4 text-left">Amount</th>
+          <th class="py-3 px-4 text-left">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in donation_history %}
+        <tr class="border-t">
+          <td class="py-3 px-4">{{ d.created_at.strftime('%b %d, %Y') }}</td>
+          <td class="py-3 px-4">{{ categories.get(d.category, {}).get('label', d.category) }}</td>
+          <td class="py-3 px-4">{{ currency_symbols.get(d.currency, d.currency) }}{{ '{:,.2f}'.format(d.amount) }}</td>
+          <td class="py-3 px-4">
+            <span class="status-badge status-{{ d.payment_status }}">{{ d.payment_status|title }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="text-center mt-4">
+    <a href="{{ url_for('giving.donation_history') }}" class="text-sm font-semibold" style="color: var(--purple-primary);">View Full History →</a>
+  </div>
+</section>
+{% endif %}
 
 <script>
-function setAmount(amount) {
-  document.getElementById('amount-field').value = amount;
-  document.getElementById('amount-display').textContent = '₦' + amount.toLocaleString();
-  document.getElementById('amount-slider').value = amount;
+function updateCurrencyDisplay() {
+  const symbols = {{ currency_symbols | tojson }};
+  const currency = document.getElementById('currency-select').value;
+  // Future: update quick amount labels based on currency
 }
-
-function updateAmountSlider() {
-  const slider = document.getElementById('amount-slider');
-  const amount = parseInt(slider.value);
-  document.getElementById('amount-field').value = amount;
-  document.getElementById('amount-display').textContent = '₦' + amount.toLocaleString();
-}
-
-// Gateway radio selection
-document.querySelectorAll('label:has(input[type="radio"])').forEach(label => {
-  label.addEventListener('click', function() {
-    this.querySelector('input[type="radio"]').checked = true;
-  });
-});
-
-// Form validation
-document.getElementById('giving-form').addEventListener('submit', function(e) {
-  const name = document.querySelector('input[name="name"]').value.trim();
-  const email = document.querySelector('input[name="email"]').value.trim();
-  const amount = document.getElementById('amount-field').value;
-  if (!name || !email || !amount || amount < 500) {
-    e.preventDefault();
-    alert('Please fill all fields and select amount ≥ ₦500');
-  }
-});
 </script>
-
 {% endblock %}

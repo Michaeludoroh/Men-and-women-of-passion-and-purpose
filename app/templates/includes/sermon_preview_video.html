@@ -1,0 +1,52 @@
+{#
+  Reusable SermonPreviewVideo component.
+  Autoplay muted looping preview; click/tap/keyboard opens social watch URL.
+  Expects: sermon (optional video_url, title)
+  Uses: sermon_watch_url, sermon_placeholder_url() from context
+#}
+{% set watch_url = sermon_watch_url or '#' %}
+{% set preview_label = 'Watch full sermon on social media: ' ~ (sermon.title if sermon and sermon.title else 'Men and Women of Passion and Purpose') %}
+{% set has_video = sermon and sermon.video_url %}
+<a href="{{ watch_url }}"
+   class="sermon-preview"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="{{ preview_label }}"
+   data-sermon-preview
+   {% if has_video %}data-has-video="true"{% endif %}>
+  <div class="sermon-preview-media">
+    {% if has_video %}
+    <video class="sermon-preview-video"
+           muted
+           loop
+           playsinline
+           webkit-playsinline
+           preload="none"
+           disablepictureinpicture
+           disableremoteplayback
+           controlslist="nodownload nofullscreen noremoteplayback"
+           poster="{{ sermon_placeholder_url() }}"
+           aria-hidden="true"
+           tabindex="-1"
+           data-src="{{ sermon.video_url }}">
+    </video>
+    <img class="sermon-preview-poster"
+         src="{{ sermon_placeholder_url() }}"
+         alt=""
+         decoding="async"
+         aria-hidden="true"
+         hidden>
+    {% else %}
+    <img class="sermon-preview-poster is-visible"
+         src="{{ sermon_placeholder_url() }}"
+         alt=""
+         decoding="async"
+         aria-hidden="true">
+    {% endif %}
+    <div class="sermon-preview-overlay" aria-hidden="true">
+      <span class="sermon-preview-play">
+        <i class="fas fa-play" aria-hidden="true"></i>
+      </span>
+    </div>
+  </div>
+</a>

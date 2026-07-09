@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Reminder Settings | Admin{% endblock %}
+{% block content %}
+<section class="max-w-2xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Website Admin</a>
+    <h1 class="text-3xl font-bold section-heading mb-2">Partnership Reminder Settings</h1>
+    <p class="text-gray-600 mb-8">Configure automatic email and SMS reminders for ministry partners.</p>
+
+    <div class="card p-8 mb-6">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="space-y-6">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    {{ form.email_reminders_enabled(class="w-5 h-5 accent-purple-600") }}
+                    <div>
+                        <span class="font-semibold">Email Reminders</span>
+                        <p class="text-sm text-gray-500">Send email before due dates, after payments, and for missed payments.</p>
+                    </div>
+                </label>
+
+                <label class="flex items-center gap-3 cursor-pointer">
+                    {{ form.sms_reminders_enabled(class="w-5 h-5 accent-purple-600") }}
+                    <div>
+                        <span class="font-semibold">SMS Reminders</span>
+                        <p class="text-sm text-gray-500">Requires Twilio configuration. Sends to partner phone numbers.</p>
+                    </div>
+                </label>
+
+                <div>
+                    <label class="form-label">{{ form.reminder_days_before.label.text }}</label>
+                    {{ form.reminder_days_before(class="form-input max-w-xs") }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary mt-8 py-3 px-8 rounded-xl font-semibold">{{ form.submit.label.text }}</button>
+        </form>
+    </div>
+
+    <div class="card p-6 border-l-4" style="border-color: var(--gold-primary);">
+        <h2 class="font-bold mb-2">Manual Reminder Run</h2>
+        <p class="text-sm text-gray-600 mb-4">Process all due reminders now. In production, schedule this via cron: <code class="text-xs bg-gray-100 px-2 py-1 rounded">flask send-reminders</code></p>
+        <form method="POST" action="{{ url_for('admin.send_reminders_now') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-outline-gold py-2 px-5 rounded-xl text-sm font-semibold">Send Reminders Now</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

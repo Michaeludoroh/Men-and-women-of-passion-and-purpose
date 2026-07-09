@@ -10,7 +10,36 @@
     </div>
 </section>
 
+{% if org_chart %}
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <h2 class="text-3xl font-black section-heading text-center mb-12">Organization Chart</h2>
+    <div class="org-chart">
+        {% for level_key, level_data in org_chart.items() %}
+        <div class="org-chart-level">
+            <div class="org-chart-level-label">{{ level_data.label }}</div>
+            <div class="org-chart-members">
+                {% for leader in level_data.leaders %}
+                <div class="org-chart-node">
+                    {% if leader.photo %}
+                    <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="org-chart-photo">
+                    {% else %}
+                    <div class="org-chart-photo-placeholder"><i class="fas fa-user"></i></div>
+                    {% endif %}
+                    <p class="org-chart-name">{{ leader.name }}</p>
+                    <p class="org-chart-role">{{ leader.role }}</p>
+                    {% if leader.is_founder %}<span class="founder-badge text-xs">Founder</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if not loop.last %}<div class="org-chart-connector"><i class="fas fa-chevron-down"></i></div>{% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <h2 class="text-2xl font-black section-heading mb-8">Leadership Profiles</h2>
     {% if leaders %}
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for leader in leaders %}
@@ -22,8 +51,24 @@
                 <i class="fas fa-user"></i>
             </div>
             {% endif %}
+
+            {% if leader.video %}
+            <div class="leader-video-wrap px-4 pt-4">
+                <video class="leader-video"
+                       controls
+                       playsinline
+                       preload="none"
+                       aria-label="Video introduction for {{ leader.name }}"
+                       {% if leader.photo %}poster="{{ url_for('static', filename=leader.photo) }}"{% endif %}>
+                    <source data-src="{{ url_for('static', filename=leader.video) }}"
+                            type="video/{{ leader.video.rsplit('.', 1)[-1]|lower }}">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            {% endif %}
+
             <div class="p-6">
-                <div class="flex items-center gap-2 mb-2">
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
                     <h2 class="text-xl font-black text-gray-900">{{ leader.name }}</h2>
                     {% if leader.is_founder %}
                     <span class="founder-badge">Founder</span>
@@ -31,9 +76,60 @@
                 </div>
                 <p class="text-sm font-bold text-purple-700 mb-1">{{ leader.role }}</p>
                 {% if leader.title %}
-                <p class="text-sm text-gold-600 font-semibold mb-3" style="color: var(--gold-dark);">{{ leader.title }}</p>
+                <p class="text-sm font-semibold mb-1" style="color: var(--gold-dark);">{{ leader.title }}</p>
                 {% endif %}
-                <p class="text-gray-600 leading-relaxed text-sm">{{ leader.bio }}</p>
+                {% if leader.department %}
+                <p class="text-xs text-gray-500 mb-3">{{ leader.department }}</p>
+                {% endif %}
+
+                <div class="leader-bio" data-leader-bio>
+                    <div class="leader-bio-content" id="leader-bio-{{ leader.id }}">{{ leader.bio }}</div>
+                    <button type="button"
+                            class="leader-bio-toggle"
+                            data-bio-toggle
+                            aria-expanded="false"
+                            aria-controls="leader-bio-{{ leader.id }}"
+                            hidden>
+                        Read More
+                    </button>
+                </div>
+
+                {% if leader.email or leader.phone or leader.facebook_url or leader.instagram_url or leader.youtube_url or leader.twitter_url %}
+                <div class="leader-contact mt-4 pt-4 border-t border-purple-50">
+                    {% if leader.email %}
+                    <a href="mailto:{{ leader.email }}" class="leader-contact-link" aria-label="Email {{ leader.name }}">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>{{ leader.email }}
+                    </a>
+                    {% endif %}
+                    {% if leader.phone %}
+                    <a href="tel:{{ leader.phone }}" class="leader-contact-link" aria-label="Call {{ leader.name }}">
+                        <i class="fas fa-phone" aria-hidden="true"></i>{{ leader.phone }}
+                    </a>
+                    {% endif %}
+                    <div class="leader-social-links">
+                        {% if leader.facebook_url %}
+                        <a href="{{ leader.facebook_url }}" target="_blank" rel="noopener noreferrer" class="leader-social-icon" aria-label="{{ leader.name }} on Facebook" title="Facebook">
+                            <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                        {% if leader.instagram_url %}
+                        <a href="{{ leader.instagram_url }}" target="_blank" rel="noopener noreferrer" class="leader-social-icon" aria-label="{{ leader.name }} on Instagram" title="Instagram">
+                            <i class="fab fa-instagram" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                        {% if leader.youtube_url %}
+                        <a href="{{ leader.youtube_url }}" target="_blank" rel="noopener noreferrer" class="leader-social-icon" aria-label="{{ leader.name }} on YouTube" title="YouTube">
+                            <i class="fab fa-youtube" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                        {% if leader.twitter_url %}
+                        <a href="{{ leader.twitter_url }}" target="_blank" rel="noopener noreferrer" class="leader-social-icon" aria-label="{{ leader.name }} on X" title="X / Twitter">
+                            <i class="fab fa-x-twitter" aria-hidden="true"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </article>
         {% endfor %}

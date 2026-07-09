@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Edit Gallery Media | Admin{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_gallery') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Manage Gallery</a>
+    <h1 class="text-3xl font-bold section-heading mb-2">Edit Gallery Media</h1>
+    <p class="text-gray-600 mb-6">Update details for <strong>{{ item.title }}</strong>. Leave media empty to keep the current file.</p>
+
+    <div class="card p-4 mb-6">
+        <p class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color: var(--purple-primary);">
+            Current {{ 'Video' if item.is_video else 'Image' }}
+        </p>
+        {% if item.is_video %}
+        <video class="leader-admin-video" controls playsinline preload="metadata"
+               {% if item.poster_path %}poster="{{ url_for('static', filename=item.poster_path) }}"{% endif %}>
+            <source src="{{ url_for('static', filename=item.image_path) }}" type="video/{{ item.image_path.rsplit('.', 1)[-1]|lower }}">
+        </video>
+        {% else %}
+        <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.title }}" class="w-full max-h-72 object-cover rounded-xl">
+        {% endif %}
+        <p class="text-xs text-gray-500 mt-2 break-all">{{ item.image_path }}</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="card space-y-4 p-6" action="{{ url_for('admin.edit_gallery_image', image_id=item.id) }}">
+        {{ form.hidden_tag() }}
+        <div><label class="label" for="{{ form.title.id }}">{{ form.title.label.text }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label" for="{{ form.description.id }}">{{ form.description.label.text }}</label>{{ form.description(class="input-field", rows="3") }}</div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div><label class="label" for="{{ form.category.id }}">{{ form.category.label.text }}</label>{{ form.category(class="input-field") }}</div>
+            <div><label class="label" for="{{ form.display_order.id }}">{{ form.display_order.label.text }}</label>{{ form.display_order(class="input-field") }}</div>
+            <div><label class="label" for="{{ form.is_featured.id }}">{{ form.is_featured.label.text }}</label>{{ form.is_featured(class="input-field") }}</div>
+            <div><label class="label" for="{{ form.is_published.id }}">{{ form.is_published.label.text }}</label>{{ form.is_published(class="input-field") }}</div>
+        </div>
+        <div id="replace-media">
+            <label class="label" for="{{ form.media.id }}">Replace Media File</label>
+            {{ form.media(class="input-field", accept="image/png,image/jpeg,image/jpg,image/gif,image/webp,video/mp4,video/webm") }}
+            <p class="text-xs text-gray-500 mt-1">Optional. Leave empty to keep the current file.</p>
+        </div>
+        <div>
+            <label class="label" for="{{ form.poster.id }}">{{ form.poster.label.text }}</label>
+            {{ form.poster(class="input-field", accept="image/png,image/jpeg,image/jpg,image/gif,image/webp") }}
+            {% if item.poster_path %}
+            <div class="mt-2 flex items-center gap-3">
+                <img src="{{ url_for('static', filename=item.poster_path) }}" alt="Current poster" class="w-24 h-16 object-cover rounded-lg">
+                <span class="text-xs text-gray-500">Current poster — upload a new image to replace.</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex flex-wrap gap-3 pt-2">
+            {{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}
+            <a href="{{ url_for('admin.manage_gallery') }}" class="btn-outline-gold px-6 py-3 rounded-xl text-sm font-semibold inline-flex items-center">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

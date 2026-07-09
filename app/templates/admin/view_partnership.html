@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Partnership Details | Admin{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_partnerships') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Partnerships</a>
+
+    <div class="card p-6 mb-8">
+        <h1 class="text-2xl font-bold section-heading mb-4">{{ partnership.name }}</h1>
+        <div class="grid sm:grid-cols-2 gap-4 text-sm">
+            <div><span class="font-semibold text-gray-700">Email:</span> {{ partnership.email }}</div>
+            <div><span class="font-semibold text-gray-700">Phone:</span> {{ partnership.phone or '—' }}</div>
+            <div><span class="font-semibold text-gray-700">Amount:</span> {{ partnership.currency }} {{ '{:,.2f}'.format(partnership.amount) }}</div>
+            <div><span class="font-semibold text-gray-700">Frequency:</span> {{ partnership.frequency|replace('_', ' ') | title }}</div>
+            <div><span class="font-semibold text-gray-700">Payment Method:</span> {{ partnership.payment_method|title }}</div>
+            <div><span class="font-semibold text-gray-700">Status:</span> <span class="status-badge status-{{ partnership.status }}">{{ partnership.status|title }}</span></div>
+            <div><span class="font-semibold text-gray-700">Next Due:</span> {{ partnership.next_due_date.strftime('%b %d, %Y') if partnership.next_due_date else '—' }}</div>
+            <div><span class="font-semibold text-gray-700">Last Payment:</span> {{ partnership.last_payment_date.strftime('%b %d, %Y') if partnership.last_payment_date else '—' }}</div>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-bold section-heading mb-4">Payment History</h2>
+    <div class="card overflow-hidden">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="py-3 px-4 text-left">Date</th>
+                    <th class="py-3 px-4 text-left">Amount</th>
+                    <th class="py-3 px-4 text-left">Gateway</th>
+                    <th class="py-3 px-4 text-left">Reference</th>
+                    <th class="py-3 px-4 text-left">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pay in payments %}
+                <tr class="border-t">
+                    <td class="py-3 px-4">{{ pay.paid_at.strftime('%b %d, %Y') if pay.paid_at else pay.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="py-3 px-4">{{ pay.currency }} {{ '{:,.2f}'.format(pay.amount) }}</td>
+                    <td class="py-3 px-4 capitalize">{{ pay.gateway or '—' }}</td>
+                    <td class="py-3 px-4 font-mono text-xs">{{ pay.payment_reference or '—' }}</td>
+                    <td class="py-3 px-4"><span class="status-badge status-{{ pay.status }}">{{ pay.status|title }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="py-6 text-center text-gray-500">No payments recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -16,11 +16,18 @@ def index():
     featured_sermons = Sermon.query.order_by(Sermon.created_at.desc()).limit(3).all()
     featured_gallery = (
         GalleryImage.query.filter_by(is_featured=True)
-        .order_by(GalleryImage.created_at.desc())
+        .filter(db.or_(GalleryImage.is_published.is_(True), GalleryImage.is_published.is_(None)))
+        .order_by(GalleryImage.display_order.asc(), GalleryImage.created_at.desc())
         .limit(6)
         .all()
     )
-    founders = Leader.query.filter_by(is_founder=True).order_by(Leader.display_order.asc()).limit(2).all()
+    founders = (
+        Leader.query.filter_by(is_founder=True)
+        .filter(db.or_(Leader.is_active.is_(True), Leader.is_active.is_(None)))
+        .order_by(Leader.display_order.asc())
+        .limit(2)
+        .all()
+    )
     now = datetime.utcnow()
     featured_events = (
         published_upcoming_query(now)
@@ -57,21 +64,45 @@ def about_minister_joy():
 
 @main.route("/leadership")
 def leadership():
-    leaders = Leader.query.order_by(Leader.display_order.asc(), Leader.id.asc()).all()
-    return render_template("leadership.html", leaders=leaders)
+    from ..constants import ORG_LEVELS, ORG_LEVEL_ORDER
+    leaders = (
+        Leader.query.filter(db.or_(Leader.is_active.is_(True), Leader.is_active.is_(None)))
+        .order_by(Leader.display_order.asc(), Leader.id.asc())
+        .all()
+    )
+    org_chart = {}
+    for level_key, level_label in ORG_LEVELS:
+        level_leaders = [l for l in leaders if (l.org_level or "coordinator") == level_key]
+        if level_leaders:
+            org_chart[level_key] = {"label": level_label, "leaders": level_leaders}
+    return render_template("leadership.html", leaders=leaders, org_chart=org_chart, org_levels=ORG_LEVELS)
 
 
 @main.route("/gallery")
 def gallery():
     category = request.args.get("category", "").strip()
+    media_type = request.args.get("media", "all").strip().lower()
+    if media_type not in ("all", "image", "video"):
+        media_type = "all"
     page = max(request.args.get("page", 1, type=int), 1)
     default_per_page = current_app.config.get("GALLERY_PER_PAGE", 12)
     per_page = request.args.get("per_page", default_per_page, type=int)
     per_page = min(max(per_page, 6), 48)
 
-    gallery_query = GalleryImage.query.order_by(GalleryImage.created_at.desc())
+    gallery_query = GalleryImage.query.filter(
+        db.or_(GalleryImage.is_published.is_(True), GalleryImage.is_published.is_(None))
+    ).order_by(
+        GalleryImage.display_order.asc(),
+        GalleryImage.created_at.desc(),
+    )
     if category:
         gallery_query = gallery_query.filter(GalleryImage.category == category)
+    if media_type == "image":
+        gallery_query = gallery_query.filter(
+            db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
+        )
+    elif media_type == "video":
+        gallery_query = gallery_query.filter_by(media_type="video")
 
     pagination = gallery_query.paginate(page=page, per_page=per_page, error_out=False)
     category_labels = dict(GALLERY_CATEGORIES)
@@ -85,6 +116,7 @@ def gallery():
         categories=GALLERY_CATEGORIES,
         category_labels=category_labels,
         active_category=category,
+        active_media=media_type,
     )
 
 

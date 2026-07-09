@@ -1,0 +1,162 @@
+{% macro field_errors(field) %}
+  {% if field.errors %}
+  <ul class="mt-1 text-sm text-red-600 list-disc list-inside">
+    {% for error in field.errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+{% endmacro %}
+
+{% macro leader_form_fields(form, leader=None, show_remove_media=False) %}
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <label class="label" for="{{ form.name.id }}">{{ form.name.label.text }}</label>
+      {{ form.name(class="input-field", required=True) }}
+      {{ field_errors(form.name) }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.role.id }}">{{ form.role.label.text }}</label>
+      {{ form.role(class="input-field", required=True) }}
+      {{ field_errors(form.role) }}
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <label class="label" for="{{ form.title.id }}">{{ form.title.label.text }}</label>
+      {{ form.title(class="input-field") }}
+      {{ field_errors(form.title) }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.department.id }}">{{ form.department.label.text }}</label>
+      {{ form.department(class="input-field", placeholder="e.g. Prayer Ministry") }}
+      {{ field_errors(form.department) }}
+    </div>
+  </div>
+
+  <div>
+    <label class="label" for="{{ form.bio.id }}">{{ form.bio.label.text }}</label>
+    {{ form.bio(class="input-field", rows="6", required=True) }}
+    {{ field_errors(form.bio) }}
+    <p class="text-xs text-gray-500 mt-1">Long biographies use Read More on the public site — full text is always preserved.</p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <label class="label" for="{{ form.email.id }}">{{ form.email.label.text }}</label>
+      {{ form.email(class="input-field", type="email", placeholder="leader@example.com") }}
+      {{ field_errors(form.email) }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.phone.id }}">{{ form.phone.label.text }}</label>
+      {{ form.phone(class="input-field", placeholder="+234 ...") }}
+      {{ field_errors(form.phone) }}
+    </div>
+  </div>
+
+  <fieldset class="border border-purple-100 rounded-2xl p-4 space-y-3">
+    <legend class="px-2 text-sm font-bold" style="color: var(--purple-primary);">Social Media Links</legend>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="label" for="{{ form.facebook_url.id }}">{{ form.facebook_url.label.text }}</label>
+        {{ form.facebook_url(class="input-field", placeholder="https://facebook.com/...") }}
+        {{ field_errors(form.facebook_url) }}
+      </div>
+      <div>
+        <label class="label" for="{{ form.instagram_url.id }}">{{ form.instagram_url.label.text }}</label>
+        {{ form.instagram_url(class="input-field", placeholder="https://instagram.com/...") }}
+        {{ field_errors(form.instagram_url) }}
+      </div>
+      <div>
+        <label class="label" for="{{ form.youtube_url.id }}">{{ form.youtube_url.label.text }}</label>
+        {{ form.youtube_url(class="input-field", placeholder="https://youtube.com/...") }}
+        {{ field_errors(form.youtube_url) }}
+      </div>
+      <div>
+        <label class="label" for="{{ form.twitter_url.id }}">{{ form.twitter_url.label.text }}</label>
+        {{ form.twitter_url(class="input-field", placeholder="https://x.com/...") }}
+        {{ field_errors(form.twitter_url) }}
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <label class="label" for="{{ form.photo.id }}">{{ form.photo.label.text }}</label>
+      {{ form.photo(class="input-field", accept="image/png,image/jpeg,image/jpg,image/gif,image/webp", id="leader-photo-input") }}
+      {{ field_errors(form.photo) }}
+      <div id="leader-photo-local-preview" class="mt-3 hidden">
+        <p class="text-xs font-semibold mb-2" style="color: var(--purple-primary);">New image preview</p>
+        <img id="leader-photo-local-img" alt="Selected profile preview" class="w-24 h-24 rounded-xl object-cover">
+      </div>
+      {% if show_remove_media and leader and leader.photo %}
+      <div class="mt-3 flex items-start gap-3">
+        <img src="{{ url_for('static', filename=leader.photo) }}" alt="Current photo of {{ leader.name }}" class="w-16 h-16 rounded-xl object-cover">
+        <div>
+          <p class="text-xs text-gray-500 mb-2">Leave empty to keep the current image.</p>
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            {{ form.remove_photo(class="w-4 h-4 accent-purple-600") }}
+            <span>{{ form.remove_photo.label.text }} on save</span>
+          </label>
+        </div>
+      </div>
+      {% else %}
+      {{ form.remove_photo(class="hidden") }}
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="label" for="{{ form.video.id }}">{{ form.video.label.text }}</label>
+      {{ form.video(class="input-field", accept="video/mp4,video/webm", id="leader-video-input") }}
+      {{ field_errors(form.video) }}
+      <p class="text-xs text-gray-500 mt-1">MP4 or WebM. Max {{ ((config.MAX_CONTENT_LENGTH or 16777216) / (1024 * 1024))|int }} MB.</p>
+
+      <div id="leader-video-local-preview" class="leader-admin-video-preview mt-3 hidden">
+        <p class="text-xs font-semibold mb-2" style="color: var(--purple-primary);">Preview before saving</p>
+        <video id="leader-video-local-player" class="leader-admin-video" controls playsinline preload="metadata"></video>
+        <p id="leader-video-local-name" class="text-xs text-gray-500 mt-2"></p>
+      </div>
+
+      {% if show_remove_media and leader and leader.video %}
+      <div class="leader-admin-video-preview mt-3" data-current-video>
+        <p class="text-xs font-semibold mb-2" style="color: var(--gold-dark);">Current video</p>
+        <video class="leader-admin-video"
+               controls
+               playsinline
+               preload="metadata"
+               {% if leader.photo %}poster="{{ url_for('static', filename=leader.photo) }}"{% endif %}>
+          <source src="{{ url_for('static', filename=leader.video) }}" type="video/{{ leader.video.rsplit('.', 1)[-1]|lower }}">
+        </video>
+        <p class="text-xs text-gray-500 mt-2 break-all">{{ leader.video.split('/')[-1] }}</p>
+        <label class="flex items-center gap-2 mt-3 text-sm cursor-pointer">
+          {{ form.remove_video(class="w-4 h-4 accent-purple-600") }}
+          <span>{{ form.remove_video.label.text }} on save</span>
+        </label>
+      </div>
+      {% else %}
+      {{ form.remove_video(class="hidden") }}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <label class="label" for="{{ form.is_founder.id }}">{{ form.is_founder.label.text }}</label>
+      {{ form.is_founder(class="input-field") }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.is_active.id }}">{{ form.is_active.label.text }}</label>
+      {{ form.is_active(class="input-field") }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.org_level.id }}">{{ form.org_level.label.text }}</label>
+      {{ form.org_level(class="input-field") }}
+    </div>
+    <div>
+      <label class="label" for="{{ form.display_order.id }}">{{ form.display_order.label.text }}</label>
+      {{ form.display_order(class="input-field") }}
+      {{ field_errors(form.display_order) }}
+    </div>
+  </div>
+{% endmacro %}

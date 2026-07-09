@@ -62,6 +62,12 @@ def get_social_dict():
     return {link["key"]: link["url"] for link in get_social_links()}
 
 
+def get_sermon_watch_url():
+    """Prefer YouTube for full sermons; fall back to Facebook if configured."""
+    links = {link["key"]: link["url"] for link in get_social_links()}
+    return links.get("youtube") or links.get("facebook") or ""
+
+
 # Validate all configured links at import time.
 for _social in SOCIAL_LINKS:
     validate_external_url(_social["url"])

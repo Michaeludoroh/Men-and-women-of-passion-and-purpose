@@ -15,6 +15,7 @@ def seed_default_leaders():
             "Leading with fire, purpose, and divine wisdom for over 25 years."
         ),
         is_founder=True,
+        org_level="founder",
         display_order=1,
     )
     db.session.add(minister_joy)

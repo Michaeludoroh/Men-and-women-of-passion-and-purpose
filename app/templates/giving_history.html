@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Giving History | WOPP Ministry{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 py-12">
+  <a href="{{ url_for('giving.giving_page') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Giving</a>
+  <h1 class="text-3xl font-black section-heading mb-8">Your Giving History</h1>
+
+  {% if donations %}
+  <div class="card overflow-hidden">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="py-3 px-4 text-left">Date</th>
+          <th class="py-3 px-4 text-left">Category</th>
+          <th class="py-3 px-4 text-left">Amount</th>
+          <th class="py-3 px-4 text-left">Method</th>
+          <th class="py-3 px-4 text-left">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in donations %}
+        <tr class="border-t">
+          <td class="py-3 px-4">{{ d.created_at.strftime('%b %d, %Y') }}</td>
+          <td class="py-3 px-4">{{ categories.get(d.category, {}).get('label', d.category) }}</td>
+          <td class="py-3 px-4 font-semibold">{{ currency_symbols.get(d.currency, d.currency) }}{{ '{:,.2f}'.format(d.amount) }}</td>
+          <td class="py-3 px-4 capitalize">{{ d.gateway }}</td>
+          <td class="py-3 px-4"><span class="status-badge status-{{ d.payment_status }}">{{ d.payment_status|title }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state card p-12 text-center">
+    <i class="fas fa-heart text-4xl text-brand-gold mb-4"></i>
+    <p class="text-gray-600 font-semibold">No giving history yet.</p>
+    <a href="{{ url_for('giving.giving_page') }}" class="btn-primary inline-block mt-6 py-3 px-8 rounded-xl">Give Now</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

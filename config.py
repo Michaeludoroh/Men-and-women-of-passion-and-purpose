@@ -33,6 +33,15 @@ class Config:
     PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY", "")
     PAYSTACK_PUBLIC_KEY = os.environ.get("PAYSTACK_PUBLIC_KEY", "")
     FLUTTERWAVE_SECRET_KEY = os.environ.get("FLUTTERWAVE_SECRET_KEY", "")
+    PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID", "")
+    PAYPAL_CLIENT_SECRET = os.environ.get("PAYPAL_CLIENT_SECRET", "")
+    PAYPAL_API_URL = os.environ.get("PAYPAL_API_URL", "https://api-m.sandbox.paypal.com")
+
+    CASHAPP_TAG = os.environ.get("CASHAPP_TAG", "$WOPPMinistry")
+
+    TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+    TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+    TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER", "")
 
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
@@ -47,6 +56,7 @@ class Config:
     MINISTRY_EMAIL = os.environ.get(
         "MINISTRY_EMAIL", "womenofpassionandpurpose2024@gmail.com"
     )
+    ZELLE_EMAIL = os.environ.get("ZELLE_EMAIL", "") or MINISTRY_EMAIL
     MINISTRY_PHONE = os.environ.get("MINISTRY_PHONE", "")
     MINISTRY_ADDRESS = os.environ.get("MINISTRY_ADDRESS", "")
     MINISTRY_MISSION = (

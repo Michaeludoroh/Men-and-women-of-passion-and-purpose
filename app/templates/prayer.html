@@ -79,8 +79,25 @@
           </div>
 
           <div class="form-group">
+            <label class="block text-xl font-bold text-gray-900 mb-4" for="{{ form.phone.id }}">Phone Number <span class="text-sm font-normal text-gray-500">(Optional)</span></label>
+            {{ form.phone(class="w-full px-6 py-5 text-lg border-2 border-purple-200 rounded-3xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 focus:outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg", placeholder="+1 (555) 000-0000") }}
+          </div>
+
+          <div class="form-group">
+            <label class="block text-xl font-bold text-gray-900 mb-4" for="{{ form.category.id }}">Prayer Category</label>
+            {{ form.category(class="w-full px-6 py-5 text-lg border-2 border-purple-200 rounded-3xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 focus:outline-none transition-all duration-300 bg-white/80 backdrop-blur-sm shadow-lg") }}
+          </div>
+
+          <div class="form-group">
             <label class="block text-xl font-bold text-gray-900 mb-4" for="{{ form.request.id }}">Prayer Request</label>
             {{ form.request(class="w-full px-6 py-5 text-lg border-2 border-purple-200 rounded-3xl focus:border-purple-400 focus:ring-4 focus:ring-purple-100 focus:outline-none transition-all duration-300 resize-vertical bg-white/80 backdrop-blur-sm shadow-lg font-medium", rows="8", placeholder="Share your prayer need in detail. Be specific - God hears!") }}
+          </div>
+
+          <div class="form-group flex items-start gap-3">
+            {{ form.consent_follow_up(class="mt-1.5 w-5 h-5 accent-purple-600") }}
+            <label for="{{ form.consent_follow_up.id }}" class="text-gray-700 leading-relaxed">
+              {{ form.consent_follow_up.label.text }}
+            </label>
           </div>
 
           <button type="submit" class="hero-cta w-full bg-gradient-to-r from-purple-600 via-purple-500 to-yellow-500 hover:from-purple-700 hover:via-purple-600 hover:to-yellow-600 text-white font-black text-2xl py-8 px-12 rounded-3xl shadow-2xl hover:shadow-3xl hover:-translate-y-3 transition-all duration-500 uppercase tracking-wider flex items-center justify-center space-x-4 group">

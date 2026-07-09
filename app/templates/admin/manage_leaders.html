@@ -1,42 +1,96 @@
 {% extends "base.html" %}
+{% from "admin/_leader_form_fields.html" import leader_form_fields %}
 {% block title %}Manage Leaders | Admin{% endblock %}
 {% block content %}
-<section class="mb-6">
-    <h1 class="text-3xl font-bold section-heading mb-3">Manage Leaders</h1>
-    <form method="POST" enctype="multipart/form-data" class="card space-y-3 mb-6 p-6">
+<section class="max-w-5xl mx-auto px-4 pb-6">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Website Admin</a>
+    <h1 class="text-3xl font-bold section-heading mb-2">Manage Leaders</h1>
+    <p class="text-gray-600 mb-6">Add leadership profiles, then use <strong>Edit</strong> on any card to update details without deleting and recreating.</p>
+
+    <form method="POST"
+          enctype="multipart/form-data"
+          class="card space-y-4 mb-8 p-6"
+          action="{{ url_for('admin.manage_leaders') }}"
+          data-leader-form>
         {{ form.hidden_tag() }}
-        <div><label class="label">{{ form.name.label }}</label>{{ form.name(class="input-field") }}</div>
-        <div><label class="label">{{ form.role.label }}</label>{{ form.role(class="input-field") }}</div>
-        <div><label class="label">{{ form.title.label }}</label>{{ form.title(class="input-field") }}</div>
-        <div><label class="label">{{ form.bio.label }}</label>{{ form.bio(class="input-field", rows="4") }}</div>
-        <div><label class="label">{{ form.photo.label }}</label>{{ form.photo(class="input-field") }}</div>
-        <div class="grid md:grid-cols-2 gap-4">
-            <div><label class="label">{{ form.is_founder.label }}</label>{{ form.is_founder(class="input-field") }}</div>
-            <div><label class="label">{{ form.display_order.label }}</label>{{ form.display_order(class="input-field") }}</div>
+        <h2 class="text-lg font-bold section-heading">Add New Leader</h2>
+        {{ leader_form_fields(form, leader=None, show_remove_media=False) }}
+        <div class="pt-2">
+            <button type="submit" class="btn-primary px-6 py-3 rounded-xl font-semibold" data-save-btn>
+                <span data-save-label>{{ form.submit.label.text }}</span>
+                <span data-save-loading class="hidden"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Saving…</span>
+            </button>
         </div>
-        <div>{{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}</div>
     </form>
 </section>
 
-<section class="grid gap-4">
-    {% for leader in leaders %}
-    <article class="card flex justify-between items-center p-4">
-        <div class="flex items-center gap-4">
-            {% if leader.photo %}
-            <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="w-16 h-16 rounded-xl object-cover">
-            {% endif %}
-            <div>
-                <h3 class="font-semibold">{{ leader.name }}{% if leader.is_founder %} <span class="founder-badge">Founder</span>{% endif %}</h3>
-                <p class="text-sm text-gray-600">{{ leader.role }}</p>
+<section class="max-w-5xl mx-auto px-4 pb-12">
+    <h2 class="text-xl font-bold section-heading mb-4">All Leaders</h2>
+    <div class="grid gap-4">
+        {% for leader in leaders %}
+        <article class="card p-4 {% if leader.is_active is not none and not leader.is_active %}opacity-70{% endif %}">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex items-start gap-4">
+                    {% if leader.photo %}
+                    <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0">
+                    {% else %}
+                    <div class="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary)); color: white;" aria-hidden="true">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h3 class="font-semibold">
+                            {{ leader.name }}
+                            {% if leader.is_founder %}<span class="founder-badge">Founder</span>{% endif %}
+                            {% if leader.is_active is not none and not leader.is_active %}
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 ml-1">Inactive</span>
+                            {% endif %}
+                        </h3>
+                        <p class="text-sm text-gray-600">{{ leader.role }}{% if leader.title %} · {{ leader.title }}{% endif %}</p>
+                        {% if leader.department %}<p class="text-xs text-gray-500">{{ leader.department }}</p>{% endif %}
+                        <p class="text-xs text-gray-500 mt-1 capitalize">{{ (leader.org_level or 'coordinator')|replace('_', ' ') }} · Order {{ leader.display_order }}</p>
+                        {% if leader.email or leader.phone %}
+                        <p class="text-xs text-gray-500 mt-1">
+                            {% if leader.email %}<i class="fas fa-envelope mr-1" aria-hidden="true"></i>{{ leader.email }}{% endif %}
+                            {% if leader.email and leader.phone %} · {% endif %}
+                            {% if leader.phone %}<i class="fas fa-phone mr-1" aria-hidden="true"></i>{{ leader.phone }}{% endif %}
+                        </p>
+                        {% endif %}
+                        {% if leader.video %}
+                        <p class="text-xs font-semibold mt-2" style="color: var(--purple-primary);">
+                            <i class="fas fa-video mr-1" aria-hidden="true"></i>Video · {{ leader.video.split('/')[-1] }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ url_for('admin.edit_leader', leader_id=leader.id) }}"
+                       class="btn-outline-gold py-2 px-4 rounded-lg text-sm font-semibold inline-flex items-center gap-2"
+                       title="Edit Leader"
+                       aria-label="Edit Leader {{ leader.name }}">
+                        <i class="fas fa-pen" aria-hidden="true"></i>
+                        <span>Edit</span>
+                    </a>
+                    {% if leader.video %}
+                    <form method="POST" action="{{ url_for('admin.remove_leader_video', leader_id=leader.id) }}" onsubmit="return confirm('Remove video for {{ leader.name }}?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="py-2 px-4 rounded-lg text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200" title="Remove Video" aria-label="Remove video for {{ leader.name }}">Remove Video</button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('admin.delete_leader', leader_id=leader.id) }}" onsubmit="return confirm('Delete {{ leader.name }} permanently?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-danger py-2 px-4 rounded-lg text-sm" title="Delete Leader" aria-label="Delete Leader {{ leader.name }}">Delete</button>
+                    </form>
+                </div>
             </div>
-        </div>
-        <form method="POST" action="{{ url_for('admin.delete_leader', leader_id=leader.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn-danger">Delete</button>
-        </form>
-    </article>
-    {% else %}
-    <div class="card p-6">No leaders yet.</div>
-    {% endfor %}
+        </article>
+        {% else %}
+        <div class="card p-6 text-center text-gray-600">No leaders yet.</div>
+        {% endfor %}
+    </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{% include "admin/_leader_form_scripts.html" %}
 {% endblock %}

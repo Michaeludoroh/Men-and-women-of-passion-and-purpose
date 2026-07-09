@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "admin/_leader_form_fields.html" import leader_form_fields %}
+{% block title %}Edit Leader | Admin{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_leaders') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Manage Leaders</a>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div>
+            <h1 class="text-3xl font-bold section-heading mb-1">Edit Leader</h1>
+            <p class="text-gray-600">Update {{ leader.name }} without recreating the profile. Unchanged media is kept automatically.</p>
+        </div>
+        {% if leader.is_active is none or leader.is_active %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold" style="background: rgba(34,197,94,0.15); color: #15803d;">Active</span>
+        {% else %}
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-600">Inactive</span>
+        {% endif %}
+    </div>
+
+    <form method="POST"
+          enctype="multipart/form-data"
+          class="card space-y-4 p-6"
+          action="{{ url_for('admin.edit_leader', leader_id=leader.id) }}"
+          data-leader-form
+          data-unsaved-warn>
+        {{ form.hidden_tag() }}
+        {{ leader_form_fields(form, leader=leader, show_remove_media=True) }}
+
+            <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
+            <button type="submit" class="btn-primary px-6 py-3 rounded-xl font-semibold" data-save-btn>
+                <span data-save-label>{{ form.submit.label.text }}</span>
+                <span data-save-loading class="hidden"><i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i>Saving…</span>
+            </button>
+            <a href="{{ url_for('admin.manage_leaders') }}" class="btn-outline-gold px-6 py-3 rounded-xl text-sm font-semibold inline-flex items-center" data-cancel-link>Cancel</a>
+        </div>
+    </form>
+
+    {% if leader.photo or leader.video %}
+    <div class="flex flex-wrap gap-3 mt-4">
+        {% if leader.photo %}
+        <form method="POST" action="{{ url_for('admin.remove_leader_photo', leader_id=leader.id) }}" onsubmit="return confirm('Remove profile image for {{ leader.name }} now?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="py-3 px-4 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Remove Image Now</button>
+        </form>
+        {% endif %}
+        {% if leader.video %}
+        <form method="POST" action="{{ url_for('admin.remove_leader_video', leader_id=leader.id) }}" onsubmit="return confirm('Remove video for {{ leader.name }} now?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="py-3 px-4 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Remove Video Now</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% include "admin/_leader_form_scripts.html" %}
+{% endblock %}

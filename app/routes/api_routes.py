@@ -105,25 +105,40 @@ def get_sermon(sermon_id):
 
 @api.route("/leaders")
 def list_leaders():
-    leaders = Leader.query.order_by(Leader.display_order.asc(), Leader.id.asc()).all()
+    leaders = (
+        Leader.query.filter(db.or_(Leader.is_active.is_(True), Leader.is_active.is_(None)))
+        .order_by(Leader.display_order.asc(), Leader.id.asc())
+        .all()
+    )
     return api_response([leader.to_dict() for leader in leaders])
 
 
 @api.route("/leaders/<int:leader_id>")
 def get_leader(leader_id):
     leader = Leader.query.get_or_404(leader_id)
+    if leader.is_active is False:
+        return api_response(message="Leader not found", status=404, success=False)
     return api_response(leader.to_dict())
 
 
 @api.route("/gallery")
 def list_gallery():
     category = request.args.get("category", "").strip()
+    media_type = request.args.get("media", "").strip().lower()
     featured_only = request.args.get("featured", "").lower() in ("1", "true", "yes")
     limit = min(int(request.args.get("limit", 50)), 100)
 
-    gallery_query = GalleryImage.query.order_by(GalleryImage.created_at.desc())
+    gallery_query = GalleryImage.query.filter(
+        db.or_(GalleryImage.is_published.is_(True), GalleryImage.is_published.is_(None))
+    ).order_by(GalleryImage.display_order.asc(), GalleryImage.created_at.desc())
     if category:
         gallery_query = gallery_query.filter(GalleryImage.category == category)
+    if media_type == "image":
+        gallery_query = gallery_query.filter(
+            db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
+        )
+    elif media_type == "video":
+        gallery_query = gallery_query.filter_by(media_type="video")
     if featured_only:
         gallery_query = gallery_query.filter(GalleryImage.is_featured.is_(True))
 
@@ -134,6 +149,8 @@ def list_gallery():
 @api.route("/gallery/<int:image_id>")
 def get_gallery_image(image_id):
     image = GalleryImage.query.get_or_404(image_id)
+    if image.is_published is False:
+        return api_response(message="Gallery item not found", status=404, success=False)
     return api_response(image.to_dict())
 
 
@@ -150,7 +167,10 @@ def create_prayer_request():
     payload = request.get_json(silent=True) or {}
     name = (payload.get("name") or "").strip()
     email = (payload.get("email") or "").strip()
+    phone = (payload.get("phone") or "").strip() or None
+    category = (payload.get("category") or "other").strip()
     request_text = (payload.get("request") or "").strip()
+    consent = payload.get("consent_follow_up", False)
 
     if not name or not email or len(request_text) < 10:
         return api_response(
@@ -159,9 +179,20 @@ def create_prayer_request():
             success=False,
         )
 
-    prayer_req = PrayerRequest(name=name, email=email, request=request_text)
+    prayer_req = PrayerRequest(
+        name=name,
+        email=email,
+        phone=phone,
+        category=category,
+        request=request_text,
+        consent_follow_up=bool(consent),
+    )
     db.session.add(prayer_req)
     db.session.commit()
+
+    from ..services.notifications import notify_ministry_prayer_request, send_prayer_confirmation
+    notify_ministry_prayer_request(prayer_req)
+    send_prayer_confirmation(prayer_req)
     current_app.logger.info("API prayer request from %s", email)
     return api_response({"id": prayer_req.id}, message="Prayer request received", status=201)
 

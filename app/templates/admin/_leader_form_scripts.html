@@ -1,0 +1,135 @@
+<script>
+(function () {
+  const form = document.querySelector('[data-leader-form]');
+  if (!form) return;
+
+  // Local photo preview
+  const photoInput = document.getElementById('leader-photo-input');
+  const photoPreview = document.getElementById('leader-photo-local-preview');
+  const photoImg = document.getElementById('leader-photo-local-img');
+  let photoObjectUrl = null;
+  if (photoInput && photoPreview && photoImg) {
+    photoInput.addEventListener('change', function () {
+      const file = photoInput.files && photoInput.files[0];
+      if (photoObjectUrl) {
+        URL.revokeObjectURL(photoObjectUrl);
+        photoObjectUrl = null;
+      }
+      if (!file) {
+        photoPreview.classList.add('hidden');
+        photoImg.removeAttribute('src');
+        return;
+      }
+      if (file.type && !file.type.startsWith('image/')) {
+        alert('Please choose an image file (PNG, JPG, GIF, or WEBP).');
+        photoInput.value = '';
+        photoPreview.classList.add('hidden');
+        return;
+      }
+      photoObjectUrl = URL.createObjectURL(file);
+      photoImg.src = photoObjectUrl;
+      photoPreview.classList.remove('hidden');
+    });
+  }
+
+  // Local video preview
+  const videoInput = document.getElementById('leader-video-input');
+  const videoPreview = document.getElementById('leader-video-local-preview');
+  const videoPlayer = document.getElementById('leader-video-local-player');
+  const videoName = document.getElementById('leader-video-local-name');
+  let videoObjectUrl = null;
+  if (videoInput && videoPreview && videoPlayer) {
+    videoInput.addEventListener('change', function () {
+      const file = videoInput.files && videoInput.files[0];
+      if (videoObjectUrl) {
+        URL.revokeObjectURL(videoObjectUrl);
+        videoObjectUrl = null;
+      }
+      if (!file) {
+        videoPreview.classList.add('hidden');
+        videoPlayer.removeAttribute('src');
+        videoPlayer.load();
+        return;
+      }
+      const allowed = ['video/mp4', 'video/webm'];
+      if (file.type && !allowed.includes(file.type) && !/\.(mp4|webm)$/i.test(file.name)) {
+        alert('Please choose an MP4 or WebM video.');
+        videoInput.value = '';
+        videoPreview.classList.add('hidden');
+        return;
+      }
+      videoObjectUrl = URL.createObjectURL(file);
+      videoPlayer.src = videoObjectUrl;
+      if (videoName) {
+        videoName.textContent = file.name + ' · ' + Math.max(1, Math.round(file.size / (1024 * 1024))) + ' MB';
+      }
+      videoPreview.classList.remove('hidden');
+    });
+  }
+
+  // Loading indicator on save
+  const saveBtn = form.querySelector('[data-save-btn]');
+  const saveLabel = form.querySelector('[data-save-label]');
+  const saveLoading = form.querySelector('[data-save-loading]');
+  form.addEventListener('submit', function (event) {
+    const submitter = event.submitter;
+    if (submitter && submitter.getAttribute('formaction')) {
+      return; // immediate remove actions
+    }
+    if (saveBtn && saveLabel && saveLoading) {
+      saveBtn.disabled = true;
+      saveLabel.classList.add('hidden');
+      saveLoading.classList.remove('hidden');
+    }
+  });
+
+  // Unsaved changes warning
+  if (form.hasAttribute('data-unsaved-warn')) {
+    let dirty = false;
+    const markDirty = function () { dirty = true; };
+    form.querySelectorAll('input, textarea, select').forEach(function (el) {
+      el.addEventListener('change', markDirty);
+      el.addEventListener('input', markDirty);
+    });
+    form.addEventListener('submit', function () { dirty = false; });
+    window.addEventListener('beforeunload', function (e) {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    });
+    const cancelLink = form.querySelector('[data-cancel-link]');
+    if (cancelLink) {
+      cancelLink.addEventListener('click', function (e) {
+        if (dirty && !confirm('You have unsaved changes. Leave without saving?')) {
+          e.preventDefault();
+        }
+      });
+    }
+  }
+
+  // Lazy-load admin list videos
+  document.querySelectorAll('.leader-admin-video source[data-src]').forEach(function (source) {
+    const video = source.parentElement;
+    if (!video) return;
+    const load = function () {
+      if (!source.dataset.src) return;
+      source.src = source.dataset.src;
+      source.removeAttribute('data-src');
+      video.load();
+    };
+    if ('IntersectionObserver' in window) {
+      const obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            load();
+            obs.disconnect();
+          }
+        });
+      }, { rootMargin: '100px' });
+      obs.observe(video);
+    } else {
+      load();
+    }
+  });
+})();
+</script>

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Manage Partnerships | WOPP Ministry{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 py-12">
+  <a href="{{ url_for('partnership.partnership_page') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Partnership</a>
+  <h1 class="text-3xl font-black section-heading mb-8">Manage Your Partnerships</h1>
+
+  {% if partnerships %}
+  <div class="space-y-6">
+    {% for p in partnerships %}
+    <div class="card p-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-xl font-bold">{{ currency_symbols.get(p.currency, p.currency) }}{{ '{:,.2f}'.format(p.amount) }}</h2>
+          <p class="text-sm text-gray-600">{{ frequencies.get(p.frequency, p.frequency) }} &bull; {{ p.payment_method|replace('_', ' ')|title }}</p>
+        </div>
+        <span class="status-badge status-{{ p.status }}">{{ p.status|title }}</span>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+        <div>
+          <span class="font-semibold text-gray-800">Next Due:</span>
+          {{ p.next_due_date.strftime('%b %d, %Y') if p.next_due_date else 'Not scheduled' }}
+        </div>
+        <div>
+          <span class="font-semibold text-gray-800">Last Payment:</span>
+          {{ p.last_payment_date.strftime('%b %d, %Y') if p.last_payment_date else 'None yet' }}
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        {% if p.status == 'active' %}
+        <form method="POST" action="{{ url_for('partnership.pause_partnership', partnership_id=p.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-outline-gold py-2 px-4 rounded-lg text-sm">Pause</button>
+        </form>
+        {% elif p.status == 'paused' %}
+        <form method="POST" action="{{ url_for('partnership.resume_partnership', partnership_id=p.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-primary py-2 px-4 rounded-lg text-sm">Resume</button>
+        </form>
+        {% endif %}
+        {% if p.status != 'cancelled' %}
+        <form method="POST" action="{{ url_for('partnership.cancel_partnership', partnership_id=p.id) }}" onsubmit="return confirm('Cancel this partnership?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="text-sm text-red-600 font-semibold py-2 px-4">Cancel Partnership</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state card p-12 text-center">
+    <i class="fas fa-handshake text-4xl text-brand-gold mb-4"></i>
+    <p class="text-gray-600 font-semibold mb-4">You don't have any partnerships yet.</p>
+    <a href="{{ url_for('partnership.partnership_page') }}" class="btn-primary inline-block py-3 px-8 rounded-xl">Become a Partner</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -44,8 +44,27 @@ class PrayerRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(30), nullable=True)
+    category = db.Column(db.String(50), nullable=False, default="other")
     request = db.Column(db.Text, nullable=False)
+    consent_follow_up = db.Column(db.Boolean, default=False)
+    is_prayed_for = db.Column(db.Boolean, default=False)
+    is_archived = db.Column(db.Boolean, default=False)
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "category": self.category,
+            "request": self.request,
+            "consent_follow_up": self.consent_follow_up,
+            "is_prayed_for": self.is_prayed_for,
+            "is_archived": self.is_archived,
+            "date": self.date.isoformat() if self.date else None,
+        }
 
 
 class ContactMessage(db.Model):
@@ -109,12 +128,34 @@ class Submission(db.Model):
 
 class Donation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default="NGN")
+    category = db.Column(db.String(50), nullable=False, default="offering")
     payment_reference = db.Column(db.String(200), nullable=False, unique=True)
-    gateway = db.Column(db.String(50), default='paystack')
+    gateway = db.Column(db.String(50), default="paystack")
+    payment_status = db.Column(db.String(20), default="pending")
+    verified_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="donations", lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "amount": self.amount,
+            "currency": self.currency,
+            "category": self.category,
+            "payment_reference": self.payment_reference,
+            "gateway": self.gateway,
+            "payment_status": self.payment_status,
+            "verified_at": self.verified_at.isoformat() if self.verified_at else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
 
 
 class Application(db.Model):
@@ -168,9 +209,20 @@ class Leader(db.Model):
     title = db.Column(db.String(200), nullable=True)
     bio = db.Column(db.Text, nullable=False)
     photo = db.Column(db.String(300), nullable=True)
+    video = db.Column(db.String(300), nullable=True)
+    email = db.Column(db.String(255), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    department = db.Column(db.String(120), nullable=True)
+    facebook_url = db.Column(db.String(500), nullable=True)
+    instagram_url = db.Column(db.String(500), nullable=True)
+    youtube_url = db.Column(db.String(500), nullable=True)
+    twitter_url = db.Column(db.String(500), nullable=True)
     is_founder = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    org_level = db.Column(db.String(50), default="coordinator")
     display_order = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {
@@ -180,19 +232,121 @@ class Leader(db.Model):
             "title": self.title,
             "bio": self.bio,
             "photo_url": f"/static/{self.photo}" if self.photo else None,
+            "video_url": f"/static/{self.video}" if self.video else None,
+            "email": self.email,
+            "phone": self.phone,
+            "department": self.department,
+            "social": {
+                "facebook": self.facebook_url,
+                "instagram": self.instagram_url,
+                "youtube": self.youtube_url,
+                "twitter": self.twitter_url,
+            },
             "is_founder": self.is_founder,
+            "is_active": self.is_active,
+            "org_level": self.org_level,
             "display_order": self.display_order,
         }
 
 
+class Partnership(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(30), nullable=True)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default="NGN")
+    frequency = db.Column(db.String(30), nullable=False, default="monthly")
+    payment_method = db.Column(db.String(30), nullable=False, default="flutterwave")
+    status = db.Column(db.String(20), default="active")
+    next_due_date = db.Column(db.DateTime, nullable=True)
+    last_payment_date = db.Column(db.DateTime, nullable=True)
+    last_reminder_sent = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship("User", backref="partnerships", lazy=True)
+    payments = db.relationship("PartnershipPayment", backref="partnership", lazy=True, cascade="all, delete-orphan")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "amount": self.amount,
+            "currency": self.currency,
+            "frequency": self.frequency,
+            "payment_method": self.payment_method,
+            "status": self.status,
+            "next_due_date": self.next_due_date.isoformat() if self.next_due_date else None,
+            "last_payment_date": self.last_payment_date.isoformat() if self.last_payment_date else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class PartnershipPayment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    partnership_id = db.Column(db.Integer, db.ForeignKey("partnership.id"), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    currency = db.Column(db.String(10), nullable=False, default="NGN")
+    payment_reference = db.Column(db.String(200), nullable=True)
+    gateway = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(20), default="pending")
+    paid_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ReminderSettings(db.Model):
+    """Singleton settings for partnership reminder notifications."""
+    id = db.Column(db.Integer, primary_key=True)
+    email_reminders_enabled = db.Column(db.Boolean, default=True)
+    sms_reminders_enabled = db.Column(db.Boolean, default=False)
+    reminder_days_before = db.Column(db.Integer, default=1)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @classmethod
+    def get_singleton(cls):
+        row = cls.query.first()
+        if row:
+            return row
+        row = cls()
+        db.session.add(row)
+        db.session.commit()
+        return row
+
+
 class GalleryImage(db.Model):
+    """Gallery media item — supports images and videos (table name kept for compatibility)."""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
     category = db.Column(db.String(50), nullable=False, default="events")
-    image_path = db.Column(db.String(300), nullable=False)
+    image_path = db.Column(db.String(300), nullable=False)  # media file path (image or video)
+    media_type = db.Column(db.String(20), nullable=False, default="image")  # image | video
+    poster_path = db.Column(db.String(300), nullable=True)  # optional video poster/thumbnail
+    display_order = db.Column(db.Integer, default=0)
     is_featured = db.Column(db.Boolean, default=False)
+    is_published = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def is_video(self):
+        return (self.media_type or "image") == "video"
+
+    @property
+    def media_url(self):
+        return f"/static/{self.image_path}" if self.image_path else None
+
+    @property
+    def poster_url(self):
+        if self.poster_path:
+            return f"/static/{self.poster_path}"
+        if not self.is_video and self.image_path:
+            return f"/static/{self.image_path}"
+        return None
 
     def to_dict(self):
         return {
@@ -200,8 +354,13 @@ class GalleryImage(db.Model):
             "title": self.title,
             "description": self.description,
             "category": self.category,
-            "image_url": f"/static/{self.image_path}",
+            "media_type": self.media_type or "image",
+            "image_url": self.media_url,
+            "media_url": self.media_url,
+            "poster_url": self.poster_url,
+            "display_order": self.display_order or 0,
             "is_featured": self.is_featured,
+            "is_published": self.is_published if self.is_published is not None else True,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

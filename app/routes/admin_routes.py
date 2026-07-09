@@ -4,10 +4,19 @@ from datetime import datetime
 from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, Response
 from flask_login import login_required, current_user
-from ..models import User, Sermon, PrayerRequest, ContactMessage, Donation, Course, Assignment, Leader, GalleryImage, Event, Application, WebsiteSettings
-from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryImageForm, EventForm, WebsiteSettingsForm
+from ..models import User, Sermon, PrayerRequest, ContactMessage, Donation, Course, Assignment, Leader, GalleryImage, Event, Application, WebsiteSettings, Partnership, PartnershipPayment, ReminderSettings
+from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryImageForm, EventForm, WebsiteSettingsForm, ReminderSettingsForm
 from ..extensions import db
-from ..services.upload import save_upload
+from ..services.upload import (
+    save_upload,
+    save_video_upload,
+    save_gallery_media,
+    save_gallery_poster,
+    delete_upload,
+    allowed_image,
+    allowed_video,
+    detect_media_type,
+)
 from ..utils.events import unique_slug, parse_datetime_local, format_datetime_local
 from ..services.website_settings import get_ministry_context, get_about_intro
 
@@ -36,6 +45,8 @@ def _admin_stats():
         "contacts": ContactMessage.query.count(),
         "unread_contacts": ContactMessage.query.filter_by(is_read=False).count(),
         "donations": Donation.query.count(),
+        "partnerships": Partnership.query.count(),
+        "active_partnerships": Partnership.query.filter_by(status="active").count(),
         "leaders": Leader.query.count(),
         "gallery": GalleryImage.query.count(),
         "events": Event.query.count(),
@@ -85,8 +96,80 @@ def manage_prayers():
         current_user.email,
         request.remote_addr,
     )
-    prayers = PrayerRequest.query.order_by(PrayerRequest.date.desc()).all()
-    return render_template("admin/manage_prayers.html", prayers=prayers)
+    search = request.args.get("q", "").strip()
+    filter_status = request.args.get("status", "active")
+
+    prayers_query = PrayerRequest.query.order_by(PrayerRequest.date.desc())
+    if filter_status == "active":
+        prayers_query = prayers_query.filter_by(is_archived=False)
+    elif filter_status == "archived":
+        prayers_query = prayers_query.filter_by(is_archived=True)
+    elif filter_status == "prayed":
+        prayers_query = prayers_query.filter_by(is_prayed_for=True, is_archived=False)
+    elif filter_status == "pending":
+        prayers_query = prayers_query.filter_by(is_prayed_for=False, is_archived=False)
+
+    if search:
+        prayers_query = prayers_query.filter(
+            db.or_(
+                PrayerRequest.name.ilike(f"%{search}%"),
+                PrayerRequest.email.ilike(f"%{search}%"),
+                PrayerRequest.request.ilike(f"%{search}%"),
+                PrayerRequest.category.ilike(f"%{search}%"),
+            )
+        )
+
+    prayers = prayers_query.all()
+    return render_template(
+        "admin/manage_prayers.html",
+        prayers=prayers,
+        search=search,
+        filter_status=filter_status,
+    )
+
+
+@admin.route("/prayers/<int:prayer_id>/toggle-prayed", methods=["POST"])
+@login_required
+@admin_required
+def toggle_prayer_prayed(prayer_id):
+    prayer = PrayerRequest.query.get_or_404(prayer_id)
+    prayer.is_prayed_for = not prayer.is_prayed_for
+    db.session.commit()
+    flash("Prayer status updated.", "success")
+    return redirect(request.referrer or url_for("admin.manage_prayers"))
+
+
+@admin.route("/prayers/<int:prayer_id>/archive", methods=["POST"])
+@login_required
+@admin_required
+def archive_prayer(prayer_id):
+    prayer = PrayerRequest.query.get_or_404(prayer_id)
+    prayer.is_archived = True
+    db.session.commit()
+    flash("Prayer request archived.", "info")
+    return redirect(request.referrer or url_for("admin.manage_prayers"))
+
+
+@admin.route("/prayers/<int:prayer_id>/unarchive", methods=["POST"])
+@login_required
+@admin_required
+def unarchive_prayer(prayer_id):
+    prayer = PrayerRequest.query.get_or_404(prayer_id)
+    prayer.is_archived = False
+    db.session.commit()
+    flash("Prayer request restored.", "success")
+    return redirect(request.referrer or url_for("admin.manage_prayers"))
+
+
+@admin.route("/prayers/<int:prayer_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_prayer(prayer_id):
+    prayer = PrayerRequest.query.get_or_404(prayer_id)
+    db.session.delete(prayer)
+    db.session.commit()
+    flash("Prayer request deleted.", "info")
+    return redirect(url_for("admin.manage_prayers"))
 
 
 @admin.route("/applications")
@@ -183,8 +266,82 @@ def manage_donations():
         current_user.email,
         request.remote_addr,
     )
-    donations = Donation.query.order_by(Donation.created_at.desc()).all()
-    return render_template("admin/manage_donations.html", donations=donations)
+    search = request.args.get("q", "").strip()
+    donations_query = Donation.query.order_by(Donation.created_at.desc())
+    if search:
+        donations_query = donations_query.filter(
+            db.or_(
+                Donation.name.ilike(f"%{search}%"),
+                Donation.email.ilike(f"%{search}%"),
+                Donation.payment_reference.ilike(f"%{search}%"),
+            )
+        )
+    donations = donations_query.all()
+    return render_template("admin/manage_donations.html", donations=donations, search=search)
+
+
+@admin.route("/partnerships")
+@login_required
+@admin_required
+def manage_partnerships():
+    search = request.args.get("q", "").strip()
+    filter_status = request.args.get("status", "all")
+    partnerships_query = Partnership.query.order_by(Partnership.created_at.desc())
+    if filter_status != "all":
+        partnerships_query = partnerships_query.filter_by(status=filter_status)
+    if search:
+        partnerships_query = partnerships_query.filter(
+            db.or_(
+                Partnership.name.ilike(f"%{search}%"),
+                Partnership.email.ilike(f"%{search}%"),
+            )
+        )
+    partnerships = partnerships_query.all()
+    return render_template(
+        "admin/manage_partnerships.html",
+        partnerships=partnerships,
+        search=search,
+        filter_status=filter_status,
+    )
+
+
+@admin.route("/partnerships/<int:partnership_id>")
+@login_required
+@admin_required
+def view_partnership(partnership_id):
+    partnership = Partnership.query.get_or_404(partnership_id)
+    payments = PartnershipPayment.query.filter_by(partnership_id=partnership.id).order_by(PartnershipPayment.created_at.desc()).all()
+    return render_template("admin/view_partnership.html", partnership=partnership, payments=payments)
+
+
+@admin.route("/reminder-settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def manage_reminder_settings():
+    settings = ReminderSettings.get_singleton()
+    form = ReminderSettingsForm(
+        email_reminders_enabled=settings.email_reminders_enabled,
+        sms_reminders_enabled=settings.sms_reminders_enabled,
+        reminder_days_before=str(settings.reminder_days_before),
+    )
+    if form.validate_on_submit():
+        settings.email_reminders_enabled = form.email_reminders_enabled.data
+        settings.sms_reminders_enabled = form.sms_reminders_enabled.data
+        settings.reminder_days_before = int(form.reminder_days_before.data)
+        db.session.commit()
+        flash("Reminder settings saved.", "success")
+        return redirect(url_for("admin.manage_reminder_settings"))
+    return render_template("admin/manage_reminder_settings.html", form=form, settings=settings)
+
+
+@admin.route("/reminders/send-now", methods=["POST"])
+@login_required
+@admin_required
+def send_reminders_now():
+    from ..services.reminders import process_partnership_reminders
+    count = process_partnership_reminders()
+    flash(f"Processed reminders. {count} notification(s) sent.", "success")
+    return redirect(url_for("admin.manage_reminder_settings"))
 
 
 @admin.route("/sermons", methods=["GET", "POST"])
@@ -316,22 +473,106 @@ def manage_assignments():
     return render_template("admin/manage_assignments.html", assignments=assignments, form=form)
 
 
+def _optional_text(value):
+    text = (value or "").strip()
+    return text or None
+
+
+def _apply_leader_form_fields(leader, form):
+    """Apply non-media leader fields from the form onto an existing or new Leader."""
+    leader.name = form.name.data.strip()
+    leader.role = form.role.data.strip()
+    leader.title = _optional_text(form.title.data)
+    leader.department = _optional_text(form.department.data)
+    leader.bio = form.bio.data.strip()
+    leader.email = _optional_text(form.email.data)
+    leader.phone = _optional_text(form.phone.data)
+    leader.facebook_url = _optional_text(form.facebook_url.data)
+    leader.instagram_url = _optional_text(form.instagram_url.data)
+    leader.youtube_url = _optional_text(form.youtube_url.data)
+    leader.twitter_url = _optional_text(form.twitter_url.data)
+    leader.is_founder = form.is_founder.data == "1"
+    leader.is_active = form.is_active.data == "1"
+    leader.org_level = form.org_level.data
+    try:
+        leader.display_order = int(form.display_order.data or 0)
+    except (TypeError, ValueError):
+        leader.display_order = 0
+
+
+def _handle_leader_media(leader, form, is_new=False):
+    """
+    Keep / replace / remove photo and video.
+    Returns (ok: bool, error_message: str|None).
+    """
+    photo_file = form.photo.data
+    video_file = form.video.data
+
+    if form.remove_photo.data and not is_new:
+        if leader.photo:
+            delete_upload(leader.photo)
+        leader.photo = None
+    elif photo_file and getattr(photo_file, "filename", None):
+        if not allowed_image(photo_file.filename):
+            return False, "Invalid photo. Use PNG, JPG, JPEG, GIF, or WEBP."
+        new_photo = save_upload(photo_file, "leaders")
+        if not new_photo:
+            return False, "Unable to save profile image. Please try again."
+        if leader.photo:
+            delete_upload(leader.photo)
+        leader.photo = new_photo
+
+    if form.remove_video.data and not is_new:
+        if leader.video:
+            delete_upload(leader.video)
+        leader.video = None
+    elif video_file and getattr(video_file, "filename", None):
+        if not allowed_video(video_file.filename):
+            return False, "Invalid leader video. Use MP4 or WebM only."
+        new_video = save_video_upload(video_file, "leader_videos")
+        if not new_video:
+            return False, "Unable to save leader video. Please try again."
+        if leader.video:
+            delete_upload(leader.video)
+        leader.video = new_video
+
+    return True, None
+
+
+def _populate_leader_form(form, leader):
+    form.name.data = leader.name
+    form.role.data = leader.role
+    form.title.data = leader.title or ""
+    form.department.data = leader.department or ""
+    form.bio.data = leader.bio
+    form.email.data = leader.email or ""
+    form.phone.data = leader.phone or ""
+    form.facebook_url.data = leader.facebook_url or ""
+    form.instagram_url.data = leader.instagram_url or ""
+    form.youtube_url.data = leader.youtube_url or ""
+    form.twitter_url.data = leader.twitter_url or ""
+    form.is_founder.data = "1" if leader.is_founder else "0"
+    form.is_active.data = "1" if (leader.is_active is None or leader.is_active) else "0"
+    form.display_order.data = str(leader.display_order or 0)
+    form.org_level.data = leader.org_level or "coordinator"
+    form.remove_photo.data = False
+    form.remove_video.data = False
+
+
 @admin.route("/leaders", methods=["GET", "POST"])
 @login_required
 @admin_required
 def manage_leaders():
     form = LeaderForm()
+    form.submit.label.text = "Add Leader"
     if form.validate_on_submit():
-        photo_path = save_upload(form.photo.data, "leaders") if form.photo.data else None
-        leader = Leader(
-            name=form.name.data,
-            role=form.role.data,
-            title=form.title.data,
-            bio=form.bio.data,
-            photo=photo_path,
-            is_founder=form.is_founder.data == "1",
-            display_order=int(form.display_order.data or 0),
-        )
+        leader = Leader()
+        ok, error = _handle_leader_media(leader, form, is_new=True)
+        if not ok:
+            flash(error, "danger")
+            leaders = Leader.query.order_by(Leader.display_order.asc(), Leader.id.asc()).all()
+            return render_template("admin/manage_leaders.html", leaders=leaders, form=form)
+        _apply_leader_form_fields(leader, form)
         db.session.add(leader)
         db.session.commit()
         flash("Leader added successfully.", "success")
@@ -341,15 +582,89 @@ def manage_leaders():
     return render_template("admin/manage_leaders.html", leaders=leaders, form=form)
 
 
+@admin.route("/leaders/<int:leader_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_leader(leader_id):
+    leader = Leader.query.get_or_404(leader_id)
+    form = LeaderForm()
+    form.submit.label.text = "Save Changes"
+
+    if request.method == "GET":
+        _populate_leader_form(form, leader)
+
+    if form.validate_on_submit():
+        ok, error = _handle_leader_media(leader, form, is_new=False)
+        if not ok:
+            flash(error, "danger")
+            return render_template("admin/edit_leader.html", form=form, leader=leader)
+        _apply_leader_form_fields(leader, form)
+        db.session.commit()
+        flash("Leader updated successfully. Changes are live on the public Leadership page.", "success")
+        return redirect(url_for("admin.manage_leaders"))
+
+    return render_template("admin/edit_leader.html", form=form, leader=leader)
+
+
+@admin.route("/leaders/<int:leader_id>/remove-photo", methods=["POST"])
+@login_required
+@admin_required
+def remove_leader_photo(leader_id):
+    leader = Leader.query.get_or_404(leader_id)
+    if leader.photo:
+        delete_upload(leader.photo)
+        leader.photo = None
+        db.session.commit()
+        flash("Profile image removed.", "info")
+    else:
+        flash("This leader has no profile image to remove.", "warning")
+    return redirect(request.referrer or url_for("admin.edit_leader", leader_id=leader.id))
+
+
+@admin.route("/leaders/<int:leader_id>/remove-video", methods=["POST"])
+@login_required
+@admin_required
+def remove_leader_video(leader_id):
+    leader = Leader.query.get_or_404(leader_id)
+    if leader.video:
+        delete_upload(leader.video)
+        leader.video = None
+        db.session.commit()
+        flash("Leader video removed.", "info")
+    else:
+        flash("This leader has no video to remove.", "warning")
+    return redirect(request.referrer or url_for("admin.edit_leader", leader_id=leader.id))
+
+
 @admin.route("/leaders/<int:leader_id>/delete", methods=["POST"])
 @login_required
 @admin_required
 def delete_leader(leader_id):
     leader = Leader.query.get_or_404(leader_id)
+    if leader.photo:
+        delete_upload(leader.photo)
+    if leader.video:
+        delete_upload(leader.video)
     db.session.delete(leader)
     db.session.commit()
     flash("Leader removed.", "info")
     return redirect(url_for("admin.manage_leaders"))
+
+
+def _gallery_display_order(form):
+    try:
+        return int(form.display_order.data or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _populate_gallery_form(form, item):
+    form.title.data = item.title
+    form.description.data = item.description or ""
+    form.category.data = item.category
+    form.display_order.data = str(item.display_order or 0)
+    form.is_featured.data = "1" if item.is_featured else "0"
+    form.is_published.data = "1" if (item.is_published is None or item.is_published) else "0"
 
 
 @admin.route("/gallery", methods=["GET", "POST"])
@@ -357,36 +672,126 @@ def delete_leader(leader_id):
 @admin_required
 def manage_gallery():
     form = GalleryImageForm()
+    form.submit.label.text = "Upload Media"
+    media_filter = request.args.get("media", "all")
+
     if form.validate_on_submit():
-        image_path = save_upload(form.image.data, "gallery")
-        if not image_path:
-            flash("Invalid image file. Use PNG, JPG, JPEG, GIF, or WEBP.", "danger")
+        media_file = form.media.data
+        if not media_file or not getattr(media_file, "filename", None):
+            flash("Please choose an image (PNG, JPG, GIF, WEBP) or video (MP4, WebM).", "danger")
             return redirect(url_for("admin.manage_gallery"))
 
-        image = GalleryImage(
-            title=form.title.data,
-            description=form.description.data,
+        media_path, media_type = save_gallery_media(media_file)
+        if not media_path:
+            flash("Unsupported file. Use PNG, JPG, JPEG, GIF, WEBP, MP4, or WebM.", "danger")
+            return redirect(url_for("admin.manage_gallery"))
+
+        poster_path = None
+        if media_type == "video" and form.poster.data and form.poster.data.filename:
+            poster_path = save_gallery_poster(form.poster.data)
+            if form.poster.data.filename and not poster_path:
+                flash("Poster must be an image (PNG, JPG, GIF, or WEBP). Media was still saved.", "warning")
+
+        item = GalleryImage(
+            title=form.title.data.strip(),
+            description=(form.description.data or "").strip() or None,
             category=form.category.data,
-            image_path=image_path,
+            image_path=media_path,
+            media_type=media_type,
+            poster_path=poster_path,
+            display_order=_gallery_display_order(form),
             is_featured=form.is_featured.data == "1",
+            is_published=form.is_published.data == "1",
         )
-        db.session.add(image)
+        db.session.add(item)
         db.session.commit()
-        flash("Gallery image uploaded successfully.", "success")
+        flash(f"Gallery {media_type} uploaded successfully.", "success")
         return redirect(url_for("admin.manage_gallery"))
 
-    images = GalleryImage.query.order_by(GalleryImage.created_at.desc()).all()
-    return render_template("admin/manage_gallery.html", images=images, form=form)
+    items_query = GalleryImage.query.order_by(
+        GalleryImage.display_order.asc(),
+        GalleryImage.created_at.desc(),
+    )
+    if media_filter == "image":
+        items_query = items_query.filter(
+            db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
+        )
+    elif media_filter == "video":
+        items_query = items_query.filter_by(media_type="video")
+
+    items = items_query.all()
+    return render_template(
+        "admin/manage_gallery.html",
+        images=items,
+        form=form,
+        media_filter=media_filter,
+    )
+
+
+@admin.route("/gallery/<int:image_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_gallery_image(image_id):
+    item = GalleryImage.query.get_or_404(image_id)
+    form = GalleryImageForm()
+    form.submit.label.text = "Save Changes"
+
+    if request.method == "GET":
+        _populate_gallery_form(form, item)
+
+    if form.validate_on_submit():
+        media_file = form.media.data
+        if media_file and getattr(media_file, "filename", None):
+            media_path, media_type = save_gallery_media(media_file)
+            if not media_path:
+                flash("Unsupported replacement file. Use PNG, JPG, JPEG, GIF, WEBP, MP4, or WebM.", "danger")
+                return render_template("admin/edit_gallery.html", form=form, item=item)
+            if item.image_path:
+                delete_upload(item.image_path)
+            item.image_path = media_path
+            item.media_type = media_type
+            # Clear poster if switching to image unless a new poster is provided
+            if media_type == "image" and item.poster_path:
+                delete_upload(item.poster_path)
+                item.poster_path = None
+
+        if form.poster.data and form.poster.data.filename:
+            if (item.media_type or "image") != "video":
+                flash("Poster images are only used for videos.", "warning")
+            else:
+                new_poster = save_gallery_poster(form.poster.data)
+                if not new_poster:
+                    flash("Poster must be an image (PNG, JPG, GIF, or WEBP).", "danger")
+                    return render_template("admin/edit_gallery.html", form=form, item=item)
+                if item.poster_path:
+                    delete_upload(item.poster_path)
+                item.poster_path = new_poster
+
+        item.title = form.title.data.strip()
+        item.description = (form.description.data or "").strip() or None
+        item.category = form.category.data
+        item.display_order = _gallery_display_order(form)
+        item.is_featured = form.is_featured.data == "1"
+        item.is_published = form.is_published.data == "1"
+        db.session.commit()
+        flash("Gallery item updated successfully.", "success")
+        return redirect(url_for("admin.manage_gallery"))
+
+    return render_template("admin/edit_gallery.html", form=form, item=item)
 
 
 @admin.route("/gallery/<int:image_id>/delete", methods=["POST"])
 @login_required
 @admin_required
 def delete_gallery_image(image_id):
-    image = GalleryImage.query.get_or_404(image_id)
-    db.session.delete(image)
+    item = GalleryImage.query.get_or_404(image_id)
+    if item.image_path:
+        delete_upload(item.image_path)
+    if item.poster_path:
+        delete_upload(item.poster_path)
+    db.session.delete(item)
     db.session.commit()
-    flash("Gallery image deleted.", "info")
+    flash("Gallery item deleted.", "info")
     return redirect(url_for("admin.manage_gallery"))
 
 
@@ -394,11 +799,23 @@ def delete_gallery_image(image_id):
 @login_required
 @admin_required
 def toggle_gallery_featured(image_id):
-    image = GalleryImage.query.get_or_404(image_id)
-    image.is_featured = not image.is_featured
+    item = GalleryImage.query.get_or_404(image_id)
+    item.is_featured = not item.is_featured
     db.session.commit()
-    status = "featured" if image.is_featured else "unfeatured"
-    flash(f"Image marked as {status}.", "success")
+    status = "featured" if item.is_featured else "unfeatured"
+    flash(f"Media marked as {status}.", "success")
+    return redirect(url_for("admin.manage_gallery"))
+
+
+@admin.route("/gallery/<int:image_id>/toggle-published", methods=["POST"])
+@login_required
+@admin_required
+def toggle_gallery_published(image_id):
+    item = GalleryImage.query.get_or_404(image_id)
+    item.is_published = not (item.is_published if item.is_published is not None else True)
+    db.session.commit()
+    status = "published" if item.is_published else "hidden"
+    flash(f"Media marked as {status}.", "success")
     return redirect(url_for("admin.manage_gallery"))
 
 

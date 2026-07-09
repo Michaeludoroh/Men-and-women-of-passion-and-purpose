@@ -6,6 +6,7 @@
   if (!triggers.length) return;
 
   const imageEl = document.getElementById("gallery-lightbox-image");
+  const videoEl = document.getElementById("gallery-lightbox-video");
   const titleEl = document.getElementById("gallery-lightbox-title");
   const metaEl = document.getElementById("gallery-lightbox-meta");
   const descriptionEl = document.getElementById("gallery-lightbox-description");
@@ -15,6 +16,8 @@
 
   const items = triggers.map((node) => ({
     src: node.dataset.src,
+    poster: node.dataset.poster || "",
+    mediaType: node.dataset.mediaType || "image",
     title: node.dataset.title || "",
     description: node.dataset.description || "",
     category: node.dataset.category || "",
@@ -22,17 +25,49 @@
 
   let currentIndex = 0;
 
+  function stopVideo() {
+    if (!videoEl) return;
+    try {
+      videoEl.pause();
+    } catch (e) {
+      /* ignore */
+    }
+    videoEl.removeAttribute("src");
+    videoEl.removeAttribute("poster");
+    while (videoEl.firstChild) videoEl.removeChild(videoEl.firstChild);
+    videoEl.load();
+  }
+
   function render(index) {
     const item = items[index];
     if (!item) return;
     currentIndex = index;
-    imageEl.src = item.src;
-    imageEl.alt = item.title;
+
     titleEl.textContent = item.title;
-    metaEl.textContent = item.category;
+    metaEl.textContent = item.category + (item.mediaType === "video" ? " · Video" : "");
     descriptionEl.textContent = item.description;
     prevBtn.disabled = index === 0;
     nextBtn.disabled = index === items.length - 1;
+
+    if (item.mediaType === "video") {
+      imageEl.hidden = true;
+      imageEl.removeAttribute("src");
+      stopVideo();
+      videoEl.hidden = false;
+      if (item.poster) videoEl.setAttribute("poster", item.poster);
+      const source = document.createElement("source");
+      source.src = item.src;
+      const ext = (item.src.split(".").pop() || "mp4").split("?")[0].toLowerCase();
+      source.type = ext === "webm" ? "video/webm" : "video/mp4";
+      videoEl.appendChild(source);
+      videoEl.load();
+    } else {
+      stopVideo();
+      if (videoEl) videoEl.hidden = true;
+      imageEl.hidden = false;
+      imageEl.src = item.src;
+      imageEl.alt = item.title;
+    }
   }
 
   function open(index) {
@@ -46,6 +81,9 @@
     lightbox.classList.add("hidden");
     document.body.classList.remove("gallery-lightbox-open");
     imageEl.src = "";
+    imageEl.hidden = true;
+    stopVideo();
+    if (videoEl) videoEl.hidden = true;
   }
 
   function showPrev() {

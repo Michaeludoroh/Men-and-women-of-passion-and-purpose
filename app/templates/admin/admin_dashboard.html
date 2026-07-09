@@ -25,6 +25,7 @@
     <div class="card text-center p-4"><p class="text-sm">Applications</p><p class="text-2xl font-bold">{{ stats.applications }}{% if stats.unread_applications %} <span class="text-sm text-brand-gold">({{ stats.unread_applications }} new)</span>{% endif %}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Contact Messages</p><p class="text-2xl font-bold">{{ stats.contacts }}{% if stats.unread_contacts %} <span class="text-sm text-brand-gold">({{ stats.unread_contacts }} unread)</span>{% endif %}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Donations</p><p class="text-2xl font-bold">{{ stats.donations }}</p></div>
+    <div class="card text-center p-4"><p class="text-sm">Partnerships</p><p class="text-2xl font-bold">{{ stats.partnerships }} <span class="text-sm text-gray-500">({{ stats.active_partnerships }} active)</span></p></div>
     <div class="card text-center p-4"><p class="text-sm">School Courses</p><p class="text-2xl font-bold">{{ stats.courses }}</p></div>
     <div class="card text-center p-4"><p class="text-sm">Assignments</p><p class="text-2xl font-bold">{{ stats.assignments }}</p></div>
 </section>
@@ -47,6 +48,8 @@
         <a href="{{ url_for('admin.manage_applications') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Applications{% if stats.unread_applications %} <span class="badge-unread ml-1">{{ stats.unread_applications }}</span>{% endif %}</a>
         <a href="{{ url_for('admin.manage_contacts') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Contact Inbox{% if stats.unread_contacts %} <span class="badge-unread ml-1">{{ stats.unread_contacts }}</span>{% endif %}</a>
         <a href="{{ url_for('admin.manage_donations') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Donations</a>
+        <a href="{{ url_for('admin.manage_partnerships') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Manage Partnerships</a>
+        <a href="{{ url_for('admin.manage_reminder_settings') }}" class="card p-4 hover:-translate-y-1 transition font-semibold">Partnership Reminders</a>
     </div>
 </section>
 

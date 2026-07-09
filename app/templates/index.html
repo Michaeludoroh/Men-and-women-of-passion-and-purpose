@@ -187,9 +187,25 @@
         <div class="gallery-masonry gallery-masonry-home">
             {% for image in featured_gallery %}
             <article class="gallery-masonry-item gallery-card rounded-2xl overflow-hidden">
+                {% if image.is_video %}
+                <div class="gallery-video-thumb">
+                    {% if image.poster_path %}
+                    <img src="{{ url_for('static', filename=image.poster_path) }}" alt="{{ image.title }}" loading="lazy">
+                    {% else %}
+                    <video muted playsinline preload="metadata" aria-hidden="true">
+                        <source src="{{ url_for('static', filename=image.image_path) }}#t=0.5" type="video/{{ image.image_path.rsplit('.', 1)[-1]|lower }}">
+                    </video>
+                    {% endif %}
+                    <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
+                </div>
+                {% else %}
                 <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}" loading="lazy">
+                {% endif %}
                 <div class="p-4">
                     <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Featured</span>
+                    {% if image.is_video %}
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(90,24,154,0.15); color: var(--purple-primary);">Video</span>
+                    {% endif %}
                     <h3 class="font-bold mt-2">{{ image.title }}</h3>
                     <p class="text-sm text-gray-500">{{ category_labels.get(image.category, image.category) }}</p>
                 </div>
@@ -214,14 +230,17 @@
         </div>
         <div class="grid md:grid-cols-3 gap-8">
             {% for sermon in featured_sermons %}
-            <div class="sermon-card rounded-3xl p-6">
-                <span class="text-xs font-bold uppercase px-3 py-1 rounded-full" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">{{ sermon.category }}</span>
-                <h3 class="text-xl font-bold mt-3 mb-2">{{ sermon.title }}</h3>
-                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ sermon.description }}</p>
-                {% if sermon.video_url %}
-                <a href="{{ sermon.video_url }}" target="_blank" class="btn-gold-nav inline-block px-4 py-2 rounded-xl text-sm font-bold">Watch</a>
-                {% endif %}
-            </div>
+            <article class="sermon-card rounded-3xl overflow-hidden">
+                {% with sermon=sermon %}
+                    {% include 'includes/sermon_preview_video.html' %}
+                {% endwith %}
+                <div class="p-6">
+                    <span class="text-xs font-bold uppercase px-3 py-1 rounded-full" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">{{ sermon.category }}</span>
+                    <h3 class="text-xl font-bold mt-3 mb-2">{{ sermon.title }}</h3>
+                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ sermon.description }}</p>
+                    <a href="{{ sermon_watch_url or '#' }}" target="_blank" rel="noopener noreferrer" class="btn-gold-nav inline-block px-4 py-2 rounded-xl text-sm font-bold">Watch Full Sermon</a>
+                </div>
+            </article>
             {% else %}
             <div class="col-span-full card text-center p-12">
                 <p class="text-gray-600">Sermons coming soon.</p>

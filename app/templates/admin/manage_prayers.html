@@ -4,19 +4,71 @@
 <section class="max-w-7xl mx-auto px-4 pb-12">
     <a href="{{ url_for('admin.admin_dashboard') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Website Admin</a>
     <h1 class="text-3xl font-bold section-heading mb-2">Prayer Requests</h1>
-    <p class="text-gray-600 mb-6">Submissions from the website prayer page.</p>
+    <p class="text-gray-600 mb-6">View, search, mark as prayed for, and archive submissions.</p>
+
+    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+        <form method="GET" class="flex gap-2 flex-1">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search by name, email, category..." class="form-input flex-1">
+            <input type="hidden" name="status" value="{{ filter_status }}">
+            <button type="submit" class="btn-primary py-2 px-5 rounded-xl text-sm">Search</button>
+        </form>
+        <div class="flex gap-2 flex-wrap">
+            {% for s, label in [('active', 'Active'), ('pending', 'Unprayed'), ('prayed', 'Prayed For'), ('archived', 'Archived')] %}
+            <a href="{{ url_for('admin.manage_prayers', status=s, q=search) }}"
+               class="py-2 px-4 rounded-xl text-sm font-semibold {% if filter_status == s %}btn-primary{% else %}btn-outline-gold{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
     <div class="grid gap-4">
         {% for prayer in prayers %}
-            <article class="card p-5">
-                <h3 class="font-semibold text-lg">{{ prayer.name }} <span class="text-sm text-gray-500 font-normal">({{ prayer.email }})</span></h3>
-                <p class="text-sm mt-3 text-gray-700 whitespace-pre-wrap">{{ prayer.request }}</p>
-                <p class="text-xs text-gray-500 mt-3">{{ prayer.date.strftime('%Y-%m-%d %H:%M') if prayer.date else '' }}</p>
-            </article>
-        {% else %}
-            <div class="empty-state card p-12 text-center">
-                <i class="fas fa-hands-praying text-4xl text-brand-gold mb-4"></i>
-                <p class="text-gray-600 font-semibold">No prayer requests yet.</p>
+        <article class="card p-5 {% if prayer.is_archived %}opacity-60{% endif %}">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="font-semibold text-lg">
+                        {{ prayer.name }}
+                        <span class="text-sm text-gray-500 font-normal">({{ prayer.email }})</span>
+                    </h3>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-semibold capitalize">{{ prayer.category|replace('_', ' ') }}</span>
+                        {% if prayer.is_prayed_for %}<span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-semibold">Prayed For</span>{% endif %}
+                        {% if prayer.is_archived %}<span class="text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-600 font-semibold">Archived</span>{% endif %}
+                        {% if prayer.consent_follow_up %}<span class="text-xs px-2 py-1 rounded-full bg-gold-100 font-semibold" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Follow-up OK</span>{% endif %}
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 whitespace-nowrap">{{ prayer.date.strftime('%Y-%m-%d %H:%M') if prayer.date else '' }}</p>
             </div>
+            {% if prayer.phone %}<p class="text-sm text-gray-500 mb-2"><i class="fas fa-phone mr-1"></i>{{ prayer.phone }}</p>{% endif %}
+            <p class="text-sm text-gray-700 whitespace-pre-wrap mb-4">{{ prayer.request }}</p>
+            <div class="flex flex-wrap gap-2">
+                <form method="POST" action="{{ url_for('admin.toggle_prayer_prayed', prayer_id=prayer.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-outline-gold py-1.5 px-4 rounded-lg text-xs font-semibold">
+                        {% if prayer.is_prayed_for %}Unmark Prayed{% else %}Mark Prayed For{% endif %}
+                    </button>
+                </form>
+                {% if not prayer.is_archived %}
+                <form method="POST" action="{{ url_for('admin.archive_prayer', prayer_id=prayer.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="py-1.5 px-4 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200">Archive</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('admin.unarchive_prayer', prayer_id=prayer.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="py-1.5 px-4 rounded-lg text-xs font-semibold bg-green-100 text-green-700">Restore</button>
+                </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('admin.delete_prayer', prayer_id=prayer.id) }}" onsubmit="return confirm('Delete this prayer request?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="py-1.5 px-4 rounded-lg text-xs font-semibold text-red-600">Delete</button>
+                </form>
+            </div>
+        </article>
+        {% else %}
+        <div class="empty-state card p-12 text-center">
+            <i class="fas fa-hands-praying text-4xl text-brand-gold mb-4"></i>
+            <p class="text-gray-600 font-semibold">No prayer requests found.</p>
+        </div>
         {% endfor %}
     </div>
 </section>

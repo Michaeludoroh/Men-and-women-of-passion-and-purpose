@@ -18,7 +18,7 @@ from .utils.media import (
     app_qr_code_url,
 )
 from .utils.urls import cors_allow_origin
-from .utils.social import get_social_links, CONTACT_ICON_BACKGROUNDS
+from .utils.social import get_social_links, get_sermon_watch_url, CONTACT_ICON_BACKGROUNDS
 from .utils.app_admin_url import app_admin_url
 from .services.website_settings import get_ministry_context
 
@@ -76,6 +76,7 @@ def create_app():
             "app_qr_code_url": app_qr_code_url,
             "app_features": APP_FEATURES,
             "social_links": get_social_links(),
+            "sermon_watch_url": get_sermon_watch_url(),
             "contact_social_backgrounds": CONTACT_ICON_BACKGROUNDS,
             "app_admin_url": app_admin_url(),
             "ministry": get_ministry_context(),
@@ -119,6 +120,7 @@ def create_app():
     from .routes.prayer_routes import prayer
     from .routes.class_routes import classes_bp
     from .routes.giving_routes import giving
+    from .routes.partnership_routes import partnership_bp
     from .routes.api_routes import api
 
     app.register_blueprint(main)
@@ -128,7 +130,15 @@ def create_app():
     app.register_blueprint(prayer, url_prefix="/prayer")
     app.register_blueprint(classes_bp, url_prefix="/classes")
     app.register_blueprint(giving, url_prefix="/giving")
+    app.register_blueprint(partnership_bp, url_prefix="/partnership")
     app.register_blueprint(api)
+
+    @app.cli.command("send-reminders")
+    def send_reminders_command():
+        """Process partnership payment reminders (run via cron)."""
+        from .services.reminders import process_partnership_reminders
+        count = process_partnership_reminders()
+        print(f"Sent {count} reminder notification(s).")
 
     @app.route('/favicon.ico')
     def favicon():

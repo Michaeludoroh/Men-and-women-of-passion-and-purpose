@@ -4,50 +4,30 @@
 {% block content %}
 <section class="py-24">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Sermons Header -->
         <div class="text-center mb-24">
             <h1 class="text-5xl md:text-7xl font-black mb-6 section-heading drop-shadow-2xl">FIRE-FILLED SERMONS</h1>
             <p class="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12">Transformative messages that ignite passion, activate purpose, and propel destiny.</p>
             <div class="flex flex-wrap gap-4 justify-center">
-                <button class="filter-btn bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-wide">All Sermons</button>
-                <button class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Latest</button>
-                <button class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Prophecy</button>
-                <button class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Healing</button>
+                <button type="button" class="filter-btn bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-wide">All Sermons</button>
+                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Latest</button>
+                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Prophecy</button>
+                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Healing</button>
             </div>
         </div>
 
-        <!-- Sermons Grid (Elementor Loop Grid Style) -->
         <div class="sermons-grid grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
-            <!-- Sermon Card Template -->
             {% for sermon in sermons %}
-            <div class="sermon-card group cursor-pointer rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/50 to-black/30 border border-gray-800/50 backdrop-blur-md hover:shadow-3xl hover:-translate-y-4 transition-all duration-500 h-96">
-                <!-- Sermon Thumbnail/Video -->
-                <div class="relative h-64 overflow-hidden bg-gradient-to-br" style="background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));">
-                    {% if sermon.video_url %}
-                    <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-75">
-                        <source src="{{ sermon.video_url }}" type="video/mp4">
-                    </video>
-                    {% else %}
-                    <img src="{{ sermon_placeholder_url() }}" alt="{{ sermon.title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-90">
-                    {% endif %}
-                    
-                    <!-- Play Button Overlay -->
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
-                        <div class="w-24 h-24 rounded-2xl flex items-center justify-center shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 cursor-pointer btn-hero-gold">
-                            <i class="fas fa-play text-3xl text-gray-900 font-bold ml-1"></i>
-                        </div>
-                    </div>
+            <article class="sermon-card group rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/50 to-black/30 border border-gray-800/50 backdrop-blur-md hover:shadow-3xl hover:-translate-y-4 transition-all duration-500">
+                {% with sermon=sermon %}
+                    {% include 'includes/sermon_preview_video.html' %}
+                {% endwith %}
 
-                    <!-- Category Badge -->
-                    <div class="absolute top-6 left-6">
+                <div class="p-8 text-white relative z-10">
+                    <div class="mb-3">
                         <span class="px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-full shadow-lg founder-badge">
                             {{ sermon.category or 'Prophecy' }}
                         </span>
                     </div>
-                </div>
-
-                <!-- Sermon Content -->
-                <div class="p-8 text-white relative z-10">
                     <h3 class="text-xl md:text-2xl font-black mb-3 line-clamp-2 leading-tight group-hover:text-brand-gold transition-colors duration-300">
                         {{ sermon.title }}
                     </h3>
@@ -55,41 +35,27 @@
                         {{ sermon.description[:120] }}{% if sermon.description|length > 120 %}...{% endif %}
                     </p>
                     <div class="flex items-center justify-between text-sm opacity-90 mb-4">
-                        <span><i class="fas fa-calendar mr-2"></i>{{ sermon.created_at.strftime('%b %d, %Y') }}</span>
-                        <span class="flex items-center"><i class="fas fa-eye mr-2"></i>{{ sermon.views or 0 }} views</span>
+                        <span><i class="fas fa-calendar mr-2" aria-hidden="true"></i>{{ sermon.created_at.strftime('%b %d, %Y') }}</span>
                     </div>
-                    <a href="{{ sermon.video_url or '#' }}" target="_blank" class="inline-flex items-center w-full justify-center font-bold py-3 px-6 rounded-2xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 btn-outline-gold border-2">
-                        <i class="fas fa-external-link-alt mr-3"></i>Watch Full Sermon
+                    <a href="{{ sermon_watch_url or '#' }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center w-full justify-center font-bold py-3 px-6 rounded-2xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 btn-outline-gold border-2">
+                        <i class="fas fa-external-link-alt mr-3" aria-hidden="true"></i>Watch Full Sermon
                     </a>
                 </div>
-            </div>
+            </article>
             {% else %}
             <div class="col-span-full text-center py-32">
-                <i class="fas fa-video-slash text-8xl text-gray-300 mb-12"></i>
+                <i class="fas fa-video-slash text-8xl text-gray-300 mb-12" aria-hidden="true"></i>
                 <h2 class="text-4xl font-black text-gray-500 mb-6">No Sermons Yet</h2>
                 <p class="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">Fire-filled messages will be available soon. Stay tuned!</p>
                 <a href="{{ url_for('main.index') }}" class="btn-hero-gold px-12 py-4 text-xl font-black">
-                    <i class="fas fa-home mr-3"></i>Back to Home
+                    <i class="fas fa-home mr-3" aria-hidden="true"></i>Back to Home
                 </a>
             </div>
             {% endfor %}
         </div>
-
-        <!-- Pagination (Elementor AJAX Style) -->
-        <div class="flex justify-center items-center space-x-2 mt-16">
-            <button class="pagination-btn bg-white hover:bg-gray-50 shadow-md border border-gray-200 py-3 px-6 rounded-2xl font-semibold text-gray-700 hover:text-yellow-500 hover:shadow-lg transition-all duration-200">
-                <i class="fas fa-chevron-left"></i> Previous
-            </button>
-            <div class="flex space-x-2">
-                <button class="pagination-btn w-12 h-12 bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">1</button>
-                <button class="pagination-btn w-12 h-12 bg-white text-gray-700 font-semibold border border-gray-200 shadow-md hover:bg-gray-50 hover:shadow-lg transition-all duration-200 rounded-xl">2</button>
-                <button class="pagination-btn w-12 h-12 bg-white text-gray-700 font-semibold border border-gray-200 shadow-md hover:bg-gray-50 hover:shadow-lg transition-all duration-200 rounded-xl">3</button>
-            </div>
-            <button class="pagination-btn bg-white hover:bg-gray-50 shadow-md border border-gray-200 py-3 px-6 rounded-2xl font-semibold text-gray-700 hover:text-yellow-500 hover:shadow-lg transition-all duration-200">
-                Next <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
     </div>
 </section>
 {% endblock %}
-
