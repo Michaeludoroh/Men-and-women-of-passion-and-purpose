@@ -1,0 +1,183 @@
+# Production deploy — Men and Women of Passion and Purpose
+#
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#   VPS_HOST       — VPS hostname or IP
+#   VPS_USERNAME   — SSH user (root or deploy user with sudo)
+#   VPS_SSH_KEY    — Private SSH key (PEM) for VPS_USERNAME
+#   VPS_PORT       — SSH port (usually 22)
+#
+# Optional secrets:
+#   VPS_SSH_KNOWN_HOSTS — Pinned host key line(s) for strict host verification
+#                         (recommended). If unset, keyscan is used once per run.
+#   HEALTH_BASE_URL     — Defaults to http://127.0.0.1:8000 on the VPS
+#
+# Docs: docs/deployment/github-actions.md
+
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_validation:
+        description: "Skip pre-deploy validation (emergency only)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: /var/www/mwpp
+  APP_USER: mwpp
+  SERVICE_NAME: mwpp
+  GIT_BRANCH: main
+
+jobs:
+  validate:
+    name: Pre-deployment checks
+    runs-on: ubuntu-latest
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_validation) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation helpers
+        run: pip install --quiet pyyaml
+
+      - name: Make scripts executable
+        run: chmod +x scripts/deploy/validate.sh scripts/deploy/remote_deploy.sh
+
+      - name: Run validation suite
+        run: bash scripts/deploy/validate.sh
+
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: validate
+    if: always() && (needs.validate.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.skip_validation))
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets are configured
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in VPS_HOST VPS_USERNAME VPS_SSH_KEY VPS_PORT; do
+            # Indirect expansion without printing values
+            eval "val=\${$name}"
+            if [ -z "${val}" ]; then
+              echo "::error::Missing required GitHub Secret: ${name}"
+              missing=1
+            else
+              echo "Secret present: ${name}"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Configure secrets under Settings → Secrets and variables → Actions"
+            echo "Required: VPS_HOST, VPS_USERNAME, VPS_SSH_KEY, VPS_PORT"
+            exit 1
+          fi
+
+      - name: Prepare SSH key and known_hosts
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          # Normalize Windows-style newlines if pasted from Windows
+          sed -i 's/\r$//' ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          if [ -n "${VPS_SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            echo "Using pinned VPS_SSH_KNOWN_HOSTS"
+          else
+            echo "VPS_SSH_KNOWN_HOSTS not set — scanning host key (prefer pinning in production)"
+            ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          # SSH config for least surprise
+          cat > ~/.ssh/config <<EOF
+          Host mwpp-vps
+            HostName ${VPS_HOST}
+            User ${{ secrets.VPS_USERNAME }}
+            Port ${VPS_PORT}
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            ServerAliveInterval 30
+            ServerAliveCountMax 6
+            ConnectTimeout 20
+          EOF
+          chmod 600 ~/.ssh/config
+          echo "SSH configuration ready"
+
+      - name: Test SSH connectivity
+        run: |
+          set -euo pipefail
+          echo "Connecting to VPS..."
+          ssh mwpp-vps 'echo "SSH OK as $(id -un) on $(hostname)"'
+
+      - name: Deploy over SSH (pull, restart, health, rollback)
+        id: deploy
+        env:
+          HEALTH_BASE_URL: ${{ secrets.HEALTH_BASE_URL }}
+        run: |
+          set -euo pipefail
+          chmod +x scripts/deploy/remote_deploy.sh
+          echo "Starting remote deployment..."
+          # Pipe the script from the Actions runner so the NEW script always runs,
+          # even before git pull updates files on the server.
+          ssh mwpp-vps \
+            "export APP_DIR='${APP_DIR}' APP_USER='${APP_USER}' SERVICE_NAME='${SERVICE_NAME}' GIT_BRANCH='${GIT_BRANCH}' HEALTH_BASE_URL='${HEALTH_BASE_URL:-http://127.0.0.1:8000}'; bash -s" \
+            < scripts/deploy/remote_deploy.sh
+          echo "Remote deployment finished successfully"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "## Deployment summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Trigger:** ${{ github.event_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Ref:** ${{ github.ref_name }} @ \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Actor:** ${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **App path:** \`${{ env.APP_DIR }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Service:** \`${{ env.SERVICE_NAME }}.service\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "- **Result:** ✅ Deployment successful" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- **Result:** ❌ Deployment failed (see logs; remote script attempts automatic rollback)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Scrub SSH key from runner
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key ~/.ssh/config
+          echo "Local deploy key removed from runner"

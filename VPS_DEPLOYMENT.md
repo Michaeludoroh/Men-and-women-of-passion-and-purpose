@@ -717,6 +717,7 @@ sudo systemctl restart mwpp
 |----------|---------|
 | `DEPLOYMENT.md` | Application config, migrations, security headers |
 | `BACKUP_AND_RECOVERY.md` | Full backup/restore and disaster recovery |
+| `docs/deployment/github-actions.md` | GitHub Actions CI/CD (auto-deploy to VPS) |
 | `.env.example` | Environment variable template |
 
 ---
