@@ -12,15 +12,15 @@
 
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
   <h2 class="text-2xl font-black section-heading mb-6 text-center">Giving Categories</h2>
-  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-12">
     {% for key, cat in categories.items() %}
     <a href="{{ url_for('giving.giving_page', category=key) }}#give-form"
        class="giving-category-card card p-5 hover:-translate-y-1 transition-all {% if selected_category == key %}ring-2 ring-brand-gold{% endif %}">
+      <div class="giving-category-icon" aria-hidden="true">
+        <i class="fas {{ cat.icon or 'fa-heart' }}"></i>
+      </div>
       <h3 class="font-bold text-lg mb-2" style="color: var(--purple-primary);">{{ cat.label }}</h3>
-      <p class="text-sm text-gray-600 mb-2">{{ cat.description }}</p>
-      {% if cat.scripture %}
-      <p class="text-xs font-semibold" style="color: var(--gold-dark);"><i class="fas fa-book-open mr-1"></i>{{ cat.scripture }}</p>
-      {% endif %}
+      <p class="text-sm text-gray-600">{{ cat.description }}</p>
     </a>
     {% endfor %}
   </div>

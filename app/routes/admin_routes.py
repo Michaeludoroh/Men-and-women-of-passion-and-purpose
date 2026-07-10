@@ -7,6 +7,7 @@ from flask_login import login_required, current_user
 from ..models import User, Sermon, PrayerRequest, ContactMessage, Donation, Course, Assignment, Leader, GalleryImage, Event, Application, WebsiteSettings, Partnership, PartnershipPayment, ReminderSettings
 from ..forms import SermonForm, CourseForm, AssignmentForm, LeaderForm, GalleryImageForm, EventForm, WebsiteSettingsForm, ReminderSettingsForm
 from ..extensions import db
+from ..constants import GIVING_CATEGORIES
 from ..services.upload import (
     save_upload,
     save_video_upload,
@@ -277,7 +278,12 @@ def manage_donations():
             )
         )
     donations = donations_query.all()
-    return render_template("admin/manage_donations.html", donations=donations, search=search)
+    return render_template(
+        "admin/manage_donations.html",
+        donations=donations,
+        search=search,
+        categories=GIVING_CATEGORIES,
+    )
 
 
 @admin.route("/partnerships")

@@ -133,7 +133,7 @@ class Donation(db.Model):
     email = db.Column(db.String(255), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     currency = db.Column(db.String(10), nullable=False, default="NGN")
-    category = db.Column(db.String(50), nullable=False, default="offering")
+    category = db.Column(db.String(50), nullable=False, default="tithing")
     payment_reference = db.Column(db.String(200), nullable=False, unique=True)
     gateway = db.Column(db.String(50), default="paystack")
     payment_status = db.Column(db.String(20), default="pending")

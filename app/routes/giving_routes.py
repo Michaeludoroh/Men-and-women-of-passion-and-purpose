@@ -31,7 +31,7 @@ def _init_payment(gateway, email, amount, reference, currency):
 @giving.route("/", methods=["GET", "POST"])
 def giving_page():
     form = DonationForm()
-    selected_category = request.args.get("category", form.category.data or "offering")
+    selected_category = request.args.get("category", form.category.data or "tithing")
 
     if request.method == "GET" and selected_category in GIVING_CATEGORIES:
         form.category.data = selected_category

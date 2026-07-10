@@ -28,45 +28,30 @@ PAYMENT_METHODS = [
 ]
 
 GIVING_CATEGORIES = {
-    "offering": {
-        "label": "Offering",
-        "description": "A freewill gift to support the ministry's work and outreach.",
-        "scripture": "2 Corinthians 9:7",
-    },
-    "thanksgiving": {
-        "label": "Thanksgiving Offering",
-        "description": "Express gratitude to God for His faithfulness and blessings.",
-        "scripture": "Psalm 107:1",
+    "tithing": {
+        "label": "Tithing",
+        "description": "Faithfully honour God with the first fruits of your increase in obedience and worship.",
+        "icon": "fa-hand-holding-heart",
     },
     "general_offering": {
         "label": "General Offering",
-        "description": "Support general ministry operations and kingdom advancement.",
-        "scripture": "Malachi 3:10",
+        "description": "Support the ongoing work of the ministry and help advance the Gospel.",
+        "icon": "fa-church",
     },
-    "tithe": {
-        "label": "Tithe",
-        "description": "Honor God with the first tenth of your increase.",
-        "scripture": "Proverbs 3:9-10",
+    "general_thanksgiving": {
+        "label": "General Thanksgiving",
+        "description": "Express gratitude to God for His faithfulness and abundant blessings.",
+        "icon": "fa-praying-hands",
     },
-    "seeds": {
-        "label": "Seeds",
-        "description": "Sow a seed of faith into the ministry and watch God multiply it.",
-        "scripture": "Luke 6:38",
-    },
-    "father_seed": {
-        "label": "Father Seed",
-        "description": "Honor and support the father of the house through a special seed.",
-        "scripture": "1 Timothy 5:17",
+    "prophetic_seed": {
+        "label": "Prophetic Seed",
+        "description": "Sow in faith as the Lord leads, believing Him for spiritual growth and divine direction.",
+        "icon": "fa-seedling",
     },
     "charity_seed": {
         "label": "Charity Seed",
-        "description": "Give to support the needy and charitable outreach programs.",
-        "scripture": "Proverbs 19:17",
-    },
-    "five_fold": {
-        "label": "Five-Fold Ministry Giving",
-        "description": "Support the five-fold ministry — apostles, prophets, evangelists, pastors, and teachers.",
-        "scripture": "Ephesians 4:11-12",
+        "description": "Support outreach programmes, welfare initiatives, and practical assistance for those in need.",
+        "icon": "fa-hands-helping",
     },
 }
 

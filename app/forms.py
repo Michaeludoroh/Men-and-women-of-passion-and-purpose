@@ -84,6 +84,7 @@ class DonationForm(FlaskForm):
     category = SelectField(
         "Giving Category",
         choices=[(k, v["label"]) for k, v in GIVING_CATEGORIES.items()],
+        default="tithing",
         validators=[DataRequired()],
     )
     currency = SelectField("Currency", choices=CURRENCIES, default="NGN", validators=[DataRequired()])

@@ -35,7 +35,7 @@ def main():
     # donation
     add_column(cur, "donation", "user_id", "INTEGER")
     add_column(cur, "donation", "currency", "VARCHAR(10) DEFAULT 'NGN'")
-    add_column(cur, "donation", "category", "VARCHAR(50) DEFAULT 'offering'")
+    add_column(cur, "donation", "category", "VARCHAR(50) DEFAULT 'tithing'")
     add_column(cur, "donation", "payment_status", "VARCHAR(20) DEFAULT 'pending'")
     add_column(cur, "donation", "verified_at", "DATETIME")
 

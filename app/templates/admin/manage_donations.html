@@ -29,7 +29,7 @@
                 <tr class="border-b">
                     <td class="py-3 px-4">{{ d.name }}</td>
                     <td class="py-3 px-4">{{ d.email }}</td>
-                    <td class="py-3 px-4 capitalize">{{ d.category|replace('_', ' ') }}</td>
+                    <td class="py-3 px-4">{{ categories.get(d.category, {}).get('label', d.category|replace('_', ' ')|title) }}</td>
                     <td class="py-3 px-4 font-semibold">{{ d.currency }} {{ '{:,.2f}'.format(d.amount) }}</td>
                     <td class="py-3 px-4 capitalize">{{ d.gateway }}</td>
                     <td class="py-3 px-4"><span class="status-badge status-{{ d.payment_status }}">{{ d.payment_status|title }}</span></td>
