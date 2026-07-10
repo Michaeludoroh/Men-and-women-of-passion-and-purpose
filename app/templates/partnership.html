@@ -1,115 +1,661 @@
 {% extends "base.html" %}
-{% block title %}Partner With The Ministry | WOPP Ministry{% endblock %}
+{% block title %}Become A Kingdom Partner | Men and Women of Passion and Purpose{% endblock %}
+{% block meta_description %}Partner with Women of Passion and Purpose through the Five Arms of Partnership — Scholarship & Education, Welfare, Mission & Ministry, Empowerment, and Children Ministry.{% endblock %}
+{% block og_title %}Become A Kingdom Partner | WOPP Ministry{% endblock %}
+{% block og_description %}Your partnership enables lives to be transformed through education, welfare, missions, empowerment and children's ministry across nations.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/partnership.css') }}">
+{% endblock %}
 
 {% block content %}
-<section class="page-hero mb-12 rounded-3xl">
-  <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
-    <i class="fas fa-handshake text-5xl text-brand-gold mb-6 block mx-auto"></i>
-    <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Partner With The Ministry</h1>
-    <p class="text-lg md:text-xl opacity-95">Join us in advancing the kingdom through faithful, recurring partnership. Your commitment fuels lives transformed by the Gospel.</p>
+{# ─── HERO ─── #}
+<section class="kp-hero" aria-labelledby="kp-hero-heading">
+  <div class="kp-hero-bg" role="img" aria-label="Ministry worship atmosphere"></div>
+  <div class="kp-hero-overlay"></div>
+  <div class="kp-hero-glow" aria-hidden="true"></div>
+  <canvas class="kp-particles" data-kp-particles aria-hidden="true"></canvas>
+  <div class="kp-hero-lines" aria-hidden="true">
+    <span class="kp-hero-line kp-hero-line-1"></span>
+    <span class="kp-hero-line kp-hero-line-2"></span>
+    <span class="kp-hero-line kp-hero-line-3"></span>
+  </div>
+  <div class="kp-hero-accent kp-hero-accent-1" aria-hidden="true"></div>
+  <div class="kp-hero-accent kp-hero-accent-2" aria-hidden="true"></div>
+  <div class="kp-hero-inner" data-kp-parallax>
+    <p class="kp-hero-brand kp-anim-fade-up" style="--kp-delay:0.05s">Men &amp; Women of Passion and Purpose</p>
+    <h1 id="kp-hero-heading" class="kp-hero-title kp-anim-fade-up" style="--kp-delay:0.15s">Become A Kingdom Partner</h1>
+    <p class="kp-hero-sub kp-anim-fade-up" style="--kp-delay:0.28s">Your partnership enables lives to be transformed through education, welfare, missions, empowerment and children's ministry across nations.</p>
+    <div class="kp-hero-ctas kp-anim-fade-up" style="--kp-delay:0.42s">
+      <a href="#partner-form" class="btn-primary kp-btn-lg kp-btn-glow kp-ripple rounded-2xl">Become A Partner</a>
+      <a href="#five-arms" class="btn-outline-gold kp-btn-lg kp-ripple rounded-2xl">Learn More</a>
+    </div>
+  </div>
+  <div class="kp-wave kp-wave-hero" aria-hidden="true">
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none" focusable="false"><path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="currentColor"/></svg>
   </div>
 </section>
 
-<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-  <div class="grid md:grid-cols-3 gap-6 mb-12">
-    <div class="card p-6 text-center">
-      <i class="fas fa-calendar-check text-3xl mb-4" style="color: var(--purple-primary);"></i>
-      <h3 class="font-bold text-lg mb-2">Flexible Frequencies</h3>
-      <p class="text-sm text-gray-600">Daily, weekly, biweekly, monthly, semi-monthly, quarterly, or annual partnership.</p>
-    </div>
-    <div class="card p-6 text-center">
-      <i class="fas fa-globe text-3xl mb-4" style="color: var(--gold-primary);"></i>
-      <h3 class="font-bold text-lg mb-2">Multi-Currency</h3>
-      <p class="text-sm text-gray-600">Give in Naira, USD, GBP, or Euro through your preferred payment method.</p>
-    </div>
-    <div class="card p-6 text-center">
-      <i class="fas fa-bell text-3xl mb-4" style="color: var(--purple-primary);"></i>
-      <h3 class="font-bold text-lg mb-2">Smart Reminders</h3>
-      <p class="text-sm text-gray-600">Receive email and SMS reminders before each partnership payment is due.</p>
+{# ─── HERO STATS ─── #}
+<section class="kp-stats" aria-label="Partnership impact statistics">
+  <div class="kp-container">
+    <div class="kp-stats-grid">
+      <div class="kp-stat kp-reveal" data-kp-reveal="up">
+        <span class="kp-stat-value" data-counter data-target="5000" data-suffix="+">0</span>
+        <span class="kp-stat-label">Lives Impacted</span>
+      </div>
+      <div class="kp-stat kp-reveal" data-kp-reveal="up">
+        <span class="kp-stat-value" data-counter data-target="120" data-suffix="+">0</span>
+        <span class="kp-stat-label">Communities Reached</span>
+      </div>
+      <div class="kp-stat kp-reveal" data-kp-reveal="up">
+        <span class="kp-stat-value" data-counter data-target="85" data-suffix="+">0</span>
+        <span class="kp-stat-label">Outreach Projects</span>
+      </div>
+      <div class="kp-stat kp-reveal" data-kp-reveal="up">
+        <span class="kp-stat-value" data-counter data-target="350" data-suffix="+">0</span>
+        <span class="kp-stat-label">Active Kingdom Partners</span>
+      </div>
     </div>
   </div>
 </section>
 
-<section id="partner-form" class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-  <div class="card p-8 md:p-12">
-    <h2 class="text-2xl font-black section-heading mb-2 text-center">Become a Ministry Partner</h2>
-    <p class="text-center text-gray-600 mb-8">Set your partnership amount, frequency, and payment method.</p>
-
-    <form method="POST">
-      {{ form.hidden_tag() }}
-
-      <div class="mb-6">
-        <label class="form-label">{{ form.name.label.text }}</label>
-        {{ form.name(class="form-input", placeholder="Full Name") }}
-      </div>
-
-      <div class="mb-6">
-        <label class="form-label">{{ form.email.label.text }}</label>
-        {{ form.email(class="form-input", placeholder="Email Address") }}
-      </div>
-
-      <div class="mb-6">
-        <label class="form-label">{{ form.phone.label.text }} <span class="text-gray-400 font-normal">(for SMS reminders)</span></label>
-        {{ form.phone(class="form-input", placeholder="Phone Number") }}
-      </div>
-
-      <div class="grid sm:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label class="form-label">{{ form.amount.label.text }}</label>
-          {{ form.amount(class="form-input", placeholder="Amount", step="0.01") }}
+{# ─── FIVE ARMS ─── #}
+<section id="five-arms" class="kp-section" aria-labelledby="five-arms-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">The Vision</span>
+      <h2 id="five-arms-heading" class="kp-section-title">The Five Arms of Partnership</h2>
+      <p class="kp-section-sub">Five channels of Kingdom impact — choose one or more as the Lord leads you.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-arms-grid" data-kp-arms>
+      <article class="kp-arm-card kp-reveal" data-kp-reveal="up" id="arm-scholarship">
+        <div class="kp-arm-bg" aria-hidden="true"></div>
+        <div class="kp-arm-icon kp-float-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></div>
+        <h3 class="kp-arm-title">Scholarship &amp; Education</h3>
+        <div class="kp-arm-gold-line" aria-hidden="true"></div>
+        <p class="kp-arm-desc">Support children's education, scholarships, tuition assistance, school supplies and academic development.</p>
+        <span class="kp-scripture-badge">Proverbs 22:6</span>
+        <button type="button" class="kp-arm-toggle" data-arm-toggle aria-expanded="false" aria-controls="arm-detail-scholarship">
+          Learn More <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <div class="kp-arm-detail" id="arm-detail-scholarship" hidden>
+          <h4>How funds are used</h4>
+          <p>Tuition support, school fees, books, uniforms, and academic mentoring for children who would otherwise miss classroom opportunities.</p>
+          <h4>Ministries impacted</h4>
+          <p>Scholarship desk, school outreach teams, and education advocacy within Women of Passion and Purpose.</p>
+          <h4>Expected outcomes</h4>
+          <p>More children remaining in school, improved literacy, and families strengthened through education.</p>
+          <p class="kp-arm-detail-verse"><strong>Scripture:</strong> “Train up a child in the way he should go…” — Proverbs 22:6</p>
         </div>
-        <div>
-          <label class="form-label">{{ form.currency.label.text }}</label>
-          {{ form.currency(class="form-input") }}
+      </article>
+
+      <article class="kp-arm-card kp-reveal" data-kp-reveal="up" id="arm-welfare">
+        <div class="kp-arm-bg" aria-hidden="true"></div>
+        <div class="kp-arm-icon kp-float-icon" aria-hidden="true"><i class="fas fa-hands-helping"></i></div>
+        <h3 class="kp-arm-title">Welfare</h3>
+        <div class="kp-arm-gold-line" aria-hidden="true"></div>
+        <p class="kp-arm-desc">Support food distribution, clothing, shelter, healthcare and emergency assistance.</p>
+        <span class="kp-scripture-badge">Proverbs 19:17</span>
+        <button type="button" class="kp-arm-toggle" data-arm-toggle aria-expanded="false" aria-controls="arm-detail-welfare">
+          Learn More <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <div class="kp-arm-detail" id="arm-detail-welfare" hidden>
+          <h4>How funds are used</h4>
+          <p>Food parcels, clothing drives, temporary shelter support, medical assistance, and crisis relief for vulnerable households.</p>
+          <h4>Ministries impacted</h4>
+          <p>Welfare outreach, hospital visitation, and community care teams.</p>
+          <h4>Expected outcomes</h4>
+          <p>Immediate relief for families in need and restored dignity through compassionate care.</p>
+          <p class="kp-arm-detail-verse"><strong>Scripture:</strong> “Whoever is kind to the poor lends to the Lord…” — Proverbs 19:17</p>
         </div>
-      </div>
+      </article>
 
-      <div class="mb-6">
-        <label class="form-label">{{ form.frequency.label.text }}</label>
-        {{ form.frequency(class="form-input") }}
-      </div>
+      <article class="kp-arm-card kp-reveal" data-kp-reveal="up" id="arm-mission">
+        <div class="kp-arm-bg" aria-hidden="true"></div>
+        <div class="kp-arm-icon kp-float-icon" aria-hidden="true"><i class="fas fa-globe-africa"></i></div>
+        <h3 class="kp-arm-title">Mission &amp; Ministry</h3>
+        <div class="kp-arm-gold-line" aria-hidden="true"></div>
+        <p class="kp-arm-desc">Support evangelism, crusades, Bible distribution, ministry materials and global outreach.</p>
+        <span class="kp-scripture-badge">Mark 16:15</span>
+        <button type="button" class="kp-arm-toggle" data-arm-toggle aria-expanded="false" aria-controls="arm-detail-mission">
+          Learn More <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <div class="kp-arm-detail" id="arm-detail-mission" hidden>
+          <h4>How funds are used</h4>
+          <p>Crusade logistics, Bibles and tracts, media outreach, travel for mission teams, and discipleship materials.</p>
+          <h4>Ministries impacted</h4>
+          <p>Evangelism, media ministry, and cross-border mission partnerships.</p>
+          <h4>Expected outcomes</h4>
+          <p>Souls reached with the Gospel and new believers grounded in the Word.</p>
+          <p class="kp-arm-detail-verse"><strong>Scripture:</strong> “Go into all the world and preach the gospel…” — Mark 16:15</p>
+        </div>
+      </article>
 
-      <div class="mb-8">
-        <label class="form-label">{{ form.payment_method.label.text }}</label>
-        <div class="grid sm:grid-cols-2 gap-3">
-          {% for value, label in form.payment_method.choices %}
-          <label class="payment-method-option">
-            <input type="radio" name="payment_method" value="{{ value }}" {% if form.payment_method.data == value or loop.first %}checked{% endif %} class="sr-only peer">
-            <div class="p-4 border-2 border-gray-200 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 transition-all cursor-pointer text-center">
-              <span class="font-semibold text-sm">{{ label }}</span>
+      <article class="kp-arm-card kp-reveal" data-kp-reveal="up" id="arm-empowerment">
+        <div class="kp-arm-bg" aria-hidden="true"></div>
+        <div class="kp-arm-icon kp-float-icon" aria-hidden="true"><i class="fas fa-briefcase"></i></div>
+        <h3 class="kp-arm-title">Empowerment</h3>
+        <div class="kp-arm-gold-line" aria-hidden="true"></div>
+        <p class="kp-arm-desc">Support vocational training, business grants, skills acquisition and financial empowerment programmes.</p>
+        <span class="kp-scripture-badge">John 10:10</span>
+        <button type="button" class="kp-arm-toggle" data-arm-toggle aria-expanded="false" aria-controls="arm-detail-empowerment">
+          Learn More <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <div class="kp-arm-detail" id="arm-detail-empowerment" hidden>
+          <h4>How funds are used</h4>
+          <p>Skills workshops, starter grants, tools for trades, and mentoring for micro-enterprise.</p>
+          <h4>Ministries impacted</h4>
+          <p>Empowerment programmes, vocational training hubs, and marketplace discipleship.</p>
+          <h4>Expected outcomes</h4>
+          <p>Sustainable livelihoods, reduced dependency, and families walking in abundance.</p>
+          <p class="kp-arm-detail-verse"><strong>Scripture:</strong> “I have come that they may have life, and have it to the full.” — John 10:10</p>
+        </div>
+      </article>
+
+      <article class="kp-arm-card kp-reveal" data-kp-reveal="up" id="arm-children">
+        <div class="kp-arm-bg" aria-hidden="true"></div>
+        <div class="kp-arm-icon kp-float-icon" aria-hidden="true"><i class="fas fa-child"></i></div>
+        <h3 class="kp-arm-title">Children Ministry</h3>
+        <div class="kp-arm-gold-line" aria-hidden="true"></div>
+        <p class="kp-arm-desc">Support Bible clubs, feeding programmes, children's outreach and Christian discipleship.</p>
+        <span class="kp-scripture-badge">Matthew 19:14</span>
+        <button type="button" class="kp-arm-toggle" data-arm-toggle aria-expanded="false" aria-controls="arm-detail-children">
+          Learn More <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <div class="kp-arm-detail" id="arm-detail-children" hidden>
+          <h4>How funds are used</h4>
+          <p>Bible clubs, children's feeding, teaching materials, camps, and safe outreach spaces.</p>
+          <h4>Ministries impacted</h4>
+          <p>Children's church, holiday clubs, and family discipleship initiatives.</p>
+          <h4>Expected outcomes</h4>
+          <p>Children encountering Jesus early and growing in faith, character, and hope.</p>
+          <p class="kp-arm-detail-verse"><strong>Scripture:</strong> “Let the little children come to me…” — Matthew 19:14</p>
+        </div>
+      </article>
+    </div>
+  </div>
+  <div class="kp-wave kp-wave-down" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" focusable="false"><path d="M0,30 C360,70 720,0 1080,40 C1260,60 1380,20 1440,30 L1440,70 L0,70 Z" fill="currentColor"/></svg>
+  </div>
+</section>
+
+{# ─── WHY PARTNER ─── #}
+<section class="kp-section kp-section-alt" aria-labelledby="why-partner-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Purpose</span>
+      <h2 id="why-partner-heading" class="kp-section-title">Why Partner With Us</h2>
+      <p class="kp-section-sub">Your faithfulness multiplies Kingdom fruit across nations.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-why-grid">
+      <article class="kp-why-card kp-reveal" data-kp-reveal="left">
+        <div class="kp-why-icon kp-float-icon" aria-hidden="true"><i class="fas fa-crown"></i></div>
+        <h3>Kingdom Impact</h3>
+        <p>Every gift advances the Gospel and strengthens ministry work that glorifies Christ.</p>
+      </article>
+      <article class="kp-why-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-why-icon kp-float-icon" aria-hidden="true"><i class="fas fa-heart"></i></div>
+        <h3>Transforming Lives</h3>
+        <p>Partnership turns compassion into action — education, welfare, and hope for families in need.</p>
+      </article>
+      <article class="kp-why-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-why-icon kp-float-icon" aria-hidden="true"><i class="fas fa-cross"></i></div>
+        <h3>Global Evangelism</h3>
+        <p>Fuel crusades, Bible distribution, and outreach that carries the Good News across borders.</p>
+      </article>
+      <article class="kp-why-card kp-reveal" data-kp-reveal="right">
+        <div class="kp-why-icon kp-float-icon" aria-hidden="true"><i class="fas fa-seedling"></i></div>
+        <h3>Building Future Generations</h3>
+        <p>Invest in children and youth so the next generation walks in purpose and faith.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="kp-wave kp-wave-up" aria-hidden="true">
+  <svg viewBox="0 0 1440 70" preserveAspectRatio="none" focusable="false"><path d="M0,40 C240,0 480,70 720,30 C960,0 1200,60 1440,20 L1440,0 L0,0 Z" fill="currentColor"/></svg>
+</div>
+
+{# ─── KINGDOM IMPACT (new) ─── #}
+<section id="kingdom-impact" class="kp-section" aria-labelledby="impact-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Fruit</span>
+      <h2 id="impact-heading" class="kp-section-title">Our Kingdom Impact</h2>
+      <p class="kp-section-sub">Placeholder figures for display — update these values as official ministry reports are published.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-impact-grid">
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-praying-hands"></i></div>
+        <span class="kp-impact-value" data-counter data-target="12500" data-suffix="+">0</span>
+        <span class="kp-impact-label">Souls Reached</span>
+      </article>
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-child"></i></div>
+        <span class="kp-impact-value" data-counter data-target="2800" data-suffix="+">0</span>
+        <span class="kp-impact-label">Children Supported</span>
+      </article>
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-map-marker-alt"></i></div>
+        <span class="kp-impact-value" data-counter data-target="95" data-suffix="+">0</span>
+        <span class="kp-impact-label">Communities Served</span>
+      </article>
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-bullhorn"></i></div>
+        <span class="kp-impact-value" data-counter data-target="64" data-suffix="+">0</span>
+        <span class="kp-impact-label">Outreach Campaigns</span>
+      </article>
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-award"></i></div>
+        <span class="kp-impact-value" data-counter data-target="420" data-suffix="+">0</span>
+        <span class="kp-impact-label">Scholarships Awarded</span>
+      </article>
+      <article class="kp-impact-card kp-reveal" data-kp-reveal="scale">
+        <div class="kp-impact-icon" aria-hidden="true"><i class="fas fa-home"></i></div>
+        <span class="kp-impact-value" data-counter data-target="1100" data-suffix="+">0</span>
+        <span class="kp-impact-label">Families Empowered</span>
+      </article>
+    </div>
+  </div>
+  <div class="kp-wave kp-wave-down" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" focusable="false"><path d="M0,25 C300,65 600,5 900,35 C1100,55 1300,15 1440,35 L1440,70 L0,70 Z" fill="currentColor"/></svg>
+  </div>
+</section>
+
+{# ─── PARTNERSHIP LEVELS ─── #}
+<section id="partnership-levels" class="kp-section kp-section-alt" aria-labelledby="levels-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Categories</span>
+      <h2 id="levels-heading" class="kp-section-title">Partnership Levels</h2>
+      <p class="kp-section-sub">River-inspired categories from the ministry registration — each channel carries a focused Kingdom assignment.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-rivers-grid">
+      <article class="kp-river-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-river-art" aria-hidden="true"><svg viewBox="0 0 120 40" focusable="false"><path d="M0,20 Q15,5 30,20 T60,20 T90,20 T120,20" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0,28 Q15,18 30,28 T60,28 T90,28 T120,28" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg></div>
+        <span class="kp-river-badge">Gold Partner</span>
+        <div class="kp-river-icon" aria-hidden="true"><i class="fas fa-water"></i></div>
+        <h3 class="kp-river-name">Pishon</h3>
+        <p class="kp-river-focus">Focus: Empowerment</p>
+        <p class="kp-river-desc">Supporting Empowerment initiatives that help individuals build sustainable futures.</p>
+        <ul class="kp-river-benefits">
+          <li>Vocational training support</li>
+          <li>Business &amp; skills grants</li>
+          <li>Marketplace discipleship</li>
+        </ul>
+      </article>
+      <article class="kp-river-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-river-art" aria-hidden="true"><svg viewBox="0 0 120 40" focusable="false"><path d="M0,22 Q20,8 40,22 T80,22 T120,22" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0,30 Q20,20 40,30 T80,30 T120,30" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg></div>
+        <span class="kp-river-badge">Gold Partner</span>
+        <div class="kp-river-icon" aria-hidden="true"><i class="fas fa-water"></i></div>
+        <h3 class="kp-river-name">Gihon</h3>
+        <p class="kp-river-focus">Focus: Welfare</p>
+        <p class="kp-river-desc">Supporting Welfare initiatives that meet urgent needs with Christ-like compassion.</p>
+        <ul class="kp-river-benefits">
+          <li>Food &amp; clothing relief</li>
+          <li>Healthcare assistance</li>
+          <li>Emergency care</li>
+        </ul>
+      </article>
+      <article class="kp-river-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-river-art" aria-hidden="true"><svg viewBox="0 0 120 40" focusable="false"><path d="M0,18 Q25,32 50,18 T100,18 T120,22" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0,26 Q25,36 50,26 T100,26 T120,28" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg></div>
+        <span class="kp-river-badge">Gold Partner</span>
+        <div class="kp-river-icon" aria-hidden="true"><i class="fas fa-water"></i></div>
+        <h3 class="kp-river-name">Hiddekel</h3>
+        <p class="kp-river-focus">Focus: Mission &amp; Ministry</p>
+        <p class="kp-river-desc">Supporting Mission &amp; Ministry that carries the Gospel across nations.</p>
+        <ul class="kp-river-benefits">
+          <li>Evangelism &amp; crusades</li>
+          <li>Bible distribution</li>
+          <li>Global outreach</li>
+        </ul>
+      </article>
+      <article class="kp-river-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-river-art" aria-hidden="true"><svg viewBox="0 0 120 40" focusable="false"><path d="M0,24 Q30,6 60,24 T120,24" fill="none" stroke="currentColor" stroke-width="2"/><path d="M0,32 Q30,18 60,32 T120,32" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/></svg></div>
+        <span class="kp-river-badge">Gold Partner</span>
+        <div class="kp-river-icon" aria-hidden="true"><i class="fas fa-water"></i></div>
+        <h3 class="kp-river-name">Euphrates</h3>
+        <p class="kp-river-focus">Focus: Scholarship &amp; Children Ministry</p>
+        <p class="kp-river-desc">Supporting Scholarship &amp; Children Ministry that raises the next generation in Christ.</p>
+        <ul class="kp-river-benefits">
+          <li>Scholarships &amp; school support</li>
+          <li>Bible clubs &amp; feeding</li>
+          <li>Children's discipleship</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+{# ─── HOW TO / SCHEDULE / METHODS ─── #}
+<section class="kp-section" aria-labelledby="how-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Journey</span>
+      <h2 id="how-heading" class="kp-section-title">How To Become A Partner</h2>
+      <p class="kp-section-sub">A clear path from calling to confirmation.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <ol class="kp-timeline">
+      <li class="kp-timeline-step kp-reveal" data-kp-reveal="left"><span class="kp-timeline-num" aria-hidden="true">1</span><div class="kp-timeline-body"><h3>Choose one or more Partnership Arms</h3><p>Select Scholarship &amp; Education, Welfare, Mission &amp; Ministry, Empowerment, and/or Children Ministry.</p></div></li>
+      <li class="kp-timeline-step kp-reveal" data-kp-reveal="left"><span class="kp-timeline-num" aria-hidden="true">2</span><div class="kp-timeline-body"><h3>Complete the Partnership Registration Form</h3><p>Share your details and partnership amount using the secure form below.</p></div></li>
+      <li class="kp-timeline-step kp-reveal" data-kp-reveal="left"><span class="kp-timeline-num" aria-hidden="true">3</span><div class="kp-timeline-body"><h3>Choose your Commitment Schedule</h3><p>Select how often you will sow into the vision.</p></div></li>
+      <li class="kp-timeline-step kp-reveal" data-kp-reveal="left"><span class="kp-timeline-num" aria-hidden="true">4</span><div class="kp-timeline-body"><h3>Select your Preferred Payment Method</h3><p>Give through bank transfer or your preferred channel.</p></div></li>
+      <li class="kp-timeline-step kp-reveal" data-kp-reveal="left"><span class="kp-timeline-num" aria-hidden="true">5</span><div class="kp-timeline-body"><h3>Receive Partnership Confirmation</h3><p>We will confirm your partnership and keep you connected to the impact of your giving.</p></div></li>
+    </ol>
+
+    <div class="kp-info-block kp-reveal" data-kp-reveal="up">
+      <h3 class="kp-info-title">Payment Schedule</h3>
+      <p class="kp-info-sub">Informational selection — choose your preferred rhythm. Your official frequency is set in the registration form.</p>
+      <div class="kp-select-grid" data-kp-schedule role="group" aria-label="Preferred payment schedule">
+        <button type="button" class="kp-select-card is-selected" data-select-card aria-pressed="true"><i class="fas fa-calendar-alt" aria-hidden="true"></i><span>Monthly</span></button>
+        <button type="button" class="kp-select-card" data-select-card aria-pressed="false"><i class="fas fa-calendar-check" aria-hidden="true"></i><span>Quarterly</span></button>
+        <button type="button" class="kp-select-card" data-select-card aria-pressed="false"><i class="fas fa-calendar" aria-hidden="true"></i><span>Annually</span></button>
+      </div>
+    </div>
+
+    <div class="kp-info-block kp-reveal" data-kp-reveal="up">
+      <h3 class="kp-info-title">Payment Methods</h3>
+      <p class="kp-info-sub">Visual overview of ministry giving channels. Online gateways remain available in the form below.</p>
+      <div class="kp-method-grid">
+        <div class="kp-method-card"><i class="fas fa-university" aria-hidden="true"></i><span>Bank Transfer</span></div>
+        <div class="kp-method-card"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i><span>Direct Debit</span></div>
+        <div class="kp-method-card"><i class="fas fa-sync-alt" aria-hidden="true"></i><span>Standing Order</span></div>
+        <div class="kp-method-card"><i class="fas fa-ellipsis-h" aria-hidden="true"></i><span>Other</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="kp-wave kp-wave-down" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" focusable="false"><path d="M0,35 C360,5 720,65 1080,25 C1260,10 1380,45 1440,35 L1440,70 L0,70 Z" fill="currentColor"/></svg>
+  </div>
+</section>
+
+{# ─── GIVE SECURELY ─── #}
+<section id="give-securely" class="kp-section kp-section-alt" aria-labelledby="give-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Banking</span>
+      <h2 id="give-heading" class="kp-section-title">Give Securely</h2>
+      <p class="kp-section-sub">Official GTBank accounts for Women of Passion and Purpose Global Impact Ministry.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-bank-grid">
+      {% set banks = [
+        {"flag": "🇳🇬", "symbol": "₦", "label": "Naira Account", "num": "3001253393", "aria": "Naira"},
+        {"flag": "🇺🇸", "symbol": "$", "label": "Dollar Account", "num": "3001253568", "aria": "Dollar"},
+        {"flag": "🇬🇧", "symbol": "£", "label": "Pound Account", "num": "3001253427", "aria": "Pound"},
+        {"flag": "🇪🇺", "symbol": "€", "label": "Euro Account", "num": "3001253599", "aria": "Euro"}
+      ] %}
+      {% for b in banks %}
+      <article class="kp-bank-card kp-reveal" data-kp-reveal="up">
+        <div class="kp-bank-top">
+          <span class="kp-bank-flag" aria-hidden="true">{{ b.flag }}</span>
+          <span class="kp-bank-symbol" aria-hidden="true">{{ b.symbol }}</span>
+        </div>
+        <h3 class="kp-bank-currency">{{ b.label }}</h3>
+        <dl class="kp-bank-details">
+          <div><dt>Account Name</dt><dd>Women of Passion and Purpose Global Impact Ministry</dd></div>
+          <div><dt>Bank</dt><dd>Guaranty Trust Bank (GTBank)</dd></div>
+          <div><dt>Account Number</dt><dd class="kp-account-num">{{ b.num }}</dd></div>
+        </dl>
+        <div class="kp-bank-qr" aria-hidden="true" title="QR code coming soon">
+          <i class="fas fa-qrcode"></i>
+          <span>QR Coming Soon</span>
+        </div>
+        <button type="button" class="kp-copy-btn" data-copy="{{ b.num }}" aria-label="Copy {{ b.aria }} account number">
+          <i class="fas fa-copy" aria-hidden="true"></i> Copy Account Number
+        </button>
+        <p class="kp-secure-badge"><i class="fas fa-shield-alt" aria-hidden="true"></i> Secure Ministry Giving</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─── COMMITMENT ─── #}
+<section class="kp-section" aria-labelledby="commitment-heading">
+  <div class="kp-container kp-commitment-wrap">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Covenant</span>
+      <h2 id="commitment-heading" class="kp-section-title">Partnership Commitment</h2>
+      <p class="kp-section-sub">Partnership is a voluntary Kingdom commitment — given freely as the Lord enables.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <blockquote class="kp-declaration kp-reveal" data-kp-reveal="scale">
+      <i class="fas fa-quote-left kp-declaration-quote" aria-hidden="true"></i>
+      <p>I willingly partner with Women of Passion and Purpose and commit to supporting the vision as the Lord enables me. I understand that this is a voluntary commitment to Kingdom service and empowerment.</p>
+    </blockquote>
+  </div>
+</section>
+
+{# ─── TESTIMONIALS ─── #}
+<section class="kp-section kp-section-alt" aria-labelledby="testimonials-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Voices</span>
+      <h2 id="testimonials-heading" class="kp-section-title">Partner Testimonials</h2>
+      <p class="kp-section-sub">Stories of faithfulness from Kingdom Partners around the world.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-carousel" data-kp-carousel aria-roledescription="carousel" aria-label="Partner testimonials">
+      <div class="kp-carousel-track" data-kp-track>
+        <figure class="kp-testimonial is-active" data-kp-slide aria-hidden="false">
+          <span class="kp-quote-mark" aria-hidden="true">“</span>
+          <div class="kp-avatar" aria-hidden="true">AO</div>
+          <blockquote>Partnering with this ministry has deepened my walk with God. Knowing my giving fuels education and outreach brings lasting joy.</blockquote>
+          <figcaption><strong>Adaeze O.</strong><span>Nigeria · Euphrates Partner</span></figcaption>
+        </figure>
+        <figure class="kp-testimonial" data-kp-slide aria-hidden="true">
+          <span class="kp-quote-mark" aria-hidden="true">“</span>
+          <div class="kp-avatar" aria-hidden="true">JK</div>
+          <blockquote>Through the Welfare arm we have seen families receive food and care in their hardest seasons. Partnership is love in action.</blockquote>
+          <figcaption><strong>James K.</strong><span>United Kingdom · Gihon Partner</span></figcaption>
+        </figure>
+        <figure class="kp-testimonial" data-kp-slide aria-hidden="true">
+          <span class="kp-quote-mark" aria-hidden="true">“</span>
+          <div class="kp-avatar" aria-hidden="true">GM</div>
+          <blockquote>Supporting Mission &amp; Ministry connects me to global evangelism. Every confirmation reminds me that the Gospel is advancing.</blockquote>
+          <figcaption><strong>Grace M.</strong><span>United States · Hiddekel Partner</span></figcaption>
+        </figure>
+        <figure class="kp-testimonial" data-kp-slide aria-hidden="true">
+          <span class="kp-quote-mark" aria-hidden="true">“</span>
+          <div class="kp-avatar" aria-hidden="true">CA</div>
+          <blockquote>The Empowerment programmes are raising entrepreneurs and restoring dignity. I am grateful to sow into Pishon.</blockquote>
+          <figcaption><strong>Chinedu A.</strong><span>Canada · Pishon Partner</span></figcaption>
+        </figure>
+      </div>
+      <div class="kp-carousel-controls">
+        <button type="button" class="kp-carousel-btn" data-kp-prev aria-label="Previous testimonial"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+        <div class="kp-carousel-dots" data-kp-dots role="tablist" aria-label="Testimonial slides"></div>
+        <button type="button" class="kp-carousel-btn" data-kp-next aria-label="Next testimonial"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─── FAQ ─── #}
+<section class="kp-section" aria-labelledby="faq-heading">
+  <div class="kp-container kp-faq-wrap">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Answers</span>
+      <h2 id="faq-heading" class="kp-section-title">Frequently Asked Questions</h2>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-faq" data-kp-faq>
+      <div class="kp-faq-item kp-reveal" data-kp-reveal="up">
+        <button type="button" class="kp-faq-trigger" aria-expanded="false" id="faq-q1" aria-controls="faq-a1">Why should I become a partner?<span class="kp-faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span></button>
+        <div class="kp-faq-panel" id="faq-a1" role="region" aria-labelledby="faq-q1"><div class="kp-faq-panel-inner"><div class="kp-faq-gold-line" aria-hidden="true"></div><p>Partnership multiplies Kingdom impact — education, welfare, missions, empowerment, and children's ministry — as you sow faithfully into the vision God has given this house.</p></div></div>
+      </div>
+      <div class="kp-faq-item kp-reveal" data-kp-reveal="up">
+        <button type="button" class="kp-faq-trigger" aria-expanded="false" id="faq-q2" aria-controls="faq-a2">Can I support more than one partnership arm?<span class="kp-faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span></button>
+        <div class="kp-faq-panel" id="faq-a2" role="region" aria-labelledby="faq-q2"><div class="kp-faq-panel-inner"><div class="kp-faq-gold-line" aria-hidden="true"></div><p>Yes. You may choose one or more of the Five Arms — Scholarship &amp; Education, Welfare, Mission &amp; Ministry, Empowerment, and Children Ministry — as the Lord leads.</p></div></div>
+      </div>
+      <div class="kp-faq-item kp-reveal" data-kp-reveal="up">
+        <button type="button" class="kp-faq-trigger" aria-expanded="false" id="faq-q3" aria-controls="faq-a3">Can I partner internationally?<span class="kp-faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span></button>
+        <div class="kp-faq-panel" id="faq-a3" role="region" aria-labelledby="faq-q3"><div class="kp-faq-panel-inner"><div class="kp-faq-gold-line" aria-hidden="true"></div><p>Absolutely. We welcome partners worldwide. Give via our Naira, Dollar, Pound, or Euro GTBank accounts, or through the online payment options on the registration form.</p></div></div>
+      </div>
+      <div class="kp-faq-item kp-reveal" data-kp-reveal="up">
+        <button type="button" class="kp-faq-trigger" aria-expanded="false" id="faq-q4" aria-controls="faq-a4">Can I change my commitment later?<span class="kp-faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span></button>
+        <div class="kp-faq-panel" id="faq-a4" role="region" aria-labelledby="faq-q4"><div class="kp-faq-panel-inner"><div class="kp-faq-gold-line" aria-hidden="true"></div><p>Yes. Partnership is voluntary. You may adjust, pause, or cancel your commitment as needed. Signed-in partners can manage schedules from the partnership management page.</p></div></div>
+      </div>
+      <div class="kp-faq-item kp-reveal" data-kp-reveal="up">
+        <button type="button" class="kp-faq-trigger" aria-expanded="false" id="faq-q5" aria-controls="faq-a5">What payment methods are accepted?<span class="kp-faq-icon" aria-hidden="true"><i class="fas fa-plus"></i></span></button>
+        <div class="kp-faq-panel" id="faq-a5" role="region" aria-labelledby="faq-q5"><div class="kp-faq-panel-inner"><div class="kp-faq-gold-line" aria-hidden="true"></div><p>Bank transfer to our official GTBank accounts, plus online options including Flutterwave, Paystack, PayPal, Zelle, and Cash App. You may also use direct debit or standing order with your bank.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="kp-wave kp-wave-down" aria-hidden="true">
+    <svg viewBox="0 0 1440 70" preserveAspectRatio="none" focusable="false"><path d="M0,40 C400,0 800,70 1200,30 C1320,15 1400,40 1440,40 L1440,70 L0,70 Z" fill="currentColor"/></svg>
+  </div>
+</section>
+
+{# ─── REGISTRATION FORM (fields unchanged) ─── #}
+<section id="partner-form" class="kp-section kp-section-alt" aria-labelledby="form-heading">
+  <div class="kp-container kp-form-wrap">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Register</span>
+      <h2 id="form-heading" class="kp-section-title">Partnership Registration</h2>
+      <p class="kp-section-sub">Set your partnership amount, frequency, and payment method. Your commitment fuels lives transformed by the Gospel.</p>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+
+    <div class="kp-form-card kp-reveal" data-kp-reveal="up">
+      <div class="kp-form-progress" aria-hidden="true">
+        <span class="is-active">1. Details</span>
+        <span>2. Amount</span>
+        <span>3. Payment</span>
+      </div>
+      <form method="POST" novalidate class="kp-reg-form">
+        {{ form.hidden_tag() }}
+
+        <h3 class="kp-form-section-title">Your Details</h3>
+        <div class="kp-field mb-6">
+          <label class="form-label" for="{{ form.name.id }}">{{ form.name.label.text }}</label>
+          {{ form.name(class="form-input", placeholder="Full Name", autocomplete="name") }}
+          {% if form.name.errors %}<p class="kp-field-error">{{ form.name.errors[0] }}</p>{% endif %}
+        </div>
+        <div class="kp-field mb-6">
+          <label class="form-label" for="{{ form.email.id }}">{{ form.email.label.text }}</label>
+          {{ form.email(class="form-input", placeholder="Email Address", autocomplete="email") }}
+          {% if form.email.errors %}<p class="kp-field-error">{{ form.email.errors[0] }}</p>{% endif %}
+        </div>
+        <div class="kp-field mb-6">
+          <label class="form-label" for="{{ form.phone.id }}">{{ form.phone.label.text }} <span class="text-gray-400 font-normal">(for SMS reminders)</span></label>
+          {{ form.phone(class="form-input", placeholder="Phone Number", autocomplete="tel") }}
+        </div>
+
+        <h3 class="kp-form-section-title">Partnership Amount</h3>
+        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+          <div class="kp-field">
+            <label class="form-label" for="{{ form.amount.id }}">{{ form.amount.label.text }}</label>
+            {{ form.amount(class="form-input", placeholder="Amount", step="0.01", inputmode="decimal") }}
+            {% if form.amount.errors %}<p class="kp-field-error">{{ form.amount.errors[0] }}</p>{% endif %}
+          </div>
+          <div class="kp-field">
+            <label class="form-label" for="{{ form.currency.id }}">{{ form.currency.label.text }}</label>
+            {{ form.currency(class="form-input") }}
+          </div>
+        </div>
+        <div class="kp-field mb-6">
+          <label class="form-label" for="{{ form.frequency.id }}">{{ form.frequency.label.text }}</label>
+          {{ form.frequency(class="form-input") }}
+        </div>
+
+        <h3 class="kp-form-section-title">Payment Method</h3>
+        <div class="mb-8">
+          <fieldset>
+            <legend class="form-label">{{ form.payment_method.label.text }}</legend>
+            <div class="grid sm:grid-cols-2 gap-3 mt-2">
+              {% for value, label in form.payment_method.choices %}
+              <label class="payment-method-option">
+                <input type="radio" name="payment_method" value="{{ value }}" {% if form.payment_method.data == value or (not form.payment_method.data and loop.first) %}checked{% endif %} class="sr-only peer">
+                <div class="p-4 border-2 border-gray-200 rounded-xl peer-checked:border-purple-600 peer-checked:bg-purple-50 transition-all cursor-pointer text-center">
+                  <span class="font-semibold text-sm">{{ label }}</span>
+                </div>
+              </label>
+              {% endfor %}
             </div>
-          </label>
-          {% endfor %}
+          </fieldset>
         </div>
-      </div>
 
-      <button type="submit" class="btn-primary w-full py-4 text-lg font-bold rounded-2xl">
-        <i class="fas fa-handshake mr-2"></i> Become a Partner
-      </button>
-    </form>
-  </div>
-</section>
-
-{% if user_partnerships %}
-<section class="max-w-3xl mx-auto px-4 pb-16">
-  <h2 class="text-xl font-bold section-heading mb-4">Your Partnerships</h2>
-  <div class="space-y-4">
-    {% for p in user_partnerships %}
-    <div class="card p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <p class="font-bold">{{ currency_symbols.get(p.currency, p.currency) }}{{ '{:,.2f}'.format(p.amount) }} / {{ p.frequency|replace('_', ' ') }}</p>
-        <p class="text-sm text-gray-500">Status: <span class="status-badge status-{{ p.status }}">{{ p.status|title }}</span></p>
-      </div>
-      <a href="{{ url_for('partnership.manage') }}" class="btn-outline-gold py-2 px-5 rounded-xl text-sm font-semibold text-center">Manage</a>
+        <button type="submit" class="btn-primary kp-btn-glow kp-ripple w-full py-4 text-lg font-bold rounded-2xl">
+          <i class="fas fa-handshake mr-2" aria-hidden="true"></i> Become a Partner
+        </button>
+      </form>
     </div>
-    {% endfor %}
+
+    {% if user_partnerships %}
+    <div class="kp-user-partnerships mt-10">
+      <h3 class="text-xl font-bold section-heading mb-4">Your Partnerships</h3>
+      <div class="space-y-4">
+        {% for p in user_partnerships %}
+        <div class="kp-form-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5">
+          <div>
+            <p class="font-bold">{{ currency_symbols.get(p.currency, p.currency) }}{{ '{:,.2f}'.format(p.amount) }} / {{ p.frequency|replace('_', ' ') }}</p>
+            <p class="text-sm text-gray-500">Status: <span class="status-badge status-{{ p.status }}">{{ p.status|title }}</span></p>
+          </div>
+          <a href="{{ url_for('partnership.manage') }}" class="btn-outline-gold py-2 px-5 rounded-xl text-sm font-semibold text-center">Manage</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% elif current_user.is_authenticated %}
+    <p class="text-center mt-8">
+      <a href="{{ url_for('partnership.manage') }}" class="text-sm font-semibold" style="color: var(--purple-primary);">Manage Your Partnerships →</a>
+    </p>
+    {% endif %}
   </div>
 </section>
-{% endif %}
 
-{% if current_user.is_authenticated %}
-<section class="max-w-3xl mx-auto px-4 pb-16 text-center">
-  <a href="{{ url_for('partnership.manage') }}" class="text-sm font-semibold" style="color: var(--purple-primary);">Manage Your Partnerships →</a>
+{# ─── CONTACT HELP ─── #}
+<section class="kp-section" aria-labelledby="help-heading">
+  <div class="kp-container">
+    <div class="kp-section-head kp-reveal" data-kp-reveal="up">
+      <span class="kp-eyebrow">Support</span>
+      <h2 id="help-heading" class="kp-section-title">Need Help Becoming a Partner?</h2>
+      <div class="kp-gold-divider" aria-hidden="true"></div>
+    </div>
+    <div class="kp-help-grid">
+      <a class="kp-help-card kp-reveal" data-kp-reveal="left" href="mailto:WOPPKINGDOMPARTNERS@GMAIL.COM">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <h3>Partnership Email</h3>
+        <p>WOPPKINGDOMPARTNERS@GMAIL.COM</p>
+      </a>
+      <a class="kp-help-card kp-reveal" data-kp-reveal="right" href="https://www.womenofpassionandpurpose.org" target="_blank" rel="noopener noreferrer">
+        <i class="fas fa-globe" aria-hidden="true"></i>
+        <h3>Official Website</h3>
+        <p>WWW.WOMENOFPASSIONANDPURPOSE.ORG</p>
+      </a>
+    </div>
+  </div>
 </section>
-{% endif %}
+
+{# ─── FINAL CTA ─── #}
+<section class="kp-final-cta" aria-labelledby="final-cta-heading">
+  <div class="kp-final-bg" aria-hidden="true"></div>
+  <div class="kp-final-shapes" aria-hidden="true">
+    <span class="kp-shape kp-shape-1"></span>
+    <span class="kp-shape kp-shape-2"></span>
+    <span class="kp-shape kp-shape-3"></span>
+  </div>
+  <div class="kp-container text-center kp-final-inner">
+    <h2 id="final-cta-heading" class="kp-final-title">Become a Kingdom Partner Today</h2>
+    <p class="kp-final-text">Together we can spread the Gospel, empower communities, educate children, care for families and raise future generations for Christ.</p>
+    <div class="kp-hero-ctas kp-final-ctas">
+      <a href="#partner-form" class="btn-primary kp-btn-lg kp-btn-glow kp-ripple rounded-2xl">Become A Partner</a>
+      <a href="{{ url_for('main.contact') }}" class="btn-outline-gold kp-btn-lg kp-ripple rounded-2xl">Contact Partnership Team</a>
+    </div>
+  </div>
+</section>
+
+<div id="kp-toast" class="kp-toast" role="status" aria-live="polite" hidden>Account number copied</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/partnership.js') }}" defer></script>
 {% endblock %}

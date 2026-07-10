@@ -21,9 +21,15 @@
                 {% for leader in level_data.leaders %}
                 <div class="org-chart-node">
                     {% if leader.photo %}
-                    <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="org-chart-photo">
+                    <img src="{{ url_for('static', filename=leader.photo) }}"
+                         alt="{{ leader.name }}"
+                         class="org-chart-photo"
+                         loading="lazy"
+                         decoding="async"
+                         width="64"
+                         height="64">
                     {% else %}
-                    <div class="org-chart-photo-placeholder"><i class="fas fa-user"></i></div>
+                    <div class="org-chart-photo-placeholder" aria-hidden="true"><i class="fas fa-user"></i></div>
                     {% endif %}
                     <p class="org-chart-name">{{ leader.name }}</p>
                     <p class="org-chart-role">{{ leader.role }}</p>
@@ -45,9 +51,17 @@
         {% for leader in leaders %}
         <article class="leader-card rounded-3xl overflow-hidden shadow-xl">
             {% if leader.photo %}
-            <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="leader-photo">
+            <div class="leader-photo-frame">
+                <img src="{{ url_for('static', filename=leader.photo) }}"
+                     alt="{{ leader.name }}"
+                     class="leader-photo"
+                     loading="lazy"
+                     decoding="async"
+                     width="480"
+                     height="600">
+            </div>
             {% else %}
-            <div class="leader-photo-placeholder">
+            <div class="leader-photo-placeholder" aria-hidden="true">
                 <i class="fas fa-user"></i>
             </div>
             {% endif %}

@@ -1,4 +1,4 @@
-/* MWPP Ministry Design System — Gold #D4AF37, Purple #5A189A, White #FFFFFF */
+﻿/* MWPP Ministry Design System â€” Gold #D4AF37, Purple #5A189A, White #FFFFFF */
 :root {
   --gold-primary: #D4AF37;
   --gold-secondary: #E8C547;
@@ -590,22 +590,47 @@ body.gallery-lightbox-open {
   color: var(--gray-dark);
 }
 
+.leader-card .leader-photo-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--purple-light), var(--gold-primary));
+}
+
 .leader-card .leader-photo {
   width: 100%;
-  height: 280px;
+  height: 100%;
+  display: block;
   object-fit: cover;
-  background: linear-gradient(135deg, var(--purple-light), var(--gold-primary));
+  /* Bias toward upper-center so faces/heads stay visible */
+  object-position: center 18%;
+  image-rendering: auto;
 }
 
 .leader-card .leader-photo-placeholder {
   width: 100%;
-  height: 280px;
+  aspect-ratio: 4 / 5;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary));
   color: var(--white-primary);
   font-size: 4rem;
+}
+
+@media (max-width: 767px) {
+  .leader-card .leader-photo-frame,
+  .leader-card .leader-photo-placeholder {
+    aspect-ratio: 5 / 6;
+  }
+}
+
+@media (min-width: 1024px) {
+  .leader-card .leader-photo-frame,
+  .leader-card .leader-photo-placeholder {
+    aspect-ratio: 4 / 5;
+  }
 }
 
 .leader-video-wrap {
@@ -1240,7 +1265,7 @@ footer {
   color: var(--gold-dark);
 }
 
-/* Sermon preview video — autoplay background, click opens social */
+/* Sermon preview video â€” autoplay background, click opens social */
 .sermon-preview {
   display: block;
   position: relative;
@@ -1422,7 +1447,7 @@ footer {
   }
 }
 
-/* Form inputs — unified styling */
+/* Form inputs â€” unified styling */
 .form-label {
   display: block;
   font-weight: 700;
@@ -1543,6 +1568,7 @@ footer {
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center 20%;
   margin: 0 auto 0.75rem;
   display: block;
   border: 3px solid var(--gold-primary);
@@ -1603,3 +1629,4 @@ footer {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+

@@ -160,9 +160,17 @@
             {% for leader in founders %}
             <div class="leader-card rounded-3xl overflow-hidden">
                 {% if leader.photo %}
-                <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="leader-photo">
+                <div class="leader-photo-frame">
+                    <img src="{{ url_for('static', filename=leader.photo) }}"
+                         alt="{{ leader.name }}"
+                         class="leader-photo"
+                         loading="lazy"
+                         decoding="async"
+                         width="480"
+                         height="600">
+                </div>
                 {% else %}
-                <div class="leader-photo-placeholder"><i class="fas fa-user"></i></div>
+                <div class="leader-photo-placeholder" aria-hidden="true"><i class="fas fa-user"></i></div>
                 {% endif %}
                 <div class="p-6">
                     <h3 class="text-xl font-black">{{ leader.name }}</h3>

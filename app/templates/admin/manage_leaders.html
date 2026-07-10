@@ -32,7 +32,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div class="flex items-start gap-4">
                     {% if leader.photo %}
-                    <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0">
+                    <img src="{{ url_for('static', filename=leader.photo) }}" alt="{{ leader.name }}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0" style="object-position: center 20%;" loading="lazy">
                     {% else %}
                     <div class="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, var(--purple-primary), var(--gold-primary)); color: white;" aria-hidden="true">
                         <i class="fas fa-user"></i>

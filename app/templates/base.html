@@ -33,6 +33,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    {% block extra_head %}{% endblock %}
     <link rel="icon" href="{{ favicon_url() }}" type="image/png" sizes="32x32">
     <link rel="icon" href="{{ favicon_16_url() }}" type="image/png" sizes="16x16">
     <link rel="apple-touch-icon" href="{{ apple_touch_icon_url() }}" sizes="180x180">
