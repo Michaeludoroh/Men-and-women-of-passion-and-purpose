@@ -38,6 +38,9 @@ Backup current Git commit SHA
 git pull origin main   (as ubuntu in /home/ubuntu/Men-and-women-of-passion-and-purpose)
         │
         ▼
+flask db upgrade       (.venv + .env; must succeed before restart)
+        │
+        ▼
 systemctl restart mwpp
         │
         ▼
@@ -45,7 +48,8 @@ Health checks (service + HTTP 200 pages)
         │
         ├─ PASS → Deployment successful
         │
-        └─ FAIL → Automatic rollback to previous commit + restart + re-check
+        └─ FAIL → Automatic rollback to previous commit (+ DB downgrade when possible) + restart + re-check
+           (migration failure: restore git/DB, do NOT restart Gunicorn)
 ```
 
 **Triggers**
@@ -153,7 +157,8 @@ The VPS clone must track `origin/main` for the same GitHub repository.
 | SSH | Key-based login; host key verification |
 | Backup | Writes current `git rev-parse HEAD` under `/home/ubuntu/mwpp-deploy-backups/` |
 | Pull | `git fetch` + `git pull --ff-only origin main` as `ubuntu` in the app directory |
-| Restart | `systemctl restart mwpp` |
+| Migrate | Activate `.venv`, load `.env`, run `flask db upgrade` (**before** restart) |
+| Restart | `systemctl restart mwpp` (only after migrations succeed) |
 | Health | Service active, Gunicorn process for `ubuntu`, HTTP 200 for `/`, `/partnership/`, `/giving/`, `/leadership` |
 | Summary | Job summary in the Actions UI |
 
@@ -175,7 +180,9 @@ Checks run **on the VPS** against Gunicorn (`HEALTH_BASE_URL`, default `http://1
 
 Retries: 12 attempts × 5 seconds (configurable in the remote script).
 
-Any failure after pull/restart triggers **automatic rollback**.
+Any failure after pull/migrate/restart triggers **automatic rollback**.
+
+Migration failures restore the previous git commit and attempt `flask db downgrade` to the pre-deploy revision. **Gunicorn is not restarted** on migration failure (the running process keeps serving the previous code).
 
 ---
 
@@ -184,9 +191,10 @@ Any failure after pull/restart triggers **automatic rollback**.
 On failure after code has been updated:
 
 1. `git reset --hard <previous_sha>`
-2. `systemctl restart mwpp`
-3. Re-run health checks
-4. Log `ROLLBACK COMPLETED` or `ROLLBACK HEALTH CHECK FAILED`
+2. Attempt `flask db downgrade <pre-deploy-revision>` when the revision was captured
+3. `systemctl restart mwpp` (skipped for migration-only failures)
+4. Re-run health checks (when the service was restarted)
+5. Log `ROLLBACK COMPLETED` or `ROLLBACK HEALTH CHECK FAILED`
 
 Previous SHA files:
 
@@ -210,18 +218,18 @@ curl -I http://127.0.0.1:8000/
 ```bash
 cd /home/ubuntu/Men-and-women-of-passion-and-purpose
 git pull
-sudo systemctl restart mwpp
-```
-
-Optional (deps / migrations — not part of the automated minimal path):
-
-```bash
-cd /home/ubuntu/Men-and-women-of-passion-and-purpose
-.venv/bin/pip install -r requirements.txt
 set -a && source .env && set +a && .venv/bin/flask db upgrade
 sudo systemctl restart mwpp
 ```
 
+Optional (deps):
+
+```bash
+cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+.venv/bin/pip install -r requirements.txt
+```
+
+Automated deploys always run `flask db upgrade` after `git pull` and before restarting `mwpp`.
 ---
 
 ## How to disable automatic deployment

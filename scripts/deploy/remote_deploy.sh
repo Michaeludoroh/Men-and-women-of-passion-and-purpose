@@ -5,7 +5,9 @@
 #
 # Automates the existing manual flow:
 #   cd /home/ubuntu/Men-and-women-of-passion-and-purpose
-#   git pull && sudo systemctl restart mwpp
+#   git pull
+#   flask db upgrade
+#   sudo systemctl restart mwpp
 # Plus: commit backup, health checks, and automatic rollback on failure.
 #
 # Production facts (do not invent alternate paths):
@@ -28,6 +30,8 @@ LOCK_FILE="${LOCK_FILE:-/tmp/mwpp-deploy.lock}"
 STARTUP_WAIT_SECONDS="${STARTUP_WAIT_SECONDS:-8}"
 HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
 HEALTH_RETRY_DELAY="${HEALTH_RETRY_DELAY:-5}"
+VENV_DIR="${VENV_DIR:-${APP_DIR}/.venv}"
+FLASK_BIN="${FLASK_BIN:-${VENV_DIR}/bin/flask}"
 
 # Paths checked after restart (must return HTTP 200)
 HEALTH_PATHS=(
@@ -36,6 +40,13 @@ HEALTH_PATHS=(
   "/giving/"
   "/leadership"
 )
+
+# Populated during deploy
+PREV_SHA=""
+PREV_SHA_SHORT=""
+NEW_SHA=""
+NEW_SHA_SHORT=""
+PREV_DB_REV=""
 
 log() {
   printf '[%s] %s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" "$*"
@@ -77,7 +88,8 @@ acquire_lock() {
 ensure_layout() {
   [[ -d "$APP_DIR" ]] || fail "App directory not found: $APP_DIR"
   [[ -d "$APP_DIR/.git" ]] || fail "Not a git repository: $APP_DIR"
-  [[ -d "$APP_DIR/.venv" ]] || log "WARNING: virtualenv not found at ${APP_DIR}/.venv (service may still manage it)"
+  [[ -x "$FLASK_BIN" ]] || fail "Flask binary not found (activate venv path): ${FLASK_BIN}"
+  [[ -d "$VENV_DIR" ]] || fail "Virtualenv not found: ${VENV_DIR}"
   mkdir -p "$BACKUP_DIR"
   if [[ "$(id -un)" == "root" ]]; then
     chown -R "${APP_USER}:${APP_GROUP}" "$BACKUP_DIR" 2>/dev/null || true
@@ -108,6 +120,73 @@ pull_latest() {
   NEW_SHA="$(as_app git -C "$APP_DIR" rev-parse HEAD)"
   NEW_SHA_SHORT="$(as_app git -C "$APP_DIR" rev-parse --short HEAD)"
   log "Code updated to ${NEW_SHA_SHORT} (${NEW_SHA})"
+}
+
+# Run a flask CLI command as the app user with venv activated + .env loaded.
+run_flask() {
+  as_app bash -c '
+    set -euo pipefail
+    cd "$1"
+    shift
+    venv_dir="$1"
+    shift
+    # shellcheck disable=SC1091
+    . "${venv_dir}/bin/activate"
+    set -a
+    if [ -f .env ]; then
+      # shellcheck disable=SC1091
+      . ./.env
+    fi
+    set +a
+    export FLASK_APP="${FLASK_APP:-run.py}"
+    exec flask "$@"
+  ' bash "$APP_DIR" "$VENV_DIR" "$@"
+}
+
+capture_db_revision() {
+  # Best-effort parse of `flask db current` (e.g. "h5c8d0e2f4a7 (head)")
+  local output
+  output="$(run_flask db current 2>/dev/null || true)"
+  PREV_DB_REV="$(printf '%s\n' "$output" | awk '/^[0-9a-fA-F]/ { print $1; exit }')"
+  if [[ -n "$PREV_DB_REV" ]]; then
+    log "Pre-deploy database revision: ${PREV_DB_REV}"
+  else
+    log "WARNING: Could not determine current Alembic revision (will skip downgrade on failure)"
+  fi
+}
+
+run_migrations() {
+  log "Running database migrations..."
+  capture_db_revision
+
+  if ! run_flask db upgrade; then
+    log "Database migration failed."
+    log "Rolling back deployment."
+    rollback_migration_failure
+    return 1
+  fi
+
+  log "Database migrations completed successfully."
+  return 0
+}
+
+# Migration failure: restore DB (while new revision files still present), then
+# restore git. Do NOT restart Gunicorn — leave the running process on old code.
+rollback_migration_failure() {
+  if [[ -n "${PREV_DB_REV:-}" ]]; then
+    log "Restoring previous migration state to ${PREV_DB_REV}"
+    if run_flask db downgrade "$PREV_DB_REV"; then
+      log "Database revision restored to ${PREV_DB_REV}"
+    else
+      log "WARNING: Could not restore database revision to ${PREV_DB_REV} — manual DB check required"
+    fi
+  else
+    log "WARNING: Previous DB revision unknown — skipped alembic downgrade"
+  fi
+
+  log "Restoring previous commit ${PREV_SHA} (service not restarted)"
+  as_app git -C "$APP_DIR" reset --hard "$PREV_SHA"
+  echo "rollback_status=migration_failed" >>"${GITHUB_OUTPUT:-/dev/null}" 2>/dev/null || true
 }
 
 restart_service() {
@@ -163,6 +242,12 @@ rollback() {
   log "ROLLBACK START — reason: ${reason}"
   log "Restoring previous commit ${PREV_SHA}"
   as_app git -C "$APP_DIR" reset --hard "$PREV_SHA"
+  # Schema may already be upgraded; that is usually safe for older code.
+  # If a pre-upgrade revision was captured, attempt downgrade with restored code.
+  if [[ -n "${PREV_DB_REV:-}" ]]; then
+    log "Attempting database downgrade to ${PREV_DB_REV} during rollback"
+    run_flask db downgrade "$PREV_DB_REV" || log "WARNING: DB downgrade to ${PREV_DB_REV} failed during rollback"
+  fi
   restart_service
   if soft_health_checks; then
     log "ROLLBACK COMPLETED — site restored to ${PREV_SHA}"
@@ -179,6 +264,7 @@ main() {
   started="$(date +%s)"
   log "=== MWPP deployment started ==="
   log "Host=$(hostname) User=$(id -un) AppDir=${APP_DIR} AppUser=${APP_USER} Branch=${GIT_BRANCH}"
+  log "Venv=${VENV_DIR} Flask=${FLASK_BIN}"
 
   require_cmd git
   require_cmd curl
@@ -191,11 +277,15 @@ main() {
   backup_commit
 
   if ! pull_latest; then
-    fail "git pull failed — no service restart performed"
+    fail "git pull failed — no migrations or service restart performed"
   fi
 
   if [[ "$NEW_SHA" == "$PREV_SHA" ]]; then
-    log "Already up to date (${NEW_SHA_SHORT}). Restarting service for consistency."
+    log "Already up to date (${NEW_SHA_SHORT}). Continuing with migrations + restart for consistency."
+  fi
+
+  if ! run_migrations; then
+    fail "Deployment failed during database migrations; service was not restarted"
   fi
 
   if ! restart_service; then

@@ -145,7 +145,7 @@ jobs:
           echo "Connecting to VPS..."
           ssh mwpp-vps 'echo "SSH OK as $(id -un) on $(hostname)"'
 
-      - name: Deploy over SSH (pull, restart, health, rollback)
+      - name: Deploy over SSH (pull, migrate, restart, health, rollback)
         id: deploy
         env:
           HEALTH_BASE_URL: ${{ secrets.HEALTH_BASE_URL }}
