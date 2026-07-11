@@ -35,8 +35,8 @@ permissions:
   contents: read
 
 env:
-  APP_DIR: /var/www/mwpp
-  APP_USER: mwpp
+  APP_DIR: /home/ubuntu/Men-and-women-of-passion-and-purpose
+  APP_USER: ubuntu
   SERVICE_NAME: mwpp
   GIT_BRANCH: main
 

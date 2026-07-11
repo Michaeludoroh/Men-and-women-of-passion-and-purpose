@@ -4,17 +4,26 @@
 # Runs on the VPS (invoked by GitHub Actions over SSH).
 #
 # Automates the existing manual flow:
-#   cd /var/www/mwpp && git pull && systemctl restart mwpp
+#   cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+#   git pull && sudo systemctl restart mwpp
 # Plus: commit backup, health checks, and automatic rollback on failure.
+#
+# Production facts (do not invent alternate paths):
+#   Service:  mwpp.service
+#   User:     ubuntu
+#   Group:    www-data
+#   App dir:  /home/ubuntu/Men-and-women-of-passion-and-purpose
+#   Venv:     /home/ubuntu/Men-and-women-of-passion-and-purpose/.venv
 # =============================================================================
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/var/www/mwpp}"
-APP_USER="${APP_USER:-mwpp}"
+APP_DIR="${APP_DIR:-/home/ubuntu/Men-and-women-of-passion-and-purpose}"
+APP_USER="${APP_USER:-ubuntu}"
+APP_GROUP="${APP_GROUP:-www-data}"
 SERVICE_NAME="${SERVICE_NAME:-mwpp}"
 GIT_BRANCH="${GIT_BRANCH:-main}"
 HEALTH_BASE_URL="${HEALTH_BASE_URL:-http://127.0.0.1:8000}"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/mwpp}"
+BACKUP_DIR="${BACKUP_DIR:-/home/ubuntu/mwpp-deploy-backups}"
 LOCK_FILE="${LOCK_FILE:-/tmp/mwpp-deploy.lock}"
 STARTUP_WAIT_SECONDS="${STARTUP_WAIT_SECONDS:-8}"
 HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
@@ -68,9 +77,10 @@ acquire_lock() {
 ensure_layout() {
   [[ -d "$APP_DIR" ]] || fail "App directory not found: $APP_DIR"
   [[ -d "$APP_DIR/.git" ]] || fail "Not a git repository: $APP_DIR"
+  [[ -d "$APP_DIR/.venv" ]] || log "WARNING: virtualenv not found at ${APP_DIR}/.venv (service may still manage it)"
   mkdir -p "$BACKUP_DIR"
   if [[ "$(id -un)" == "root" ]]; then
-    chown -R "${APP_USER}:${APP_USER}" "$BACKUP_DIR" 2>/dev/null || true
+    chown -R "${APP_USER}:${APP_GROUP}" "$BACKUP_DIR" 2>/dev/null || true
   fi
 }
 
@@ -81,12 +91,11 @@ backup_commit() {
   BACKUP_FILE="${BACKUP_DIR}/pre-deploy-${BACKUP_STAMP}.sha"
   printf '%s\n' "$PREV_SHA" >"$BACKUP_FILE"
   if [[ "$(id -un)" == "root" ]]; then
-    chown "${APP_USER}:${APP_USER}" "$BACKUP_FILE" 2>/dev/null || true
+    chown "${APP_USER}:${APP_GROUP}" "$BACKUP_FILE" 2>/dev/null || true
   fi
-  # Keep a stable pointer to the last known-good pre-deploy commit
   printf '%s\n' "$PREV_SHA" >"${BACKUP_DIR}/last_good_sha"
   if [[ "$(id -un)" == "root" ]]; then
-    chown "${APP_USER}:${APP_USER}" "${BACKUP_DIR}/last_good_sha" 2>/dev/null || true
+    chown "${APP_USER}:${APP_GROUP}" "${BACKUP_DIR}/last_good_sha" 2>/dev/null || true
   fi
   log "Backed up current commit ${PREV_SHA_SHORT} (${PREV_SHA}) -> ${BACKUP_FILE}"
 }
@@ -112,7 +121,6 @@ restart_service() {
   return 0
 }
 
-# Soft health checks that return non-zero instead of exiting (for retry / rollback)
 soft_health_checks() {
   local path code
   svc is-active --quiet "$SERVICE_NAME" || return 1
@@ -170,7 +178,7 @@ main() {
   local started
   started="$(date +%s)"
   log "=== MWPP deployment started ==="
-  log "Host=$(hostname) User=$(id -un) AppDir=${APP_DIR} Branch=${GIT_BRANCH}"
+  log "Host=$(hostname) User=$(id -un) AppDir=${APP_DIR} AppUser=${APP_USER} Branch=${GIT_BRANCH}"
 
   require_cmd git
   require_cmd curl

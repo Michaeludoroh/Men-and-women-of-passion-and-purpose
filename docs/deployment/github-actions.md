@@ -1,6 +1,17 @@
 # GitHub Actions CI/CD — Men and Women of Passion and Purpose
 
-Production deployment automation for the ministry website. This pipeline **automates the existing VPS process** without changing Gunicorn, Flask, Nginx, `mwpp.service`, or `/var/www/mwpp`.
+Production deployment automation for the ministry website. This pipeline **automates the existing VPS process** without changing Gunicorn, Flask, Nginx, or `mwpp.service`.
+
+## Actual production configuration
+
+| Item | Value |
+|------|--------|
+| Systemd service | `mwpp.service` |
+| Service user | `ubuntu` |
+| Service group | `www-data` |
+| Working directory | `/home/ubuntu/Men-and-women-of-passion-and-purpose` |
+| Virtualenv | `/home/ubuntu/Men-and-women-of-passion-and-purpose/.venv` |
+| Process | Gunicorn |
 
 ---
 
@@ -24,7 +35,7 @@ SSH into production VPS
 Backup current Git commit SHA
         │
         ▼
-git pull origin main   (as mwpp in /var/www/mwpp)
+git pull origin main   (as ubuntu in /home/ubuntu/Men-and-women-of-passion-and-purpose)
         │
         ▼
 systemctl restart mwpp
@@ -54,7 +65,7 @@ Configure under: **GitHub repo → Settings → Secrets and variables → Action
 | Secret | Required | Description |
 |--------|----------|-------------|
 | `VPS_HOST` | **Yes** | VPS hostname or public IP |
-| `VPS_USERNAME` | **Yes** | SSH login user (must be able to `sudo` for `systemctl` and run git as `mwpp`) |
+| `VPS_USERNAME` | **Yes** | SSH login user (typically `ubuntu`; must be able to `sudo systemctl` for `mwpp`) |
 | `VPS_SSH_KEY` | **Yes** | Private SSH key (full PEM, including `BEGIN` / `END` lines) |
 | `VPS_PORT` | **Yes** | SSH port (usually `22`) |
 | `VPS_SSH_KNOWN_HOSTS` | Recommended | Output of `ssh-keyscan -p PORT HOST` (pins host key) |
@@ -73,16 +84,17 @@ Configure under: **GitHub repo → Settings → Secrets and variables → Action
 ssh-keygen -t ed25519 -C "mwpp-github-deploy" -f mwpp_deploy_ed25519 -N ""
 ```
 
-Copy the **public** key to the VPS authorized_keys for `VPS_USERNAME`:
+Copy the **public** key to the VPS `ubuntu` user authorized_keys:
 
 ```bash
-# Example as root on the VPS
+# On the VPS as ubuntu
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 echo "PASTE_PUBLIC_KEY_HERE" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-Add the **private** key contents as GitHub secret `VPS_SSH_KEY`.
+Add the **private** key contents as GitHub secret `VPS_SSH_KEY`.  
+Set `VPS_USERNAME` to `ubuntu`.
 
 ### 2. Pin host key (recommended)
 
@@ -96,28 +108,26 @@ Paste the output into GitHub secret `VPS_SSH_KNOWN_HOSTS`.
 
 ### 3. Passwordless sudo for service control
 
-The remote script restarts `mwpp` via `systemctl`. If `VPS_USERNAME` is not `root`, allow only the needed commands:
+The remote script restarts `mwpp` via `sudo systemctl`. Allow only the needed commands for `ubuntu`:
 
 ```bash
 sudo visudo -f /etc/sudoers.d/mwpp-deploy
 ```
 
-Example (adjust username):
-
 ```
-deploy ALL=(mwpp) NOPASSWD: /usr/bin/git, /usr/bin/git *
-deploy ALL=(root) NOPASSWD: /bin/systemctl restart mwpp, /bin/systemctl status mwpp, /bin/systemctl is-active mwpp, /bin/journalctl -u mwpp *
+ubuntu ALL=(root) NOPASSWD: /bin/systemctl restart mwpp, /bin/systemctl status mwpp, /bin/systemctl is-active mwpp, /bin/journalctl -u mwpp *
 ```
 
-If you SSH as `root`, no sudoers change is required; the script uses `sudo -u mwpp` for git.
+Git operations run as `ubuntu` (the SSH user / app user), so no `sudo -u` is required for `git pull` when `VPS_USERNAME=ubuntu`.
 
 ### 4. Confirm app path and git remote
 
 ```bash
-cd /var/www/mwpp
-sudo -u mwpp git remote -v
-sudo -u mwpp git status
+cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+git remote -v
+git status
 sudo systemctl status mwpp
+ls .venv
 ```
 
 The VPS clone must track `origin/main` for the same GitHub repository.
@@ -125,7 +135,7 @@ The VPS clone must track `origin/main` for the same GitHub repository.
 ### 5. Ensure GitHub can reach the VPS
 
 - Firewall allows SSH from GitHub Actions IPs **or** keep SSH open with key-only auth + fail2ban
-- Prefer a dedicated deploy user + deploy key with no interactive shell extras
+- Prefer a dedicated deploy key
 
 ### 6. First workflow run
 
@@ -141,10 +151,10 @@ The VPS clone must track `origin/main` for the same GitHub repository.
 | Checkout | Actions checks out the commit being deployed |
 | Validate | `scripts/deploy/validate.sh` — integrity, Python `compileall`, template balance, CSS presence, workflow YAML |
 | SSH | Key-based login; host key verification |
-| Backup | Writes current `git rev-parse HEAD` under `/var/backups/mwpp/` |
-| Pull | `git fetch` + `git pull --ff-only origin main` as `mwpp` |
+| Backup | Writes current `git rev-parse HEAD` under `/home/ubuntu/mwpp-deploy-backups/` |
+| Pull | `git fetch` + `git pull --ff-only origin main` as `ubuntu` in the app directory |
 | Restart | `systemctl restart mwpp` |
-| Health | Service active, Gunicorn process present, HTTP 200 for `/`, `/partnership/`, `/giving/`, `/leadership` |
+| Health | Service active, Gunicorn process for `ubuntu`, HTTP 200 for `/`, `/partnership/`, `/giving/`, `/leadership` |
 | Summary | Job summary in the Actions UI |
 
 Remote logic lives in `scripts/deploy/remote_deploy.sh` (piped over SSH so the **new** script always runs).
@@ -156,7 +166,7 @@ Remote logic lives in `scripts/deploy/remote_deploy.sh` (piped over SSH so the *
 Checks run **on the VPS** against Gunicorn (`HEALTH_BASE_URL`, default `http://127.0.0.1:8000`):
 
 1. `systemctl is-active mwpp`
-2. Gunicorn process for user `mwpp`
+2. Gunicorn process for user `ubuntu`
 3. HTTP 200:
    - `/` (homepage)
    - `/partnership/`
@@ -180,34 +190,35 @@ On failure after code has been updated:
 
 Previous SHA files:
 
-- `/var/backups/mwpp/pre-deploy-<timestamp>.sha`
-- `/var/backups/mwpp/last_good_sha`
+- `/home/ubuntu/mwpp-deploy-backups/pre-deploy-<timestamp>.sha`
+- `/home/ubuntu/mwpp-deploy-backups/last_good_sha`
 
 ### Manual rollback
 
 ```bash
-cd /var/www/mwpp
-PREV=$(cat /var/backups/mwpp/last_good_sha)
-sudo -u mwpp git reset --hard "$PREV"
+cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+PREV=$(cat /home/ubuntu/mwpp-deploy-backups/last_good_sha)
+git reset --hard "$PREV"
 sudo systemctl restart mwpp
 curl -I http://127.0.0.1:8000/
 ```
 
 ---
 
-## How to deploy manually (unchanged)
+## How to deploy manually (unchanged architecture)
 
 ```bash
-cd /var/www/mwpp
-sudo -u mwpp git pull
+cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+git pull
 sudo systemctl restart mwpp
 ```
 
 Optional (deps / migrations — not part of the automated minimal path):
 
 ```bash
-sudo -u mwpp .venv/bin/pip install -r requirements.txt
-sudo -u mwpp bash -c 'set -a && source .env && set +a && .venv/bin/flask db upgrade'
+cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+.venv/bin/pip install -r requirements.txt
+set -a && source .env && set +a && .venv/bin/flask db upgrade
 sudo systemctl restart mwpp
 ```
 
@@ -235,9 +246,9 @@ Push only to a feature branch (workflow does not deploy non-`main` branches).
 2. If rollback completed, the site should already be on the previous commit — verify pages in a browser.
 3. If rollback failed:
    ```bash
-   cd /var/www/mwpp
-   sudo -u mwpp git status
-   sudo -u mwpp git reset --hard "$(cat /var/backups/mwpp/last_good_sha)"
+   cd /home/ubuntu/Men-and-women-of-passion-and-purpose
+   git status
+   git reset --hard "$(cat /home/ubuntu/mwpp-deploy-backups/last_good_sha)"
    sudo systemctl restart mwpp
    sudo journalctl -u mwpp -n 100 --no-pager
    ```
@@ -253,7 +264,7 @@ Push only to a feature branch (workflow does not deploy non-`main` branches).
 - Deploy lock (`flock`) prevents overlapping deploys on the VPS
 - Logs avoid printing secret values
 - Concurrency group `production-deploy` prevents overlapping Actions deploys
-- Least privilege: dedicated deploy key; sudo limited to service/git as needed
+- Least privilege: dedicated deploy key; sudo limited to `mwpp` service control
 
 ---
 
@@ -270,14 +281,15 @@ Push only to a feature branch (workflow does not deploy non-`main` branches).
 
 ## Production readiness checklist
 
-- [ ] GitHub Secrets configured (`VPS_HOST`, `VPS_USERNAME`, `VPS_SSH_KEY`, `VPS_PORT`)
+- [ ] GitHub Secrets configured (`VPS_HOST`, `VPS_USERNAME=ubuntu`, `VPS_SSH_KEY`, `VPS_PORT`)
 - [ ] `VPS_SSH_KNOWN_HOSTS` pinned (recommended)
-- [ ] SSH key auth works from a test machine
-- [ ] Passwordless sudo (or root SSH) can restart `mwpp`
-- [ ] `/var/www/mwpp` is a clean git clone of this repo on `main`
+- [ ] SSH key auth works as `ubuntu`
+- [ ] Passwordless sudo can restart `mwpp`
+- [ ] `/home/ubuntu/Men-and-women-of-passion-and-purpose` is a clean git clone on `main`
+- [ ] `.venv` exists at that path
 - [ ] First Actions run succeeds (validation + deploy + health)
 - [ ] Intentional bad deploy test confirms rollback (optional but recommended)
 
 ---
 
-*Related: `VPS_DEPLOYMENT.md`, `DEPLOYMENT.md`, `BACKUP_AND_RECOVERY.md`*
+*Related: `VPS_DEPLOYMENT.md` (generic Ubuntu runbook — paths there may differ from this live server), `DEPLOYMENT.md`, `BACKUP_AND_RECOVERY.md`*
