@@ -107,7 +107,7 @@
     if (posterFields) posterFields.classList.toggle('hidden', source === 'image');
     if (mediaInput) {
       mediaInput.accept = source === 'video'
-        ? 'video/mp4,video/x-m4v,video/quicktime,.mp4'
+        ? 'video/mp4,video/x-m4v,.mp4'
         : 'image/png,image/jpeg,image/jpg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp';
     }
     if (mediaHelp) {
@@ -128,17 +128,16 @@
       if (!file || (sourceSelect && sourceSelect.value !== 'video')) return;
       const name = String(file.name || '').trim();
       const type = String(file.type || '').toLowerCase().split(';')[0].trim();
+      // Soft gate only — never require exact MIME === video/mp4.
+      // Server performs authoritative ISO BMFF (ftyp) validation.
       const rejectedExt = /\.(avi|mov|mkv|wmv|flv|3gp|3g2|webm|mpg|mpeg|m4a)$/i.test(name);
       const rejectedMime = [
         'video/x-msvideo', 'video/avi', 'video/webm', 'video/x-matroska',
-        'video/x-flv', 'video/3gpp', 'video/3gpp2', 'video/x-ms-wmv'
+        'video/x-flv', 'video/3gpp', 'video/3gpp2', 'video/x-ms-wmv',
+        'audio/mp4', 'audio/x-m4a'
       ].indexOf(type) !== -1;
-      const likelyMp4 = /\.mp4$/i.test(name) || [
-        'video/mp4', 'video/x-m4v', 'application/mp4', 'application/octet-stream',
-        'video/quicktime'
-      ].indexOf(type) !== -1;
-      if (rejectedExt || rejectedMime || !likelyMp4) {
-        alert('Unsupported format. Upload an MP4 video only.');
+      if (rejectedExt || rejectedMime) {
+        alert('Unsupported video format. Upload an MP4 video only.');
         mediaInput.value = '';
         return;
       }

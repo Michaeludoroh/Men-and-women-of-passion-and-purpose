@@ -268,32 +268,21 @@ def format_duration(seconds: float | None) -> str:
 # Gallery MP4 upload validation (independent of Sermons)
 # ---------------------------------------------------------------------------
 
-# Browser MIME types commonly reported for genuine MP4 / ISO BMFF files.
-GALLERY_MP4_MIME_ALLOW = frozenset({
-    "video/mp4",
-    "video/x-m4v",
-    "application/mp4",
-    "application/octet-stream",
-    # Safari / iOS frequently labels MP4 uploads as QuickTime even when the
-    # container is ISO BMFF with an .mp4 filename.
-    "video/quicktime",
-})
-
+# Hard-reject extensions (never accept, even if MIME looks video-like).
 GALLERY_REJECT_VIDEO_EXTENSIONS = frozenset({
     "avi", "mov", "mkv", "wmv", "flv", "3gp", "3g2", "webm", "mpg", "mpeg", "m4a",
 })
 
-GALLERY_REJECT_VIDEO_MIMES = frozenset({
-    "video/x-msvideo",
-    "video/avi",
-    "video/x-matroska",
-    "video/webm",
-    "video/x-flv",
-    "video/3gpp",
-    "video/3gpp2",
-    "video/x-ms-wmv",
-    "audio/mp4",
-    "audio/x-m4a",
+# Logged only — never used as a hard accept/reject gate.
+GALLERY_MP4_MIME_HINTS = frozenset({
+    "video/mp4",
+    "video/x-m4v",
+    "video/x-mp4",
+    "video/mpeg4",
+    "application/mp4",
+    "application/octet-stream",
+    "binary/octet-stream",
+    "video/quicktime",
 })
 
 
@@ -307,6 +296,8 @@ def _normalize_mime(mimetype: str | None) -> str:
 
 def _filename_extension(filename: str | None) -> str:
     name = (filename or "").strip()
+    # Some browsers send full paths or Content-Disposition artifacts
+    name = name.replace("\\", "/").split("/")[-1]
     if not name or "." not in name:
         return ""
     return name.rsplit(".", 1)[-1].lower().strip()
@@ -316,19 +307,27 @@ def sniff_is_mp4_container(data: bytes) -> bool:
     """Return True when bytes look like ISO BMFF / MP4 (ftyp box present)."""
     if not data or len(data) < 12:
         return False
-    head = data[:256]
+    # Scan a generous prefix — some cameras put free/wide atoms before ftyp.
+    head = data[:8192]
     if head[4:8] == b"ftyp":
         return True
-    # Some writers place ftyp a few bytes in; keep the scan tight.
-    return b"ftyp" in head
+    # ftyp must be at a box boundary (size field immediately before the type).
+    idx = 0
+    while True:
+        idx = head.find(b"ftyp", idx)
+        if idx < 0:
+            return False
+        if idx >= 4:
+            return True
+        idx += 1
 
 
-def read_upload_prefix(file_storage, nbytes: int = 65536) -> bytes:
-    """Read a prefix for sniffing/duration without relying on browser MIME."""
+def read_upload_bytes(file_storage, limit: int | None = None) -> bytes:
+    """Read upload bytes and always rewind the stream afterward."""
     stream = getattr(file_storage, "stream", None) or file_storage
     try:
         stream.seek(0)
-        data = stream.read(nbytes)
+        data = stream.read(limit) if limit is not None else stream.read()
         stream.seek(0)
         return data or b""
     except Exception:
@@ -354,16 +353,16 @@ def validate_gallery_mp4_file(
     max_bytes: int,
 ) -> tuple[dict | None, str | None]:
     """
-    Validate a Gallery MP4 upload.
+    Validate a Gallery MP4 upload (content-first).
 
-    Strategy (permanent fix):
-    1. Extension-first for hard rejects (AVI/MOV/MKV/…)
-    2. Treat browser MIME as advisory — accept common MP4 family MIME values
-       including Safari's video/quicktime when the file is otherwise valid
+    Permanent strategy:
+    1. Hard-reject only known non-MP4 extensions (AVI/MOV/MKV/…)
+    2. Treat browser MIME as advisory (log only) — never reject solely on MIME
     3. Confirm ISO BMFF via ftyp sniff
     4. Enforce size + duration limits
 
-    Returns (meta_dict, None) on success or (None, error_message) on failure.
+    This mirrors Sermons' permissive MIME handling while adding container proof,
+    without sharing code with the Sermons module.
     """
     if not file_storage or not getattr(file_storage, "filename", None):
         return None, "Please choose a file to upload."
@@ -382,17 +381,7 @@ def validate_gallery_mp4_file(
         file_size = None
 
     if ext in GALLERY_REJECT_VIDEO_EXTENSIONS:
-        return None, f"Unsupported format (.{ext}). Upload an MP4 video only."
-
-    if mime in GALLERY_REJECT_VIDEO_MIMES and ext != "mp4":
-        return None, "Unsupported format. Upload an MP4 video only."
-
-    # Prefer .mp4 extension; allow missing/odd extension only when MIME is MP4-family
-    # and container sniff confirms MP4 (handles mobile pickers that drop extensions).
-    extension_ok = ext == "mp4"
-    mime_ok = mime in GALLERY_MP4_MIME_ALLOW
-    if not extension_ok and not mime_ok:
-        return None, "Unsupported format. Upload an MP4 video only."
+        return None, f"Unsupported video format (.{ext}). Upload an MP4 video only."
 
     if file_size is not None and file_size > max_bytes:
         mb = max_bytes / (1024 * 1024)
@@ -400,29 +389,29 @@ def validate_gallery_mp4_file(
         return None, f"Video exceeds maximum size ({mb_label} MB)."
 
     if file_size == 0:
-        return None, "Unable to process media. The uploaded file is empty."
+        return None, "Unable to process video. The uploaded file is empty."
 
-    # Read enough bytes for sniff + duration (full read only when needed for mvhd)
-    prefix = read_upload_prefix(file_storage, 256 * 1024)
-    if not sniff_is_mp4_container(prefix):
-        # Fall back to full-file sniff for unusual layouts; still rewind afterward.
-        full = read_upload_prefix(file_storage, max_bytes if file_size is None else min(file_size, max_bytes) + 1)
-        if not sniff_is_mp4_container(full):
-            rewind_upload(file_storage)
+    # Content inspection — authoritative. MIME/extension are hints only.
+    # Read full file for sniff + duration (moov atom is often at the end).
+    read_limit = None
+    if file_size is not None:
+        read_limit = min(file_size, max_bytes) + 1
+    elif max_bytes:
+        read_limit = max_bytes + 1
+
+    data = read_upload_bytes(file_storage, read_limit)
+    rewind_upload(file_storage)
+
+    if not data:
+        return None, "Unable to process video."
+
+    if not sniff_is_mp4_container(data):
+        # Distinguish "clearly not a video we accept" vs corrupt MP4-named file
+        if ext == "mp4" or mime in GALLERY_MP4_MIME_HINTS or mime.startswith("video/"):
             return None, "Corrupted video or not a valid MP4 container."
-        data_for_duration = full
-    else:
-        # Need full bytes for reliable mvhd walk when moov is at end (common).
-        try:
-            stream = getattr(file_storage, "stream", None) or file_storage
-            stream.seek(0)
-            data_for_duration = stream.read()
-            stream.seek(0)
-        except Exception:
-            rewind_upload(file_storage)
-            return None, "Unable to process media."
+        return None, "Unsupported video format. Upload an MP4 video only."
 
-    duration = _parse_mp4_duration(data_for_duration)
+    duration = _parse_mp4_duration(data)
     rewind_upload(file_storage)
 
     if duration is not None and duration > max_seconds:
@@ -435,7 +424,8 @@ def validate_gallery_mp4_file(
         "filename": original_name,
         "extension": ext or "mp4",
         "mime_type": mime or "video/mp4",
-        "file_size": file_size,
+        "file_size": file_size if file_size is not None else len(data),
         "duration_seconds": duration,
         "sniff_ok": True,
+        "mime_hint_ok": mime in GALLERY_MP4_MIME_HINTS or mime == "",
     }, None

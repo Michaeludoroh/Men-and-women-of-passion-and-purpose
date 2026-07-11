@@ -165,8 +165,10 @@
     return (n / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
-  // Extension-first MP4 detection. Do NOT require exact MIME === 'video/mp4'
-  // (Safari/iOS often reports video/quicktime; some browsers omit type).
+  // Soft client gate only. Browser MIME is advisory — never require
+  // file.type === 'video/mp4'. Server performs authoritative ftyp sniff.
+  // Matches Sermons' permissive pattern: empty MIME + unknown type still
+  // proceed when the file is not a clearly non-MP4 container by extension.
   function normalizeMime(type) {
     return String(type || '').toLowerCase().split(';')[0].trim();
   }
@@ -174,20 +176,12 @@
     const name = String(file.name || '').trim();
     if (/\.(avi|mov|mkv|wmv|flv|3gp|3g2|webm|mpg|mpeg|m4a)$/i.test(name)) return true;
     const type = normalizeMime(file.type);
+    // Only hard-reject when MIME is present AND clearly a non-MP4 video family.
+    // Do NOT reject video/quicktime — Safari/iOS often uses it for real MP4s.
     return [
       'video/x-msvideo', 'video/avi', 'video/webm', 'video/x-matroska',
       'video/x-flv', 'video/3gpp', 'video/3gpp2', 'video/x-ms-wmv',
       'audio/mp4', 'audio/x-m4a'
-    ].indexOf(type) !== -1;
-  }
-  function isLikelyMp4(file) {
-    const name = String(file.name || '').trim();
-    if (/\.mp4$/i.test(name)) return true;
-    const type = normalizeMime(file.type);
-    if (!type) return false;
-    return [
-      'video/mp4', 'video/x-m4v', 'application/mp4', 'application/octet-stream',
-      'video/quicktime'
     ].indexOf(type) !== -1;
   }
 
@@ -203,8 +197,9 @@
         if (mediaHelp) mediaHelp.textContent = 'Images: PNG, JPG, GIF, WEBP';
         if (mediaLabel) mediaLabel.textContent = 'Image File';
       } else if (source === 'video') {
-        // Include .mp4 extension + common Safari MIME values for mobile pickers
-        mediaInput.accept = 'video/mp4,video/x-m4v,video/quicktime,.mp4';
+        // Prefer MP4; include .mp4 for pickers that filter by extension.
+        // video/quicktime is advisory for Safari — server still sniffs ftyp.
+        mediaInput.accept = 'video/mp4,video/x-m4v,.mp4';
         if (mediaHelp) mediaHelp.textContent = 'MP4 only · Max ' + maxVideoSeconds + 's · Max {{ gallery_max_video_mb }} MB';
         if (mediaLabel) mediaLabel.textContent = 'MP4 Video File';
       }
@@ -243,8 +238,9 @@
           return;
         }
       } else if (source === 'video') {
-        if (isClearlyRejectedVideo(file) || !isLikelyMp4(file)) {
-          alert('Unsupported format. Upload an MP4 video only.');
+        // Soft gate only — same spirit as Sermons (no exact MIME match required).
+        if (isClearlyRejectedVideo(file)) {
+          alert('Unsupported video format. Upload an MP4 video only.');
           mediaInput.value = '';
           return;
         }

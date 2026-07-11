@@ -1,0 +1,2 @@
+# Dev / CI test dependencies (not required in production runtime).
+pytest==8.3.5

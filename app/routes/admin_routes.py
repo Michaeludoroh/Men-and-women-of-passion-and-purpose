@@ -976,9 +976,11 @@ def _apply_uploaded_gallery_file(form, source):
         )
         if err:
             current_app.logger.info(
-                "Gallery MP4 upload rejected name=%s mime=%s reason=%s",
+                "Gallery MP4 upload rejected name=%s ext=%s mime=%s size=%s reason=%s",
                 original_name[:120],
+                (original_name.rsplit(".", 1)[-1].lower() if "." in original_name else ""),
                 detected_mime[:80],
+                getattr(media_file, "content_length", None),
                 err,
             )
             return None, err
@@ -986,8 +988,9 @@ def _apply_uploaded_gallery_file(form, source):
         path, media_type = save_gallery_video_only(media_file)
         if not path:
             current_app.logger.info(
-                "Gallery MP4 save failed name=%s mime=%s size=%s duration=%s",
+                "Gallery MP4 save failed name=%s ext=%s mime=%s size=%s duration=%s",
                 original_name[:120],
+                (meta or {}).get("extension"),
                 detected_mime[:80],
                 (meta or {}).get("file_size"),
                 (meta or {}).get("duration_seconds"),
@@ -995,11 +998,13 @@ def _apply_uploaded_gallery_file(form, source):
             return None, "Upload failed. Unable to save the MP4 file."
 
         current_app.logger.info(
-            "Gallery MP4 upload ok name=%s mime=%s size=%s duration=%s path=%s",
+            "Gallery MP4 upload ok name=%s ext=%s mime=%s size=%s duration=%s sniff=%s path=%s",
             original_name[:120],
+            (meta or {}).get("extension"),
             (meta or {}).get("mime_type") or detected_mime[:80],
             (meta or {}).get("file_size"),
             (meta or {}).get("duration_seconds"),
+            (meta or {}).get("sniff_ok"),
             path,
         )
         return {

@@ -56,20 +56,15 @@ def save_gallery_image_only(file):
 
 def save_gallery_video_only(file):
     """
-    Save gallery MP4 only. Returns (path, 'video') or (None, None).
+    Save a Gallery video that the caller already validated as MP4/ISO BMFF.
 
-    Extension checks use the original upload filename. The stored name is forced
-    to end with .mp4 because secure_filename() can strip Unicode basenames and
-    leave a bare 'mp4' token without a dot.
+    Always persists with a ``.mp4`` suffix. Original extension / browser MIME
+    are ignored for the stored filename so mobile pickers without an extension
+    (or with quirky secure_filename output) still save correctly.
     """
     if not file or not getattr(file, "filename", None):
         return None, None
     original = (file.filename or "").strip()
-    ext = _extension(original)
-    # Allow missing extension when caller already validated MP4 content.
-    if ext and ext not in GALLERY_VIDEO_EXTENSIONS:
-        return None, None
-
     filename = secure_filename(original) or "video"
     if not filename.lower().endswith(".mp4"):
         # secure_filename('视频.mp4') -> 'mp4'  |  secure_filename('clip') -> 'clip'
