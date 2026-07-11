@@ -62,7 +62,6 @@ class ContactForm(FlaskForm):
 class SermonForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=200)])
     description = TextAreaField("Description", validators=[DataRequired(), Length(min=10)])
-    video_url = StringField("Video URL")
     category = SelectField(
         "Category",
         choices=[
@@ -70,9 +69,34 @@ class SermonForm(FlaskForm):
             ("Prayer", "Prayer"),
             ("Leadership", "Leadership"),
             ("Purpose", "Purpose"),
+            ("Teaching", "Teaching"),
+            ("Worship", "Worship"),
+            ("Conference", "Conference"),
+            ("Bible Study", "Bible Study"),
             ("General", "General"),
         ],
         validators=[DataRequired()],
+    )
+    media_source = SelectField(
+        "Media Type",
+        choices=[
+            ("image", "Image"),
+            ("video", "MP4 Video Upload"),
+            ("external", "External Video Link"),
+        ],
+        default="image",
+        validators=[DataRequired()],
+    )
+    media = FileField("Media File (Image or MP4)")
+    poster = FileField("Poster / Thumbnail (optional)")
+    external_url = StringField(
+        "External Video URL",
+        validators=[Optional(), Length(max=500)],
+        render_kw={"placeholder": "https://www.youtube.com/watch?v=..."},
+    )
+    video_url = StringField(
+        "Legacy Preview URL (optional)",
+        validators=[Optional(), Length(max=500)],
     )
     submit = SubmitField("Save Sermon")
 
@@ -213,6 +237,7 @@ class LeaderForm(FlaskForm):
 class GalleryImageForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=200)])
     description = TextAreaField("Description", validators=[Optional()])
+    event_name = StringField("Event Name", validators=[Optional(), Length(max=200)])
     category = SelectField(
         "Category",
         choices=[
@@ -224,8 +249,23 @@ class GalleryImageForm(FlaskForm):
         ],
         validators=[DataRequired()],
     )
-    media = FileField("Media File (Image or Video)")
-    poster = FileField("Video Poster / Thumbnail (optional)")
+    media_source = SelectField(
+        "Media Type",
+        choices=[
+            ("image", "Image Upload"),
+            ("video", "MP4 Video Upload"),
+            ("external", "External Video Link"),
+        ],
+        default="image",
+        validators=[DataRequired()],
+    )
+    media = FileField("Media File (Image or MP4)")
+    poster = FileField("Poster / Thumbnail (optional)")
+    external_url = StringField(
+        "External Video URL",
+        validators=[Optional(), Length(max=500)],
+        render_kw={"placeholder": "https://www.youtube.com/watch?v=..."},
+    )
     display_order = StringField("Display Order", default="0")
     is_featured = SelectField(
         "Featured",

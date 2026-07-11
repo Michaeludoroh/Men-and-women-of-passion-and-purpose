@@ -53,42 +53,77 @@
     {% if images %}
     <div class="gallery-masonry" id="gallery-masonry">
         {% for image in images %}
+        {% set is_external = image.is_external %}
+        {% set is_uploaded_video = image.is_uploaded_video %}
         {% set is_video = image.is_video %}
-        <article class="gallery-masonry-item gallery-card rounded-2xl overflow-hidden gallery-lightbox-trigger"
-                 tabindex="0"
-                 role="button"
+        {% set poster = image.poster_url %}
+        <article class="gallery-masonry-item gallery-card rounded-2xl overflow-hidden {% if not is_external %}gallery-lightbox-trigger{% endif %}"
+                 {% if not is_external %}tabindex="0" role="button"{% endif %}
                  data-index="{{ loop.index0 }}"
-                 data-media-type="{{ 'video' if is_video else 'image' }}"
-                 data-src="{{ url_for('static', filename=image.image_path) }}"
-                 {% if is_video and image.poster_path %}data-poster="{{ url_for('static', filename=image.poster_path) }}"{% endif %}
+                 data-media-type="{{ image.media_type or 'image' }}"
+                 {% if is_uploaded_video %}data-src="{{ url_for('static', filename=image.image_path) }}"{% elif not is_external %}data-src="{{ url_for('static', filename=image.image_path) }}"{% endif %}
+                 {% if is_external and image.external_url %}data-watch-url="{{ image.external_url }}"{% endif %}
+                 {% if poster %}data-poster="{{ poster }}"{% endif %}
+                 {% if image.provider %}data-provider="{{ image.provider }}"{% endif %}
+                 {% if image.embed_url %}data-embed-url="{{ image.embed_url }}"{% endif %}
                  data-title="{{ image.title|e }}"
                  data-description="{{ (image.description or '')|e }}"
-                 data-category="{{ category_labels.get(image.category, image.category)|e }}">
-            <button type="button" class="gallery-image-btn" aria-label="Open {{ image.title }}{% if is_video %} video{% endif %} in lightbox">
-                {% if is_video %}
+                 data-category="{{ category_labels.get(image.category, image.category)|e }}"
+                 {% if image.event_name %}data-event="{{ image.event_name|e }}"{% endif %}>
+            {% if is_external %}
+            <a href="{{ image.external_url }}"
+               class="gallery-image-btn gallery-external-link"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Watch {{ image.title }} on {{ image.provider_label }}">
+                <div class="gallery-video-thumb gallery-external-thumb"
+                     data-provider="{{ image.provider or '' }}"
+                     {% if image.embed_url and image.provider == 'youtube' %}data-preview-embed="{{ image.embed_url }}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&loop=1&playlist={{ image.provider_video_id }}"{% endif %}>
+                    {% if poster %}
+                    <img src="{{ poster }}" alt="{{ image.title }}" loading="lazy" referrerpolicy="no-referrer" class="gallery-thumb-img">
+                    {% else %}
+                    <div class="gallery-thumb-fallback" aria-hidden="true">{{ image.provider_label or 'Video' }}</div>
+                    {% endif %}
+                    <span class="gallery-platform-badge" aria-hidden="true">{{ image.provider_label or 'Video' }}</span>
+                    <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
+                    <button type="button" class="gallery-mute-btn" aria-label="Mute preview" hidden data-muted="true">
+                        <i class="fas fa-volume-mute" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </a>
+            {% else %}
+            <button type="button" class="gallery-image-btn" aria-label="Open {{ image.title }}{% if is_uploaded_video %} video{% endif %} in lightbox">
+                {% if is_uploaded_video %}
                 <div class="gallery-video-thumb">
                     {% if image.poster_path %}
-                    <img src="{{ url_for('static', filename=image.poster_path) }}" alt="{{ image.title }}" loading="lazy">
-                    {% else %}
-                    <video muted playsinline preload="metadata" aria-hidden="true">
-                        <source src="{{ url_for('static', filename=image.image_path) }}#t=0.5" type="video/{{ image.image_path.rsplit('.', 1)[-1]|lower }}">
-                    </video>
+                    <img src="{{ url_for('static', filename=image.poster_path) }}" alt="{{ image.title }}" loading="lazy" class="gallery-thumb-img">
                     {% endif %}
+                    <video class="gallery-preview-video" muted playsinline preload="metadata" loop aria-hidden="true"
+                           {% if image.poster_path %}poster="{{ url_for('static', filename=image.poster_path) }}"{% endif %}
+                           data-src="{{ url_for('static', filename=image.image_path) }}">
+                        <source src="{{ url_for('static', filename=image.image_path) }}#t=0.5" type="video/mp4">
+                    </video>
                     <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
                 </div>
                 {% else %}
                 <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}" loading="lazy">
                 {% endif %}
             </button>
+            {% endif %}
             <div class="p-4">
                 <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">{{ category_labels.get(image.category, image.category) }}</span>
-                {% if is_video %}
+                {% if is_external %}
+                <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(90,24,154,0.15); color: var(--purple-primary);">{{ image.provider_label }}</span>
+                {% elif is_uploaded_video %}
                 <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(90,24,154,0.15); color: var(--purple-primary);">Video</span>
                 {% endif %}
                 {% if image.is_featured %}
                 <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Featured</span>
                 {% endif %}
                 <h3 class="text-lg font-bold mt-2 text-gray-900">{{ image.title }}</h3>
+                {% if image.event_name %}
+                <p class="text-xs font-semibold mt-1" style="color: var(--purple-primary);">{{ image.event_name }}</p>
+                {% endif %}
                 {% if image.description %}
                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ image.description }}</p>
                 {% endif %}
@@ -139,7 +174,24 @@
     <button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next item">&#10095;</button>
     <div class="gallery-lightbox-content">
         <img id="gallery-lightbox-image" src="" alt="" hidden>
-        <video id="gallery-lightbox-video" controls playsinline preload="metadata" hidden></video>
+        <div class="gallery-lightbox-video-wrap" hidden>
+            <video id="gallery-lightbox-video" controls playsinline preload="metadata" controlslist="nodownload"></video>
+            <div class="gallery-lightbox-extras" role="group" aria-label="Playback options">
+                <label class="gallery-speed-label">
+                    <span class="sr-only">Playback speed</span>
+                    Speed
+                    <select id="gallery-playback-rate" aria-label="Playback speed">
+                        <option value="0.5">0.5×</option>
+                        <option value="0.75">0.75×</option>
+                        <option value="1" selected>1×</option>
+                        <option value="1.25">1.25×</option>
+                        <option value="1.5">1.5×</option>
+                        <option value="2">2×</option>
+                    </select>
+                </label>
+                <button type="button" id="gallery-pip-btn" class="gallery-pip-btn" aria-label="Picture in picture">PiP</button>
+            </div>
+        </div>
         <div class="gallery-lightbox-caption">
             <h3 id="gallery-lightbox-title"></h3>
             <p id="gallery-lightbox-meta"></p>

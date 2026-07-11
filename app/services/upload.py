@@ -4,9 +4,19 @@ from werkzeug.utils import secure_filename
 from flask import current_app
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm"}
+ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm"}  # leaders may use webm; gallery/sermon MP4-only via dedicated helpers
+GALLERY_VIDEO_EXTENSIONS = {"mp4"}
+SERMON_VIDEO_EXTENSIONS = {"mp4"}
 ALLOWED_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
-UPLOAD_SUBFOLDERS = ("gallery", "leaders", "events", "leader_videos", "gallery_posters")
+UPLOAD_SUBFOLDERS = (
+    "gallery",
+    "gallery_posters",
+    "sermons",
+    "sermon_posters",
+    "leaders",
+    "events",
+    "leader_videos",
+)
 
 
 def detect_media_type(filename):
@@ -19,14 +29,39 @@ def detect_media_type(filename):
     return None
 
 
-def save_gallery_media(file):
-    """Save a gallery image or video; returns (path, media_type) or (None, None)."""
+def save_gallery_media(file, allow_video=True):
+    """
+    Save a gallery image or MP4 video.
+    Gallery uploaded videos are MP4-only (WebM rejected for gallery).
+    Returns (path, media_type) or (None, None).
+    """
     media_type = detect_media_type(getattr(file, "filename", None) if file else None)
     if not media_type:
         return None, None
-    allowed = ALLOWED_IMAGE_EXTENSIONS if media_type == "image" else ALLOWED_VIDEO_EXTENSIONS
+    if media_type == "video":
+        if not allow_video:
+            return None, None
+        if _extension(file.filename) not in GALLERY_VIDEO_EXTENSIONS:
+            return None, None
+        allowed = GALLERY_VIDEO_EXTENSIONS
+    else:
+        allowed = ALLOWED_IMAGE_EXTENSIONS
     path = save_upload(file, "gallery", allowed)
     return path, media_type
+
+
+def save_gallery_image_only(file):
+    return save_gallery_media(file, allow_video=False)
+
+
+def save_gallery_video_only(file):
+    """Save MP4 only; returns (path, 'video') or (None, None)."""
+    if not file or not getattr(file, "filename", None):
+        return None, None
+    if _extension(file.filename) not in GALLERY_VIDEO_EXTENSIONS:
+        return None, None
+    path = save_upload(file, "gallery", GALLERY_VIDEO_EXTENSIONS)
+    return (path, "video") if path else (None, None)
 
 
 def save_gallery_poster(file):
@@ -36,6 +71,34 @@ def save_gallery_poster(file):
     if not allowed_image(file.filename):
         return None
     return save_upload(file, "gallery_posters", ALLOWED_IMAGE_EXTENSIONS)
+
+
+def save_sermon_image(file):
+    """Save a sermon cover/image. Returns path or None."""
+    if not file or not getattr(file, "filename", None):
+        return None
+    if not allowed_image(file.filename):
+        return None
+    return save_upload(file, "sermons", ALLOWED_IMAGE_EXTENSIONS)
+
+
+def save_sermon_video(file):
+    """Save sermon MP4 only. Returns (path, 'video') or (None, None)."""
+    if not file or not getattr(file, "filename", None):
+        return None, None
+    if _extension(file.filename) not in SERMON_VIDEO_EXTENSIONS:
+        return None, None
+    path = save_upload(file, "sermons", SERMON_VIDEO_EXTENSIONS)
+    return (path, "video") if path else (None, None)
+
+
+def save_sermon_poster(file):
+    """Optional poster/thumbnail for sermon videos."""
+    if not file or not getattr(file, "filename", None):
+        return None
+    if not allowed_image(file.filename):
+        return None
+    return save_upload(file, "sermon_posters", ALLOWED_IMAGE_EXTENSIONS)
 
 
 def _extension(filename):

@@ -100,15 +100,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     /**
      * SermonPreviewVideo
-     * - muted autoplay loop when in view
-     * - no native controls / no player UI
-     * - click/keyboard handled by wrapping <a> → social watch URL
-     * - poster fallback if autoplay blocked or media fails
+     * - Only ONE muted autoplay preview at a time
+     * - Pause when leaving viewport (IntersectionObserver)
+     * - prefers-reduced-motion → poster only
+     * - Homepage cards link to /sermons#sermon-id
+     * - External cards open the platform; uploaded MP4 uses sermon-player.js
      */
     const sermonPreviews = document.querySelectorAll('[data-sermon-preview]');
     const prefersReducedMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)'
     ).matches;
+    let activeSermonPreview = null;
 
     const showPreviewFallback = (preview) => {
         const video = preview.querySelector('.sermon-preview-video');
@@ -166,21 +168,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    const tryPlayPreview = (preview) => {
-        if (preview.dataset.previewInit === '1') return;
-        preview.dataset.previewInit = '1';
-
+    const pausePreview = (preview) => {
+        if (!preview) return;
         const video = preview.querySelector('.sermon-preview-video');
-        if (!video) return;
+        const iframe = preview.querySelector('iframe.sermon-preview-iframe');
+        if (video) {
+            try {
+                video.pause();
+            } catch (e) {}
+        }
+        if (iframe) iframe.remove();
+        preview.classList.remove('is-playing');
+        if (activeSermonPreview === preview) activeSermonPreview = null;
+    };
 
-        preparePreviewVideo(video);
-
-        // Accessibility / reduced motion: keep poster + play overlay only
+    const tryPlayPreview = (preview) => {
         if (prefersReducedMotion) {
             showPreviewFallback(preview);
             return;
         }
 
+        // Enforce single autoplay across the page
+        if (activeSermonPreview && activeSermonPreview !== preview) {
+            pausePreview(activeSermonPreview);
+        }
+
+        const embed = preview.dataset.previewEmbed;
+        if (embed && preview.dataset.mediaType === 'external') {
+            const media = preview.querySelector('.sermon-preview-media');
+            if (media && !media.querySelector('iframe.sermon-preview-iframe')) {
+                const iframe = document.createElement('iframe');
+                iframe.className = 'sermon-preview-iframe';
+                iframe.setAttribute('title', 'Muted sermon preview');
+                iframe.setAttribute('allow', 'autoplay; encrypted-media');
+                iframe.setAttribute('loading', 'lazy');
+                iframe.src = embed;
+                media.appendChild(iframe);
+            }
+            activeSermonPreview = preview;
+            preview.classList.add('is-playing');
+            return;
+        }
+
+        const video = preview.querySelector('.sermon-preview-video');
+        if (!video) return;
+
+        preparePreviewVideo(video);
         loadPreviewSource(video)
             .then(() => {
                 preparePreviewVideo(video);
@@ -189,9 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     return playPromise.then(() => {
                         preview.classList.add('is-playing');
                         preview.classList.remove('is-fallback');
+                        activeSermonPreview = preview;
                     });
                 }
                 preview.classList.add('is-playing');
+                activeSermonPreview = preview;
             })
             .catch(() => showPreviewFallback(preview));
 
@@ -206,38 +241,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         tryPlayPreview(entry.target);
-                        previewObserver.unobserve(entry.target);
+                    } else {
+                        pausePreview(entry.target);
                     }
                 });
             },
-            { rootMargin: '120px 0px', threshold: 0.1 }
+            { rootMargin: '40px 0px', threshold: 0.45 }
         );
         sermonPreviews.forEach((preview) => previewObserver.observe(preview));
-    } else {
-        sermonPreviews.forEach(tryPlayPreview);
+    } else if (sermonPreviews.length) {
+        tryPlayPreview(sermonPreviews[0]);
     }
 
-    // Enter works natively on <a>; Space should also activate the social redirect
     sermonPreviews.forEach((preview) => {
         preview.addEventListener('keydown', (event) => {
             if (event.key === ' ' || event.key === 'Spacebar') {
-                event.preventDefault();
-                preview.click();
+                if (preview.tagName === 'A' || preview.tagName === 'BUTTON') {
+                    event.preventDefault();
+                    preview.click();
+                }
             }
         });
     });
 
-    // Keep looping previews alive if the browser pauses them in background tabs
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) return;
-        sermonPreviews.forEach((preview) => {
-            const video = preview.querySelector('.sermon-preview-video');
-            if (!video || preview.classList.contains('is-fallback')) return;
-            if (video.paused && video.getAttribute('src')) {
-                preparePreviewVideo(video);
-                video.play().catch(() => {});
-            }
-        });
+        if (document.hidden && activeSermonPreview) {
+            pausePreview(activeSermonPreview);
+        }
     });
 
     /**

@@ -11,8 +11,10 @@ from ..constants import GIVING_CATEGORIES
 from ..services.upload import (
     save_upload,
     save_video_upload,
-    save_gallery_media,
     save_gallery_poster,
+    save_sermon_image,
+    save_sermon_video,
+    save_sermon_poster,
     delete_upload,
     allowed_image,
     allowed_video,
@@ -355,24 +357,51 @@ def send_reminders_now():
 @admin_required
 def manage_sermons():
     form = SermonForm()
+    form.submit.label.text = "Save Sermon"
+    max_seconds = current_app.config.get("SERMON_MAX_VIDEO_SECONDS", 300)
+    max_bytes = current_app.config.get("SERMON_MAX_VIDEO_BYTES", 100 * 1024 * 1024)
+
     if form.validate_on_submit():
+        payload, err = _apply_sermon_media(form, require_media=True)
+        if err:
+            flash(err, "danger")
+            return redirect(url_for("admin.manage_sermons"))
+
+        poster_path = None
+        if form.media_source.data in ("video", "external") and form.poster.data and form.poster.data.filename:
+            poster_path = save_sermon_poster(form.poster.data)
+            if form.poster.data.filename and not poster_path:
+                flash("Poster must be an image (PNG, JPG, GIF, or WEBP). Sermon was still saved.", "warning")
+
         sermon = Sermon(
-            title=form.title.data,
-            description=form.description.data,
-            video_url=form.video_url.data,
+            title=form.title.data.strip(),
+            description=form.description.data.strip(),
             category=form.category.data,
+            video_url=(form.video_url.data or "").strip() or None,
+            media_type=payload["media_type"],
+            media_path=payload["media_path"],
+            poster_path=poster_path,
+            external_url=payload["external_url"],
+            embed_url=payload["embed_url"],
+            provider=payload["provider"],
+            provider_video_id=payload["provider_video_id"],
+            thumbnail_url=payload["thumbnail_url"],
+            duration_seconds=payload["duration_seconds"],
+            mime_type=payload["mime_type"],
+            file_size=payload["file_size"],
         )
         db.session.add(sermon)
         db.session.commit()
         current_app.logger.info(
-            "Admin created sermon sermon_id=%s title=%s user_id=%s email=%s ip=%s",
+            "Admin created sermon sermon_id=%s title=%s media_type=%s user_id=%s email=%s ip=%s",
             sermon.id,
             sermon.title,
+            sermon.media_type,
             current_user.id,
             current_user.email,
             request.remote_addr,
         )
-        flash("Sermon created successfully.", "success")
+        flash(f"Sermon saved ({sermon.media_type}).", "success")
         return redirect(url_for("admin.manage_sermons"))
 
     current_app.logger.info(
@@ -382,7 +411,210 @@ def manage_sermons():
         request.remote_addr,
     )
     sermons = Sermon.query.order_by(Sermon.created_at.desc()).all()
-    return render_template("admin/manage_sermons.html", sermons=sermons, form=form)
+    return render_template(
+        "admin/manage_sermons.html",
+        sermons=sermons,
+        form=form,
+        sermon_max_video_seconds=max_seconds,
+        sermon_max_video_mb=max_bytes // (1024 * 1024),
+    )
+
+
+@admin.route("/sermons/<int:sermon_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_sermon(sermon_id):
+    sermon = Sermon.query.get_or_404(sermon_id)
+    form = SermonForm()
+    form.submit.label.text = "Save Changes"
+    max_seconds = current_app.config.get("SERMON_MAX_VIDEO_SECONDS", 300)
+    max_bytes = current_app.config.get("SERMON_MAX_VIDEO_BYTES", 100 * 1024 * 1024)
+
+    if request.method == "GET":
+        _populate_sermon_form(form, sermon)
+
+    if form.validate_on_submit():
+        source = form.media_source.data
+        media_file = form.media.data
+        has_new_file = media_file and getattr(media_file, "filename", None)
+        need_media = source == "external" or has_new_file or (
+            source != (sermon.media_type or "image") and source in ("image", "video", "external")
+        )
+
+        if source == "external" or has_new_file:
+            payload, err = _apply_sermon_media(form, require_media=(source == "external" or has_new_file))
+            if err:
+                flash(err, "danger")
+                return render_template(
+                    "admin/edit_sermon.html",
+                    form=form,
+                    sermon=sermon,
+                    sermon_max_video_seconds=max_seconds,
+                    sermon_max_video_mb=max_bytes // (1024 * 1024),
+                )
+            if sermon.media_path and payload.get("media_path") and sermon.media_path != payload["media_path"]:
+                delete_upload(sermon.media_path)
+            if source == "external":
+                if sermon.media_path:
+                    delete_upload(sermon.media_path)
+                if sermon.poster_path and not (form.poster.data and form.poster.data.filename):
+                    # keep existing poster unless replaced below
+                    pass
+            for key, value in payload.items():
+                setattr(sermon, key, value)
+            if payload["media_type"] == "image" and sermon.poster_path:
+                delete_upload(sermon.poster_path)
+                sermon.poster_path = None
+        elif need_media and source in ("image", "video") and source != (sermon.media_type or "image"):
+            flash("Upload a new file when switching between image and MP4.", "danger")
+            return render_template(
+                "admin/edit_sermon.html",
+                form=form,
+                sermon=sermon,
+                sermon_max_video_seconds=max_seconds,
+                sermon_max_video_mb=max_bytes // (1024 * 1024),
+            )
+        else:
+            sermon.media_type = source
+
+        if form.poster.data and form.poster.data.filename:
+            if (sermon.media_type or "image") not in ("video", "external"):
+                flash("Poster images are only used for videos.", "warning")
+            else:
+                new_poster = save_sermon_poster(form.poster.data)
+                if not new_poster:
+                    flash("Poster must be an image (PNG, JPG, GIF, or WEBP).", "danger")
+                    return render_template(
+                        "admin/edit_sermon.html",
+                        form=form,
+                        sermon=sermon,
+                        sermon_max_video_seconds=max_seconds,
+                        sermon_max_video_mb=max_bytes // (1024 * 1024),
+                    )
+                if sermon.poster_path:
+                    delete_upload(sermon.poster_path)
+                sermon.poster_path = new_poster
+
+        sermon.title = form.title.data.strip()
+        sermon.description = form.description.data.strip()
+        sermon.category = form.category.data
+        sermon.video_url = (form.video_url.data or "").strip() or None
+        db.session.commit()
+        flash("Sermon updated successfully.", "success")
+        return redirect(url_for("admin.manage_sermons"))
+
+    return render_template(
+        "admin/edit_sermon.html",
+        form=form,
+        sermon=sermon,
+        sermon_max_video_seconds=max_seconds,
+        sermon_max_video_mb=max_bytes // (1024 * 1024),
+    )
+
+
+def _sermon_video_limits():
+    max_seconds = current_app.config.get("SERMON_MAX_VIDEO_SECONDS", 300)
+    max_bytes = current_app.config.get("SERMON_MAX_VIDEO_BYTES", 100 * 1024 * 1024)
+    return max_seconds, max_bytes
+
+
+def _populate_sermon_form(form, sermon):
+    form.title.data = sermon.title
+    form.description.data = sermon.description
+    form.category.data = sermon.category
+    form.media_source.data = sermon.media_type if sermon.media_type in ("image", "video", "external") else "image"
+    form.external_url.data = sermon.external_url or ""
+    form.video_url.data = sermon.video_url or ""
+
+
+def _apply_sermon_media(form, require_media=True):
+    """Validate and build media payload for sermon create/edit. Returns (dict, error)."""
+    from ..services.sermon_media import get_sermon_mp4_duration_seconds, parse_sermon_external_url
+
+    source = form.media_source.data
+    max_seconds, max_bytes = _sermon_video_limits()
+
+    if source == "external":
+        raw = (form.external_url.data or "").strip()
+        if not raw:
+            return None, "Please paste an external video URL."
+        try:
+            info = parse_sermon_external_url(raw)
+        except ValueError as exc:
+            return None, str(exc)
+        return {
+            "media_path": None,
+            "media_type": "external",
+            "mime_type": None,
+            "file_size": None,
+            "duration_seconds": None,
+            "external_url": info.watch_url,
+            "embed_url": info.embed_url,
+            "provider": info.provider,
+            "provider_video_id": info.video_id,
+            "thumbnail_url": info.thumbnail_url,
+        }, None
+
+    media_file = form.media.data
+    if not media_file or not getattr(media_file, "filename", None):
+        if require_media:
+            return None, "Please choose a file to upload."
+        return None, None
+
+    file_size = None
+    try:
+        media_file.stream.seek(0, 2)
+        file_size = media_file.stream.tell()
+        media_file.stream.seek(0)
+    except Exception:
+        file_size = None
+
+    if source == "image":
+        path = save_sermon_image(media_file)
+        if not path:
+            return None, "Unsupported image. Use PNG, JPG, JPEG, GIF, or WEBP."
+        return {
+            "media_path": path,
+            "media_type": "image",
+            "mime_type": getattr(media_file, "mimetype", None) or "image/jpeg",
+            "file_size": file_size,
+            "duration_seconds": None,
+            "external_url": None,
+            "embed_url": None,
+            "provider": None,
+            "provider_video_id": None,
+            "thumbnail_url": None,
+        }, None
+
+    if source == "video":
+        if file_size is not None and file_size > max_bytes:
+            return None, f"Video is too large. Maximum size is {max_bytes // (1024 * 1024)} MB."
+        mime = (getattr(media_file, "mimetype", None) or "").lower()
+        if mime and mime not in ("video/mp4", "application/mp4", "application/octet-stream"):
+            return None, "Unsupported video format. Upload an MP4 file (video/mp4) only."
+        duration = get_sermon_mp4_duration_seconds(media_file)
+        if duration is not None and duration > max_seconds:
+            return None, (
+                f"Video is too long ({int(duration)}s). "
+                f"Maximum duration is {max_seconds} seconds (5 minutes)."
+            )
+        path, _media_type = save_sermon_video(media_file)
+        if not path:
+            return None, "Unsupported video. Upload an MP4 file only (AVI, MOV, MKV, etc. are rejected)."
+        return {
+            "media_path": path,
+            "media_type": "video",
+            "mime_type": "video/mp4",
+            "file_size": file_size,
+            "duration_seconds": duration,
+            "external_url": None,
+            "embed_url": None,
+            "provider": None,
+            "provider_video_id": None,
+            "thumbnail_url": None,
+        }, None
+
+    return None, "Invalid media type."
 
 
 @admin.route("/sermons/<int:sermon_id>/delete", methods=["POST"])
@@ -390,12 +622,17 @@ def manage_sermons():
 @admin_required
 def delete_sermon(sermon_id):
     sermon = Sermon.query.get_or_404(sermon_id)
+    title = sermon.title
+    if sermon.media_path:
+        delete_upload(sermon.media_path)
+    if sermon.poster_path:
+        delete_upload(sermon.poster_path)
     db.session.delete(sermon)
     db.session.commit()
     current_app.logger.info(
         "Admin deleted sermon sermon_id=%s title=%s user_id=%s email=%s ip=%s",
         sermon_id,
-        sermon.title,
+        title,
         current_user.id,
         current_user.email,
         request.remote_addr,
@@ -667,10 +904,117 @@ def _gallery_display_order(form):
 def _populate_gallery_form(form, item):
     form.title.data = item.title
     form.description.data = item.description or ""
+    form.event_name.data = item.event_name or ""
     form.category.data = item.category
+    form.media_source.data = item.media_type if item.media_type in ("image", "video", "external") else "image"
+    form.external_url.data = item.external_url or ""
     form.display_order.data = str(item.display_order or 0)
     form.is_featured.data = "1" if item.is_featured else "0"
     form.is_published.data = "1" if (item.is_published is None or item.is_published) else "0"
+
+
+def _gallery_video_limits():
+    max_seconds = current_app.config.get("GALLERY_MAX_VIDEO_SECONDS", 300)
+    max_bytes = current_app.config.get("GALLERY_MAX_VIDEO_BYTES", 100 * 1024 * 1024)
+    return max_seconds, max_bytes
+
+
+def _apply_uploaded_gallery_file(form, source):
+    """Validate and save image or MP4 based on media_source. Returns dict or None + flash."""
+    from ..services.gallery_media import get_mp4_duration_seconds
+    from ..services.upload import save_gallery_image_only, save_gallery_video_only
+
+    media_file = form.media.data
+    if not media_file or not getattr(media_file, "filename", None):
+        return None, "Please choose a file to upload."
+
+    max_seconds, max_bytes = _gallery_video_limits()
+
+    # Best-effort size from stream
+    file_size = None
+    try:
+        media_file.stream.seek(0, 2)
+        file_size = media_file.stream.tell()
+        media_file.stream.seek(0)
+    except Exception:
+        file_size = None
+
+    if source == "image":
+        path, media_type = save_gallery_image_only(media_file)
+        if not path:
+            return None, "Unsupported image. Use PNG, JPG, JPEG, GIF, or WEBP."
+        return {
+            "image_path": path,
+            "media_type": "image",
+            "mime_type": getattr(media_file, "mimetype", None) or "image/jpeg",
+            "file_size": file_size,
+            "duration_seconds": None,
+            "external_url": None,
+            "embed_url": None,
+            "provider": None,
+            "provider_video_id": None,
+            "thumbnail_url": None,
+        }, None
+
+    if source == "video":
+        if file_size is not None and file_size > max_bytes:
+            return None, f"Video is too large. Maximum size is {max_bytes // (1024 * 1024)} MB."
+        mime = (getattr(media_file, "mimetype", None) or "").lower()
+        if mime and mime not in ("video/mp4", "application/mp4", "application/octet-stream"):
+            return None, "Unsupported video format. Upload an MP4 file (video/mp4) only."
+        duration = get_mp4_duration_seconds(media_file)
+        if duration is not None and duration > max_seconds:
+            return None, f"Video is too long ({int(duration)}s). Maximum duration is {max_seconds} seconds (5 minutes)."
+        path, media_type = save_gallery_video_only(media_file)
+        if not path:
+            return None, "Unsupported video. Upload an MP4 file only."
+        return {
+            "image_path": path,
+            "media_type": "video",
+            "mime_type": "video/mp4",
+            "file_size": file_size,
+            "duration_seconds": duration,
+            "external_url": None,
+            "embed_url": None,
+            "provider": None,
+            "provider_video_id": None,
+            "thumbnail_url": None,
+        }, None
+
+    return None, "Invalid media type."
+
+
+def _apply_external_gallery_url(form):
+    from ..services.gallery_media import parse_external_video_url
+
+    raw = (form.external_url.data or "").strip()
+    if not raw:
+        return None, "Please paste an external video URL."
+    try:
+        info = parse_external_video_url(raw)
+    except ValueError as exc:
+        return None, str(exc)
+    return {
+        "image_path": None,
+        "media_type": "external",
+        "mime_type": None,
+        "file_size": None,
+        "duration_seconds": None,
+        "external_url": info.watch_url,
+        "embed_url": info.embed_url,
+        "provider": info.provider,
+        "provider_video_id": info.video_id,
+        "thumbnail_url": info.thumbnail_url,
+    }, None
+
+
+def _clear_gallery_local_files(item):
+    if item.image_path:
+        delete_upload(item.image_path)
+        item.image_path = None
+    if item.poster_path:
+        delete_upload(item.poster_path)
+        item.poster_path = None
 
 
 @admin.route("/gallery", methods=["GET", "POST"])
@@ -678,22 +1022,24 @@ def _populate_gallery_form(form, item):
 @admin_required
 def manage_gallery():
     form = GalleryImageForm()
-    form.submit.label.text = "Upload Media"
+    form.submit.label.text = "Save Media"
     media_filter = request.args.get("media", "all")
+    max_seconds, max_bytes = _gallery_video_limits()
 
     if form.validate_on_submit():
-        media_file = form.media.data
-        if not media_file or not getattr(media_file, "filename", None):
-            flash("Please choose an image (PNG, JPG, GIF, WEBP) or video (MP4, WebM).", "danger")
-            return redirect(url_for("admin.manage_gallery"))
-
-        media_path, media_type = save_gallery_media(media_file)
-        if not media_path:
-            flash("Unsupported file. Use PNG, JPG, JPEG, GIF, WEBP, MP4, or WebM.", "danger")
-            return redirect(url_for("admin.manage_gallery"))
-
+        source = form.media_source.data
         poster_path = None
-        if media_type == "video" and form.poster.data and form.poster.data.filename:
+
+        if source == "external":
+            payload, err = _apply_external_gallery_url(form)
+        else:
+            payload, err = _apply_uploaded_gallery_file(form, source)
+
+        if err:
+            flash(err, "danger")
+            return redirect(url_for("admin.manage_gallery"))
+
+        if source in ("video", "external") and form.poster.data and form.poster.data.filename:
             poster_path = save_gallery_poster(form.poster.data)
             if form.poster.data.filename and not poster_path:
                 flash("Poster must be an image (PNG, JPG, GIF, or WEBP). Media was still saved.", "warning")
@@ -701,17 +1047,26 @@ def manage_gallery():
         item = GalleryImage(
             title=form.title.data.strip(),
             description=(form.description.data or "").strip() or None,
+            event_name=(form.event_name.data or "").strip() or None,
             category=form.category.data,
-            image_path=media_path,
-            media_type=media_type,
+            image_path=payload["image_path"],
+            media_type=payload["media_type"],
             poster_path=poster_path,
+            external_url=payload["external_url"],
+            embed_url=payload["embed_url"],
+            provider=payload["provider"],
+            provider_video_id=payload["provider_video_id"],
+            thumbnail_url=payload["thumbnail_url"],
+            duration_seconds=payload["duration_seconds"],
+            mime_type=payload["mime_type"],
+            file_size=payload["file_size"],
             display_order=_gallery_display_order(form),
             is_featured=form.is_featured.data == "1",
             is_published=form.is_published.data == "1",
         )
         db.session.add(item)
         db.session.commit()
-        flash(f"Gallery {media_type} uploaded successfully.", "success")
+        flash(f"Gallery {payload['media_type']} saved successfully.", "success")
         return redirect(url_for("admin.manage_gallery"))
 
     items_query = GalleryImage.query.order_by(
@@ -723,7 +1078,9 @@ def manage_gallery():
             db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
         )
     elif media_filter == "video":
-        items_query = items_query.filter_by(media_type="video")
+        items_query = items_query.filter(GalleryImage.media_type.in_(("video", "external")))
+    elif media_filter == "external":
+        items_query = items_query.filter_by(media_type="external")
 
     items = items_query.all()
     return render_template(
@@ -731,6 +1088,8 @@ def manage_gallery():
         images=items,
         form=form,
         media_filter=media_filter,
+        gallery_max_video_seconds=max_seconds,
+        gallery_max_video_mb=max_bytes // (1024 * 1024),
     )
 
 
@@ -741,40 +1100,89 @@ def edit_gallery_image(image_id):
     item = GalleryImage.query.get_or_404(image_id)
     form = GalleryImageForm()
     form.submit.label.text = "Save Changes"
+    max_seconds, max_bytes = _gallery_video_limits()
 
     if request.method == "GET":
         _populate_gallery_form(form, item)
 
     if form.validate_on_submit():
+        source = form.media_source.data
         media_file = form.media.data
-        if media_file and getattr(media_file, "filename", None):
-            media_path, media_type = save_gallery_media(media_file)
-            if not media_path:
-                flash("Unsupported replacement file. Use PNG, JPG, JPEG, GIF, WEBP, MP4, or WebM.", "danger")
-                return render_template("admin/edit_gallery.html", form=form, item=item)
-            if item.image_path:
-                delete_upload(item.image_path)
-            item.image_path = media_path
-            item.media_type = media_type
-            # Clear poster if switching to image unless a new poster is provided
-            if media_type == "image" and item.poster_path:
-                delete_upload(item.poster_path)
-                item.poster_path = None
+        has_new_file = media_file and getattr(media_file, "filename", None)
+        external_changed = source == "external" and (form.external_url.data or "").strip()
+
+        if source == "external":
+            if external_changed or item.media_type != "external":
+                payload, err = _apply_external_gallery_url(form)
+                if err:
+                    flash(err, "danger")
+                    return render_template(
+                        "admin/edit_gallery.html",
+                        form=form,
+                        item=item,
+                        gallery_max_video_seconds=max_seconds,
+                        gallery_max_video_mb=max_bytes // (1024 * 1024),
+                    )
+                _clear_gallery_local_files(item)
+                for key, value in payload.items():
+                    setattr(item, key, value)
+        else:
+            if has_new_file:
+                payload, err = _apply_uploaded_gallery_file(form, source)
+                if err:
+                    flash(err, "danger")
+                    return render_template(
+                        "admin/edit_gallery.html",
+                        form=form,
+                        item=item,
+                        gallery_max_video_seconds=max_seconds,
+                        gallery_max_video_mb=max_bytes // (1024 * 1024),
+                    )
+                # Clear previous local/external fields as needed
+                if item.image_path and item.image_path != payload["image_path"]:
+                    delete_upload(item.image_path)
+                if item.media_type == "external":
+                    item.external_url = None
+                    item.embed_url = None
+                    item.provider = None
+                    item.provider_video_id = None
+                    item.thumbnail_url = None
+                for key, value in payload.items():
+                    setattr(item, key, value)
+                if payload["media_type"] == "image" and item.poster_path:
+                    delete_upload(item.poster_path)
+                    item.poster_path = None
+            elif item.media_type != source and source in ("image", "video"):
+                flash("Upload a new file when switching between image and MP4.", "danger")
+                return render_template(
+                    "admin/edit_gallery.html",
+                    form=form,
+                    item=item,
+                    gallery_max_video_seconds=max_seconds,
+                    gallery_max_video_mb=max_bytes // (1024 * 1024),
+                )
 
         if form.poster.data and form.poster.data.filename:
-            if (item.media_type or "image") != "video":
+            if (item.media_type or "image") not in ("video", "external"):
                 flash("Poster images are only used for videos.", "warning")
             else:
                 new_poster = save_gallery_poster(form.poster.data)
                 if not new_poster:
                     flash("Poster must be an image (PNG, JPG, GIF, or WEBP).", "danger")
-                    return render_template("admin/edit_gallery.html", form=form, item=item)
+                    return render_template(
+                        "admin/edit_gallery.html",
+                        form=form,
+                        item=item,
+                        gallery_max_video_seconds=max_seconds,
+                        gallery_max_video_mb=max_bytes // (1024 * 1024),
+                    )
                 if item.poster_path:
                     delete_upload(item.poster_path)
                 item.poster_path = new_poster
 
         item.title = form.title.data.strip()
         item.description = (form.description.data or "").strip() or None
+        item.event_name = (form.event_name.data or "").strip() or None
         item.category = form.category.data
         item.display_order = _gallery_display_order(form)
         item.is_featured = form.is_featured.data == "1"
@@ -783,7 +1191,13 @@ def edit_gallery_image(image_id):
         flash("Gallery item updated successfully.", "success")
         return redirect(url_for("admin.manage_gallery"))
 
-    return render_template("admin/edit_gallery.html", form=form, item=item)
+    return render_template(
+        "admin/edit_gallery.html",
+        form=form,
+        item=item,
+        gallery_max_video_seconds=max_seconds,
+        gallery_max_video_mb=max_bytes // (1024 * 1024),
+    )
 
 
 @admin.route("/gallery/<int:image_id>/delete", methods=["POST"])

@@ -6,27 +6,37 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-24">
             <h1 class="text-5xl md:text-7xl font-black mb-6 section-heading drop-shadow-2xl">FIRE-FILLED SERMONS</h1>
-            <p class="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12">Transformative messages that ignite passion, activate purpose, and propel destiny.</p>
-            <div class="flex flex-wrap gap-4 justify-center">
-                <button type="button" class="filter-btn bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 uppercase tracking-wide">All Sermons</button>
-                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Latest</button>
-                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Prophecy</button>
-                <button type="button" class="filter-btn bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl hover:shadow-3xl hover:-translate-y-1 transition-all duration-300 border border-gray-200">Healing</button>
+            <p class="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12">Teachings, conferences, Bible studies, worship sessions, and messages that ignite passion and activate purpose.</p>
+            <div class="flex flex-wrap gap-4 justify-center" role="group" aria-label="Filter sermons by category">
+                <a href="{{ url_for('sermon.sermons') }}"
+                   class="filter-btn {% if not category %}is-active{% endif %} bg-gradient-to-r from-yellow-400 to-amber-500 text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl uppercase tracking-wide">All Sermons</a>
+                {% for cat in categories %}
+                <a href="{{ url_for('sermon.sermons', category=cat) }}"
+                   class="filter-btn {% if category == cat %}is-active{% endif %} bg-white/80 backdrop-blur-sm hover:bg-white text-gray-900 font-bold py-3 px-8 rounded-2xl shadow-2xl border border-gray-200">{{ cat }}</a>
+                {% endfor %}
             </div>
         </div>
 
         <div class="sermons-grid grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-16">
             {% for sermon in sermons %}
-            <article class="sermon-card group rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/50 to-black/30 border border-gray-800/50 backdrop-blur-md hover:shadow-3xl hover:-translate-y-4 transition-all duration-500">
-                {% with sermon=sermon %}
+            <article id="sermon-{{ sermon.id }}"
+                     class="sermon-card group rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-gray-900/50 to-black/30 border border-gray-800/50 backdrop-blur-md hover:shadow-3xl hover:-translate-y-4 transition-all duration-500"
+                     data-sermon-card
+                     tabindex="-1">
+                {% with sermon=sermon, link_to_sermons_page=false %}
                     {% include 'includes/sermon_preview_video.html' %}
                 {% endwith %}
 
                 <div class="p-8 text-white relative z-10">
-                    <div class="mb-3">
+                    <div class="mb-3 flex flex-wrap gap-2">
                         <span class="px-4 py-2 font-bold text-xs uppercase tracking-wider rounded-full shadow-lg founder-badge">
-                            {{ sermon.category or 'Prophecy' }}
+                            {{ sermon.category or 'General' }}
                         </span>
+                        {% if sermon.is_external %}
+                        <span class="px-3 py-2 font-bold text-xs uppercase tracking-wider rounded-full" style="background: rgba(212,175,55,0.2); color: var(--gold-primary);">{{ sermon.provider_label }}</span>
+                        {% elif sermon.is_uploaded_video %}
+                        <span class="px-3 py-2 font-bold text-xs uppercase tracking-wider rounded-full" style="background: rgba(212,175,55,0.2); color: var(--gold-primary);">Video</span>
+                        {% endif %}
                     </div>
                     <h3 class="text-xl md:text-2xl font-black mb-3 line-clamp-2 leading-tight group-hover:text-brand-gold transition-colors duration-300">
                         {{ sermon.title }}
@@ -37,12 +47,28 @@
                     <div class="flex items-center justify-between text-sm opacity-90 mb-4">
                         <span><i class="fas fa-calendar mr-2" aria-hidden="true"></i>{{ sermon.created_at.strftime('%b %d, %Y') }}</span>
                     </div>
-                    <a href="{{ sermon_watch_url or '#' }}"
+                    {% if sermon.is_external and sermon.external_url %}
+                    <a href="{{ sermon.external_url }}"
                        target="_blank"
                        rel="noopener noreferrer"
                        class="inline-flex items-center w-full justify-center font-bold py-3 px-6 rounded-2xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 btn-outline-gold border-2">
-                        <i class="fas fa-external-link-alt mr-3" aria-hidden="true"></i>Watch Full Sermon
+                        <i class="fas fa-external-link-alt mr-3" aria-hidden="true"></i>Watch on {{ sermon.provider_label or 'Platform' }}
                     </a>
+                    {% elif sermon.is_uploaded_video and sermon.media_path %}
+                    <button type="button"
+                            class="sermon-play-trigger inline-flex items-center w-full justify-center font-bold py-3 px-6 rounded-2xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 btn-outline-gold border-2"
+                            data-play-src="{{ url_for('static', filename=sermon.media_path) }}"
+                            {% if sermon.poster_path %}data-poster="{{ url_for('static', filename=sermon.poster_path) }}"{% endif %}
+                            data-title="{{ sermon.title|e }}"
+                            data-description="{{ (sermon.description or '')|e }}"
+                            aria-label="Play {{ sermon.title }}">
+                        <i class="fas fa-play mr-3" aria-hidden="true"></i>Play Sermon
+                    </button>
+                    {% else %}
+                    <span class="inline-flex items-center w-full justify-center font-bold py-3 px-6 rounded-2xl btn-outline-gold border-2 opacity-80">
+                        <i class="fas fa-book-open mr-3" aria-hidden="true"></i>Message Highlight
+                    </span>
+                    {% endif %}
                 </div>
             </article>
             {% else %}
@@ -58,4 +84,65 @@
         </div>
     </div>
 </section>
+
+<div id="sermon-player-modal" class="sermon-player-modal hidden" role="dialog" aria-modal="true" aria-label="Sermon player" hidden>
+    <div class="sermon-player-backdrop" data-sermon-player-close></div>
+    <div class="sermon-player-dialog">
+        <button type="button" class="sermon-player-close" data-sermon-player-close aria-label="Close player">&times;</button>
+        <div class="sermon-player-stage">
+            <div class="sermon-player-loading" id="sermon-player-loading" hidden aria-live="polite">Loading…</div>
+            <div class="sermon-player-error" id="sermon-player-error" hidden role="alert"></div>
+            <video id="sermon-player-video"
+                   class="sermon-player-video"
+                   playsinline
+                   preload="metadata"
+                   controlslist="nodownload"></video>
+            <div class="sermon-player-controls" role="group" aria-label="Playback controls">
+                <button type="button" id="sermon-btn-play" aria-label="Play">▶</button>
+                <div class="sermon-seek-wrap">
+                    <input type="range" id="sermon-seek" min="0" max="1000" value="0" aria-label="Seek">
+                    <div class="sermon-time">
+                        <span id="sermon-time-elapsed">0:00</span>
+                        <span aria-hidden="true"> / </span>
+                        <span id="sermon-time-remaining">0:00</span>
+                    </div>
+                </div>
+                <button type="button" id="sermon-btn-mute" aria-label="Mute">🔇</button>
+                <input type="range" id="sermon-volume" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+                <label class="sermon-speed-wrap">
+                    <span class="sr-only">Playback speed</span>
+                    <select id="sermon-speed" aria-label="Playback speed">
+                        <option value="0.5">0.5×</option>
+                        <option value="0.75">0.75×</option>
+                        <option value="1" selected>1×</option>
+                        <option value="1.25">1.25×</option>
+                        <option value="1.5">1.5×</option>
+                        <option value="2">2×</option>
+                    </select>
+                </label>
+                <button type="button" id="sermon-btn-pip" aria-label="Picture in picture">PiP</button>
+                <button type="button" id="sermon-btn-fs" aria-label="Fullscreen">⛶</button>
+            </div>
+        </div>
+        <div class="sermon-player-caption">
+            <h3 id="sermon-player-title"></h3>
+            <p id="sermon-player-description"></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sermon-player.js') }}"></script>
+<script>
+(function () {
+  var hash = window.location.hash || '';
+  if (hash.indexOf('#sermon-') !== 0) return;
+  var el = document.querySelector(hash);
+  if (!el) return;
+  el.classList.add('sermon-card-highlight');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+})();
+</script>
 {% endblock %}

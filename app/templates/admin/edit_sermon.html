@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Edit Sermon | Admin{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 pb-12">
+    <a href="{{ url_for('admin.manage_sermons') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Manage Sermons</a>
+    <h1 class="text-3xl font-bold section-heading mb-2">Edit Sermon</h1>
+    <p class="text-gray-600 mb-6">Update <strong>{{ sermon.title }}</strong>. Leave file fields empty to keep current media.</p>
+
+    <div class="card p-4 mb-6">
+        <p class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color: var(--purple-primary);">
+            Current
+            {% if sermon.is_external %}External ({{ sermon.provider_label }})
+            {% elif sermon.is_uploaded_video %}MP4 Video
+            {% else %}Image{% endif %}
+        </p>
+        {% if sermon.is_external %}
+        {% if sermon.poster_url %}
+        <img src="{{ sermon.poster_url }}" alt="{{ sermon.title }}" class="w-full max-h-72 object-cover rounded-xl" referrerpolicy="no-referrer">
+        {% endif %}
+        <p class="text-sm mt-2"><a href="{{ sermon.external_url }}" target="_blank" rel="noopener noreferrer" class="font-semibold" style="color: var(--purple-primary);">{{ sermon.external_url }}</a></p>
+        {% elif sermon.is_uploaded_video and sermon.media_path %}
+        <video class="leader-admin-video" controls playsinline preload="metadata"
+               {% if sermon.poster_path %}poster="{{ url_for('static', filename=sermon.poster_path) }}"{% endif %}>
+            <source src="{{ url_for('static', filename=sermon.media_path) }}" type="video/mp4">
+        </video>
+        {% elif sermon.media_path %}
+        <img src="{{ url_for('static', filename=sermon.media_path) }}" alt="{{ sermon.title }}" class="w-full max-h-72 object-cover rounded-xl">
+        {% else %}
+        <img src="{{ sermon_placeholder_url() }}" alt="" class="w-full max-h-48 object-cover rounded-xl">
+        {% endif %}
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="card space-y-4 p-6" action="{{ url_for('admin.edit_sermon', sermon_id=sermon.id) }}">
+        {{ form.hidden_tag() }}
+        <div><label class="label" for="{{ form.title.id }}">{{ form.title.label.text }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label" for="{{ form.description.id }}">{{ form.description.label.text }}</label>{{ form.description(class="input-field", rows="4") }}</div>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="label" for="{{ form.media_source.id }}">{{ form.media_source.label.text }}</label>{{ form.media_source(class="input-field", id="sermon-media-source") }}</div>
+            <div><label class="label" for="{{ form.category.id }}">{{ form.category.label.text }}</label>{{ form.category(class="input-field") }}</div>
+        </div>
+
+        <div id="sermon-upload-fields">
+            <label class="label" for="{{ form.media.id }}">Replace Media File</label>
+            {{ form.media(class="input-field", id="sermon-media-input") }}
+            <p class="text-xs text-gray-500 mt-1" id="sermon-media-help">Optional. MP4 max {{ sermon_max_video_seconds }}s / {{ sermon_max_video_mb }} MB.</p>
+            <div id="sermon-poster-fields" class="mt-4">
+                <label class="label" for="{{ form.poster.id }}">{{ form.poster.label.text }}</label>
+                {{ form.poster(class="input-field", accept="image/png,image/jpeg,image/jpg,image/gif,image/webp") }}
+                {% if sermon.poster_path %}
+                <div class="mt-2 flex items-center gap-3">
+                    <img src="{{ url_for('static', filename=sermon.poster_path) }}" alt="Current poster" class="w-24 h-16 object-cover rounded-lg">
+                    <span class="text-xs text-gray-500">Current poster</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="sermon-external-fields" class="hidden">
+            <label class="label" for="{{ form.external_url.id }}">{{ form.external_url.label.text }}</label>
+            {{ form.external_url(class="input-field") }}
+        </div>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+            {{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}
+            <a href="{{ url_for('admin.manage_sermons') }}" class="btn-outline-gold px-6 py-3 rounded-xl text-sm font-semibold inline-flex items-center">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const sourceSelect = document.getElementById('sermon-media-source');
+  const uploadFields = document.getElementById('sermon-upload-fields');
+  const externalFields = document.getElementById('sermon-external-fields');
+  const posterFields = document.getElementById('sermon-poster-fields');
+  const mediaInput = document.getElementById('sermon-media-input');
+  function sync() {
+    const source = sourceSelect ? sourceSelect.value : 'image';
+    if (uploadFields) uploadFields.classList.toggle('hidden', source === 'external');
+    if (externalFields) externalFields.classList.toggle('hidden', source !== 'external');
+    if (posterFields) posterFields.classList.toggle('hidden', source === 'image');
+    if (mediaInput) mediaInput.accept = source === 'video' ? 'video/mp4' : 'image/png,image/jpeg,image/jpg,image/gif,image/webp';
+  }
+  if (sourceSelect) { sourceSelect.addEventListener('change', sync); sync(); }
+})();
+</script>
+{% endblock %}

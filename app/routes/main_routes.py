@@ -102,7 +102,7 @@ def gallery():
             db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
         )
     elif media_type == "video":
-        gallery_query = gallery_query.filter_by(media_type="video")
+        gallery_query = gallery_query.filter(GalleryImage.media_type.in_(("video", "external")))
 
     pagination = gallery_query.paginate(page=page, per_page=per_page, error_out=False)
     category_labels = dict(GALLERY_CATEGORIES)

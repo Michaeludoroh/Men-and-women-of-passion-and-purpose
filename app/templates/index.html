@@ -195,23 +195,44 @@
         <div class="gallery-masonry gallery-masonry-home">
             {% for image in featured_gallery %}
             <article class="gallery-masonry-item gallery-card rounded-2xl overflow-hidden">
-                {% if image.is_video %}
-                <div class="gallery-video-thumb">
-                    {% if image.poster_path %}
-                    <img src="{{ url_for('static', filename=image.poster_path) }}" alt="{{ image.title }}" loading="lazy">
-                    {% else %}
-                    <video muted playsinline preload="metadata" aria-hidden="true">
-                        <source src="{{ url_for('static', filename=image.image_path) }}#t=0.5" type="video/{{ image.image_path.rsplit('.', 1)[-1]|lower }}">
-                    </video>
-                    {% endif %}
-                    <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
-                </div>
+                {% if image.is_external %}
+                <a href="{{ image.external_url }}" target="_blank" rel="noopener noreferrer" class="gallery-home-link" aria-label="Watch {{ image.title }} on {{ image.provider_label }}">
+                    <div class="gallery-video-thumb gallery-external-thumb"
+                         data-provider="{{ image.provider or '' }}"
+                         {% if image.embed_url and image.provider == 'youtube' %}data-preview-embed="{{ image.embed_url }}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&loop=1&playlist={{ image.provider_video_id }}"{% endif %}>
+                        {% if image.poster_url %}
+                        <img src="{{ image.poster_url }}" alt="{{ image.title }}" loading="lazy" referrerpolicy="no-referrer" class="gallery-thumb-img">
+                        {% else %}
+                        <div class="gallery-thumb-fallback" aria-hidden="true">{{ image.provider_label or 'Video' }}</div>
+                        {% endif %}
+                        <span class="gallery-platform-badge" aria-hidden="true">{{ image.provider_label or 'Video' }}</span>
+                        <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
+                    </div>
+                </a>
+                {% elif image.is_uploaded_video %}
+                <a href="{{ url_for('main.gallery') }}" class="gallery-home-link" aria-label="Open gallery to watch {{ image.title }}">
+                    <div class="gallery-video-thumb">
+                        {% if image.poster_path %}
+                        <img src="{{ url_for('static', filename=image.poster_path) }}" alt="{{ image.title }}" loading="lazy" class="gallery-thumb-img">
+                        {% endif %}
+                        <video class="gallery-preview-video" muted playsinline preload="metadata" loop aria-hidden="true"
+                               {% if image.poster_path %}poster="{{ url_for('static', filename=image.poster_path) }}"{% endif %}
+                               data-src="{{ url_for('static', filename=image.image_path) }}">
+                            <source src="{{ url_for('static', filename=image.image_path) }}#t=0.5" type="video/mp4">
+                        </video>
+                        <span class="gallery-play-overlay" aria-hidden="true"><i class="fas fa-play"></i></span>
+                    </div>
+                </a>
                 {% else %}
-                <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}" loading="lazy">
+                <a href="{{ url_for('main.gallery') }}" class="gallery-home-link" aria-label="View {{ image.title }} in gallery">
+                    <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.title }}" loading="lazy">
+                </a>
                 {% endif %}
                 <div class="p-4">
                     <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Featured</span>
-                    {% if image.is_video %}
+                    {% if image.is_external %}
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(90,24,154,0.15); color: var(--purple-primary);">{{ image.provider_label }}</span>
+                    {% elif image.is_uploaded_video %}
                     <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ml-1" style="background: rgba(90,24,154,0.15); color: var(--purple-primary);">Video</span>
                     {% endif %}
                     <h3 class="font-bold mt-2">{{ image.title }}</h3>
@@ -220,6 +241,7 @@
             </article>
             {% endfor %}
         </div>
+        <script src="{{ url_for('static', filename='js/gallery-lightbox.js') }}"></script>
         {% else %}
         <div class="card text-center p-12">
             <i class="fas fa-images text-4xl mb-4" style="color: var(--gold-primary);"></i>
@@ -239,14 +261,19 @@
         <div class="grid md:grid-cols-3 gap-8">
             {% for sermon in featured_sermons %}
             <article class="sermon-card rounded-3xl overflow-hidden">
-                {% with sermon=sermon %}
+                {% with sermon=sermon, link_to_sermons_page=true %}
                     {% include 'includes/sermon_preview_video.html' %}
                 {% endwith %}
                 <div class="p-6">
                     <span class="text-xs font-bold uppercase px-3 py-1 rounded-full" style="background: rgba(90,24,154,0.1); color: var(--purple-primary);">{{ sermon.category }}</span>
+                    {% if sermon.is_external %}
+                    <span class="text-xs font-bold uppercase px-3 py-1 rounded-full ml-1" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">{{ sermon.provider_label }}</span>
+                    {% elif sermon.is_uploaded_video %}
+                    <span class="text-xs font-bold uppercase px-3 py-1 rounded-full ml-1" style="background: rgba(212,175,55,0.2); color: var(--gold-dark);">Video</span>
+                    {% endif %}
                     <h3 class="text-xl font-bold mt-3 mb-2">{{ sermon.title }}</h3>
                     <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ sermon.description }}</p>
-                    <a href="{{ sermon_watch_url or '#' }}" target="_blank" rel="noopener noreferrer" class="btn-gold-nav inline-block px-4 py-2 rounded-xl text-sm font-bold">Watch Full Sermon</a>
+                    <a href="{{ url_for('sermon.sermons') }}#sermon-{{ sermon.id }}" class="btn-gold-nav inline-block px-4 py-2 rounded-xl text-sm font-bold">View Sermon</a>
                 </div>
             </article>
             {% else %}

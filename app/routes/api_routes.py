@@ -31,6 +31,8 @@ def require_api_key(view_func):
 
 
 def sermon_to_dict(sermon):
+    if hasattr(sermon, "to_dict"):
+        return sermon.to_dict()
     return {
         "id": sermon.id,
         "title": sermon.title,
@@ -138,7 +140,9 @@ def list_gallery():
             db.or_(GalleryImage.media_type == "image", GalleryImage.media_type.is_(None))
         )
     elif media_type == "video":
-        gallery_query = gallery_query.filter_by(media_type="video")
+        gallery_query = gallery_query.filter(GalleryImage.media_type.in_(("video", "external")))
+    elif media_type == "external":
+        gallery_query = gallery_query.filter_by(media_type="external")
     if featured_only:
         gallery_query = gallery_query.filter(GalleryImage.is_featured.is_(True))
 

@@ -430,6 +430,146 @@ nav {
   color: var(--purple-dark);
 }
 
+.gallery-media-badge-external {
+  background: rgba(26, 26, 46, 0.9);
+  color: var(--gold-primary);
+}
+
+.gallery-platform-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3;
+  padding: 0.25rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(26, 26, 46, 0.88);
+  color: var(--gold-primary);
+  pointer-events: none;
+}
+
+.gallery-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white-primary);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.gallery-preview-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.gallery-external-thumb .gallery-thumb-img {
+  position: relative;
+  z-index: 0;
+}
+
+.gallery-mute-btn {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 4;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  border: none;
+  background: rgba(26, 26, 46, 0.75);
+  color: var(--white-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gallery-mute-btn:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+.gallery-video-thumb:hover .gallery-play-overlay i,
+.gallery-card:hover .gallery-play-overlay i {
+  transform: scale(1.08);
+  transition: transform 0.25s ease;
+}
+
+.gallery-lightbox-video-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gallery-lightbox-extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-speed-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.gallery-speed-label select,
+.gallery-pip-btn {
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white-primary);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.gallery-pip-btn {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.gallery-pip-btn:focus-visible,
+.gallery-speed-label select:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+.gallery-home-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .gallery-lightbox-trigger {
   cursor: zoom-in;
 }
@@ -1445,6 +1585,237 @@ footer {
   .sermon-preview:focus-visible .sermon-preview-play {
     transform: none;
   }
+}
+
+button.sermon-preview {
+  width: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.sermon-platform-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 3;
+  padding: 0.25rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(26, 26, 46, 0.88);
+  color: var(--gold-primary);
+  pointer-events: none;
+}
+
+.sermon-preview-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sermon-admin-thumb {
+  width: 7.5rem;
+  height: 4.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+}
+
+.sermon-admin-thumb img,
+.sermon-admin-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sermon-admin-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.sermon-card-highlight {
+  outline: 3px solid var(--gold-primary);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(212, 175, 55, 0.25);
+}
+
+body.sermon-player-open {
+  overflow: hidden;
+}
+
+.sermon-player-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.sermon-player-modal.hidden,
+.sermon-player-modal[hidden] {
+  display: none !important;
+}
+
+.sermon-player-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 5, 30, 0.88);
+}
+
+.sermon-player-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(960px, 100%);
+  background: #12081f;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  color: var(--white-primary);
+}
+
+.sermon-player-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 3;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sermon-player-close:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+.sermon-player-stage {
+  position: relative;
+  background: #000;
+}
+
+.sermon-player-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  background: #000;
+}
+
+.sermon-player-loading,
+.sermon-player-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 2;
+  font-weight: 700;
+  padding: 1rem;
+  text-align: center;
+}
+
+.sermon-player-error {
+  color: #ffb4b4;
+}
+
+.sermon-player-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(18, 8, 31, 0.95);
+}
+
+.sermon-player-controls button,
+.sermon-player-controls select,
+.sermon-player-controls input[type="range"] {
+  touch-action: manipulation;
+}
+
+.sermon-player-controls button,
+.sermon-player-controls select {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white-primary);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.sermon-player-controls button:focus-visible,
+.sermon-player-controls select:focus-visible,
+.sermon-player-controls input:focus-visible {
+  outline: 2px solid var(--gold-primary);
+  outline-offset: 2px;
+}
+
+.sermon-seek-wrap {
+  flex: 1 1 12rem;
+  min-width: 8rem;
+}
+
+.sermon-seek-wrap input[type="range"] {
+  width: 100%;
+}
+
+.sermon-time {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-top: 0.2rem;
+}
+
+#sermon-volume {
+  width: 5rem;
+}
+
+.sermon-player-caption {
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.sermon-player-caption h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+}
+
+.sermon-player-caption p {
+  font-size: 0.95rem;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+
+.filter-btn.is-active {
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary)) !important;
+  color: var(--gray-dark) !important;
 }
 
 /* Form inputs â€” unified styling */

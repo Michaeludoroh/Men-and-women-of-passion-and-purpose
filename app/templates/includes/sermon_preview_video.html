@@ -1,21 +1,58 @@
 {#
-  Reusable SermonPreviewVideo component.
-  Autoplay muted looping preview; click/tap/keyboard opens social watch URL.
-  Expects: sermon (optional video_url, title)
-  Uses: sermon_watch_url, sermon_placeholder_url() from context
+  Sermon media preview card.
+  Homepage: links to /sermons#sermon-{id}
+  Sermons page: uploaded MP4 opens in-site player; external opens platform.
+  Legacy video_url preview clips remain supported via sermon.preview_video_src.
 #}
-{% set watch_url = sermon_watch_url or '#' %}
-{% set preview_label = 'Watch full sermon on social media: ' ~ (sermon.title if sermon and sermon.title else 'Men and Women of Passion and Purpose') %}
-{% set has_video = sermon and sermon.video_url %}
-<a href="{{ watch_url }}"
+{% set poster = sermon.poster_url or sermon_placeholder_url() %}
+{% set is_home = link_to_sermons_page|default(false) %}
+{% set sermons_anchor = url_for('sermon.sermons') ~ '#sermon-' ~ sermon.id %}
+{% set preview_src = sermon.preview_video_src %}
+{% set can_play_local = sermon.is_uploaded_video and sermon.media_path %}
+{% set can_external = sermon.is_external and sermon.external_url %}
+
+{% if is_home %}
+<a href="{{ sermons_anchor }}"
+   class="sermon-preview"
+   aria-label="Open sermon: {{ sermon.title }}"
+   data-sermon-preview
+   data-sermon-id="{{ sermon.id }}"
+   data-media-type="{{ sermon.media_type or 'image' }}"
+   {% if preview_src %}data-has-video="true" data-preview-src="{{ preview_src }}"{% endif %}
+   {% if can_external and sermon.embed_url and sermon.provider == 'youtube' %}data-preview-embed="{{ sermon.embed_url }}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&loop=1&playlist={{ sermon.provider_video_id }}"{% endif %}>
+{% elif can_external %}
+<a href="{{ sermon.external_url }}"
    class="sermon-preview"
    target="_blank"
    rel="noopener noreferrer"
-   aria-label="{{ preview_label }}"
+   aria-label="Watch {{ sermon.title }} on {{ sermon.provider_label }}"
    data-sermon-preview
-   {% if has_video %}data-has-video="true"{% endif %}>
+   data-sermon-id="{{ sermon.id }}"
+   data-media-type="external"
+   {% if sermon.embed_url and sermon.provider == 'youtube' %}data-preview-embed="{{ sermon.embed_url }}?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&loop=1&playlist={{ sermon.provider_video_id }}"{% endif %}>
+{% elif can_play_local %}
+<button type="button"
+   class="sermon-preview sermon-play-trigger"
+   aria-label="Play sermon: {{ sermon.title }}"
+   data-sermon-preview
+   data-sermon-id="{{ sermon.id }}"
+   data-media-type="video"
+   data-has-video="true"
+   data-preview-src="{{ preview_src }}"
+   data-play-src="{{ url_for('static', filename=sermon.media_path) }}"
+   {% if sermon.poster_path %}data-poster="{{ url_for('static', filename=sermon.poster_path) }}"{% elif sermon.poster_url %}data-poster="{{ sermon.poster_url }}"{% endif %}
+   data-title="{{ sermon.title|e }}"
+   data-description="{{ (sermon.description or '')|e }}">
+{% else %}
+<div class="sermon-preview"
+     data-sermon-preview
+     data-sermon-id="{{ sermon.id }}"
+     data-media-type="{{ sermon.media_type or 'image' }}"
+     aria-label="{{ sermon.title }}">
+{% endif %}
+
   <div class="sermon-preview-media">
-    {% if has_video %}
+    {% if preview_src %}
     <video class="sermon-preview-video"
            muted
            loop
@@ -25,28 +62,57 @@
            disablepictureinpicture
            disableremoteplayback
            controlslist="nodownload nofullscreen noremoteplayback"
-           poster="{{ sermon_placeholder_url() }}"
+           poster="{{ poster }}"
            aria-hidden="true"
            tabindex="-1"
-           data-src="{{ sermon.video_url }}">
+           data-src="{{ preview_src }}">
     </video>
     <img class="sermon-preview-poster"
-         src="{{ sermon_placeholder_url() }}"
+         src="{{ poster }}"
          alt=""
+         loading="lazy"
          decoding="async"
          aria-hidden="true"
+         {% if sermon.thumbnail_url %}referrerpolicy="no-referrer"{% endif %}
          hidden>
+    {% elif can_external %}
+    <img class="sermon-preview-poster is-visible"
+         src="{{ poster }}"
+         alt=""
+         loading="lazy"
+         decoding="async"
+         aria-hidden="true"
+         referrerpolicy="no-referrer">
+    {% if sermon.provider_label %}
+    <span class="sermon-platform-badge" aria-hidden="true">{{ sermon.provider_label }}</span>
+    {% endif %}
+    {% elif sermon.media_path and (sermon.media_type or 'image') == 'image' %}
+    <img class="sermon-preview-poster is-visible"
+         src="{{ url_for('static', filename=sermon.media_path) }}"
+         alt="{{ sermon.title }}"
+         loading="lazy"
+         decoding="async">
     {% else %}
     <img class="sermon-preview-poster is-visible"
          src="{{ sermon_placeholder_url() }}"
          alt=""
+         loading="lazy"
          decoding="async"
          aria-hidden="true">
     {% endif %}
+    {% if preview_src or can_external or can_play_local %}
     <div class="sermon-preview-overlay" aria-hidden="true">
       <span class="sermon-preview-play">
         <i class="fas fa-play" aria-hidden="true"></i>
       </span>
     </div>
+    {% endif %}
   </div>
+
+{% if is_home or can_external %}
 </a>
+{% elif can_play_local %}
+</button>
+{% else %}
+</div>
+{% endif %}

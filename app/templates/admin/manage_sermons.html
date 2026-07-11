@@ -1,32 +1,210 @@
 {% extends "base.html" %}
 {% block title %}Manage Sermons | Admin{% endblock %}
 {% block content %}
-<section class="mb-6">
-    <h1 class="text-3xl font-bold text-purple-900 mb-3">Manage Sermons</h1>
-    <form method="POST" class="card space-y-3 mb-6">
+<section class="mb-6 max-w-7xl mx-auto px-4">
+    <a href="{{ url_for('admin.admin_dashboard') }}" class="text-sm font-semibold mb-4 inline-block" style="color: var(--purple-primary);">← Back to Website Admin</a>
+    <h1 class="text-3xl font-bold section-heading mb-2">Manage Sermons</h1>
+    <p class="text-gray-600 mb-6">Add teachings and messages as an image, MP4 (max {{ sermon_max_video_seconds }}s / {{ sermon_max_video_mb }} MB), or external video link. Gallery remains a separate module for church activities.</p>
+
+    <form method="POST" enctype="multipart/form-data" class="card space-y-4 mb-8 p-6" data-sermon-upload-form>
         {{ form.hidden_tag() }}
-        <div><label class="label">{{ form.title.label }}</label>{{ form.title(class="input-field") }}</div>
-        <div><label class="label">{{ form.description.label }}</label>{{ form.description(class="input-field", rows="4") }}</div>
-        <div><label class="label">{{ form.video_url.label }}</label>{{ form.video_url(class="input-field") }}</div>
-        <div><label class="label">{{ form.category.label }}</label>{{ form.category(class="input-field") }}</div>
-        <div>{{ form.submit(class="btn-primary") }}</div>
+        <div><label class="label" for="{{ form.title.id }}">{{ form.title.label.text }}</label>{{ form.title(class="input-field") }}</div>
+        <div><label class="label" for="{{ form.description.id }}">{{ form.description.label.text }}</label>{{ form.description(class="input-field", rows="4") }}</div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div><label class="label" for="{{ form.media_source.id }}">{{ form.media_source.label.text }}</label>{{ form.media_source(class="input-field", id="sermon-media-source") }}</div>
+            <div><label class="label" for="{{ form.category.id }}">{{ form.category.label.text }}</label>{{ form.category(class="input-field") }}</div>
+        </div>
+
+        <div id="sermon-upload-fields" class="grid md:grid-cols-2 gap-4">
+            <div>
+                <label class="label" for="{{ form.media.id }}" id="sermon-media-label">{{ form.media.label.text }}</label>
+                {{ form.media(class="input-field", id="sermon-media-input") }}
+                <p class="text-xs text-gray-500 mt-1" id="sermon-media-help">Images: PNG, JPG, GIF, WEBP</p>
+                <p id="sermon-media-meta" class="text-xs font-semibold mt-1 hidden" style="color: var(--purple-primary);"></p>
+                <div id="sermon-media-preview" class="mt-3 hidden"></div>
+            </div>
+            <div id="sermon-poster-fields">
+                <label class="label" for="{{ form.poster.id }}">{{ form.poster.label.text }}</label>
+                {{ form.poster(class="input-field", accept="image/png,image/jpeg,image/jpg,image/gif,image/webp", id="sermon-poster-input") }}
+                <p class="text-xs text-gray-500 mt-1">Optional poster for videos.</p>
+                <div id="sermon-poster-preview" class="mt-3 hidden">
+                    <img id="sermon-poster-preview-img" alt="Poster preview" class="w-32 h-20 object-cover rounded-xl">
+                </div>
+            </div>
+        </div>
+
+        <div id="sermon-external-fields" class="hidden">
+            <label class="label" for="{{ form.external_url.id }}">{{ form.external_url.label.text }}</label>
+            {{ form.external_url(class="input-field", id="sermon-external-url") }}
+            <p class="text-xs text-gray-500 mt-1">YouTube, Facebook, Instagram, TikTok, Vimeo, or X. Visitors open the original platform.</p>
+        </div>
+
+        <div>{{ form.submit(class="btn-primary px-6 py-3 rounded-xl") }}</div>
     </form>
 </section>
 
-<section class="grid gap-4">
+<section class="max-w-7xl mx-auto px-4 pb-12 grid gap-4">
     {% for sermon in sermons %}
-    <article class="card flex justify-between items-center">
-        <div>
-            <h3 class="font-semibold">{{ sermon.title }}</h3>
-            <p class="text-sm text-gray-600">{{ sermon.category }}</p>
+    <article class="card p-4 flex flex-col md:flex-row justify-between gap-4">
+        <div class="flex gap-4 items-start">
+            <div class="sermon-admin-thumb">
+                {% if sermon.is_external %}
+                {% if sermon.poster_url %}
+                <img src="{{ sermon.poster_url }}" alt="" loading="lazy" referrerpolicy="no-referrer">
+                {% else %}
+                <div class="sermon-admin-fallback">{{ sermon.provider_label or 'Link' }}</div>
+                {% endif %}
+                {% elif sermon.is_uploaded_video %}
+                {% if sermon.poster_path %}
+                <img src="{{ url_for('static', filename=sermon.poster_path) }}" alt="" loading="lazy">
+                {% elif sermon.media_path %}
+                <video muted playsinline preload="metadata"><source src="{{ url_for('static', filename=sermon.media_path) }}#t=0.5" type="video/mp4"></video>
+                {% endif %}
+                {% elif sermon.media_path %}
+                <img src="{{ url_for('static', filename=sermon.media_path) }}" alt="" loading="lazy">
+                {% else %}
+                <img src="{{ sermon_placeholder_url() }}" alt="" loading="lazy">
+                {% endif %}
+            </div>
+            <div>
+                <h3 class="font-semibold text-lg">{{ sermon.title }}</h3>
+                <p class="text-sm text-gray-600">
+                    {{ sermon.category }}
+                    · {{ sermon.media_type or 'image' }}
+                    {% if sermon.provider_label %} · {{ sermon.provider_label }}{% endif %}
+                    {% if sermon.duration_seconds %} · {{ '%.0f'|format(sermon.duration_seconds) }}s{% endif %}
+                </p>
+                <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ sermon.description }}</p>
+            </div>
         </div>
-        <form method="POST" action="{{ url_for('admin.delete_sermon', sermon_id=sermon.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn-danger">Delete</button>
-        </form>
+        <div class="flex flex-wrap gap-2 items-start">
+            <a href="{{ url_for('admin.edit_sermon', sermon_id=sermon.id) }}" class="btn-outline-gold text-xs px-3 py-2 rounded-lg">Edit</a>
+            <form method="POST" action="{{ url_for('admin.delete_sermon', sermon_id=sermon.id) }}" onsubmit="return confirm('Delete this sermon?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn-danger text-xs px-3 py-2 rounded-lg" type="submit">Delete</button>
+            </form>
+        </div>
     </article>
     {% else %}
-    <div class="card">No sermons yet.</div>
+    <div class="card p-6">No sermons yet.</div>
     {% endfor %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const sourceSelect = document.getElementById('sermon-media-source');
+  const uploadFields = document.getElementById('sermon-upload-fields');
+  const externalFields = document.getElementById('sermon-external-fields');
+  const posterFields = document.getElementById('sermon-poster-fields');
+  const mediaInput = document.getElementById('sermon-media-input');
+  const mediaHelp = document.getElementById('sermon-media-help');
+  const mediaLabel = document.getElementById('sermon-media-label');
+  const mediaMeta = document.getElementById('sermon-media-meta');
+  const mediaPreview = document.getElementById('sermon-media-preview');
+  const posterInput = document.getElementById('sermon-poster-input');
+  const posterPreview = document.getElementById('sermon-poster-preview');
+  const posterImg = document.getElementById('sermon-poster-preview-img');
+  const maxVideoSeconds = {{ sermon_max_video_seconds|int }};
+  const maxVideoBytes = {{ sermon_max_video_mb|int }} * 1024 * 1024;
+  let mediaUrl = null;
+
+  function revoke(url) { if (url) URL.revokeObjectURL(url); }
+  function formatBytes(n) {
+    if (!n && n !== 0) return '';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  function syncSourceUI() {
+    const source = sourceSelect ? sourceSelect.value : 'image';
+    const isExternal = source === 'external';
+    if (uploadFields) uploadFields.classList.toggle('hidden', isExternal);
+    if (externalFields) externalFields.classList.toggle('hidden', !isExternal);
+    if (posterFields) posterFields.classList.toggle('hidden', source === 'image');
+    if (mediaInput) {
+      if (source === 'image') {
+        mediaInput.accept = 'image/png,image/jpeg,image/jpg,image/gif,image/webp';
+        if (mediaHelp) mediaHelp.textContent = 'Images: PNG, JPG, GIF, WEBP';
+        if (mediaLabel) mediaLabel.textContent = 'Image File';
+      } else if (source === 'video') {
+        mediaInput.accept = 'video/mp4';
+        if (mediaHelp) mediaHelp.textContent = 'MP4 only · Max ' + maxVideoSeconds + 's · Max {{ sermon_max_video_mb }} MB · AVI/MOV/MKV rejected';
+        if (mediaLabel) mediaLabel.textContent = 'MP4 Video File';
+      }
+    }
+  }
+  if (sourceSelect) {
+    sourceSelect.addEventListener('change', function () {
+      revoke(mediaUrl); mediaUrl = null;
+      if (mediaPreview) { mediaPreview.innerHTML = ''; mediaPreview.classList.add('hidden'); }
+      if (mediaMeta) mediaMeta.classList.add('hidden');
+      if (mediaInput) mediaInput.value = '';
+      syncSourceUI();
+    });
+    syncSourceUI();
+  }
+  if (mediaInput) {
+    mediaInput.addEventListener('change', function () {
+      const file = mediaInput.files && mediaInput.files[0];
+      revoke(mediaUrl); mediaUrl = null;
+      if (mediaPreview) { mediaPreview.innerHTML = ''; mediaPreview.classList.add('hidden'); }
+      if (!file) return;
+      const source = sourceSelect ? sourceSelect.value : 'image';
+      if (source === 'video') {
+        if (file.type && file.type !== 'video/mp4' && !/\.mp4$/i.test(file.name)) {
+          alert('Please upload an MP4 video only.');
+          mediaInput.value = '';
+          return;
+        }
+        if (file.size > maxVideoBytes) {
+          alert('Video is too large. Maximum size is {{ sermon_max_video_mb }} MB.');
+          mediaInput.value = '';
+          return;
+        }
+        mediaUrl = URL.createObjectURL(file);
+        const video = document.createElement('video');
+        video.controls = true; video.playsInline = true; video.preload = 'metadata';
+        video.className = 'leader-admin-video'; video.src = mediaUrl;
+        video.addEventListener('loadedmetadata', function () {
+          if (isFinite(video.duration) && video.duration > maxVideoSeconds) {
+            alert('Video is too long (' + Math.round(video.duration) + 's). Maximum is ' + maxVideoSeconds + ' seconds.');
+            mediaInput.value = '';
+            revoke(mediaUrl); mediaUrl = null;
+            mediaPreview.innerHTML = ''; mediaPreview.classList.add('hidden');
+            return;
+          }
+          if (mediaMeta) {
+            mediaMeta.textContent = 'Duration: ' + Math.round(video.duration || 0) + 's · Size: ' + formatBytes(file.size);
+            mediaMeta.classList.remove('hidden');
+          }
+        });
+        mediaPreview.appendChild(video);
+        mediaPreview.classList.remove('hidden');
+      } else {
+        mediaUrl = URL.createObjectURL(file);
+        mediaPreview.innerHTML = '<img alt="Preview" class="w-full max-h-48 object-cover rounded-xl" src="' + mediaUrl + '">';
+        mediaPreview.classList.remove('hidden');
+        if (mediaMeta) {
+          mediaMeta.textContent = 'Size: ' + formatBytes(file.size);
+          mediaMeta.classList.remove('hidden');
+        }
+      }
+    });
+  }
+  if (posterInput && posterPreview && posterImg) {
+    posterInput.addEventListener('change', function () {
+      const file = posterInput.files && posterInput.files[0];
+      if (!file) { posterPreview.classList.add('hidden'); return; }
+      if (!file.type.startsWith('image/')) {
+        alert('Poster must be an image.');
+        posterInput.value = '';
+        return;
+      }
+      posterImg.src = URL.createObjectURL(file);
+      posterPreview.classList.remove('hidden');
+    });
+  }
+})();
+</script>
 {% endblock %}

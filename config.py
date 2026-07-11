@@ -43,10 +43,19 @@ class Config:
     TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
     TWILIO_PHONE_NUMBER = os.environ.get("TWILIO_PHONE_NUMBER", "")
 
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+    # Default 100 MB so gallery MP4 uploads (up to 5 minutes) can succeed.
+    # Override with MAX_CONTENT_LENGTH env var (bytes) if needed.
+    MAX_CONTENT_LENGTH = int(os.environ.get("MAX_CONTENT_LENGTH", 100 * 1024 * 1024))
 
     GALLERY_PER_PAGE = int(os.environ.get("GALLERY_PER_PAGE", 12))
     GALLERY_PER_PAGE_OPTIONS = (6, 12, 24, 36)
+    GALLERY_MAX_VIDEO_SECONDS = int(os.environ.get("GALLERY_MAX_VIDEO_SECONDS", 300))
+    GALLERY_MAX_VIDEO_BYTES = int(os.environ.get("GALLERY_MAX_VIDEO_BYTES", 100 * 1024 * 1024))
+    GALLERY_ALLOWED_VIDEO_EXTENSIONS = ("mp4",)
+
+    SERMON_MAX_VIDEO_SECONDS = int(os.environ.get("SERMON_MAX_VIDEO_SECONDS", 300))
+    SERMON_MAX_VIDEO_BYTES = int(os.environ.get("SERMON_MAX_VIDEO_BYTES", 100 * 1024 * 1024))
+    SERMON_ALLOWED_VIDEO_EXTENSIONS = ("mp4",)
 
     MINISTRY_NAME = "Men and Women of Passion and Purpose"
     MINISTRY_TAGLINE = (
