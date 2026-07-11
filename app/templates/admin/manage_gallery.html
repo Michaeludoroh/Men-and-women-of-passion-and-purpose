@@ -165,20 +165,46 @@
     return (n / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  // Extension-first MP4 detection. Do NOT require exact MIME === 'video/mp4'
+  // (Safari/iOS often reports video/quicktime; some browsers omit type).
+  function normalizeMime(type) {
+    return String(type || '').toLowerCase().split(';')[0].trim();
+  }
+  function isClearlyRejectedVideo(file) {
+    const name = String(file.name || '').trim();
+    if (/\.(avi|mov|mkv|wmv|flv|3gp|3g2|webm|mpg|mpeg|m4a)$/i.test(name)) return true;
+    const type = normalizeMime(file.type);
+    return [
+      'video/x-msvideo', 'video/avi', 'video/webm', 'video/x-matroska',
+      'video/x-flv', 'video/3gpp', 'video/3gpp2', 'video/x-ms-wmv',
+      'audio/mp4', 'audio/x-m4a'
+    ].indexOf(type) !== -1;
+  }
+  function isLikelyMp4(file) {
+    const name = String(file.name || '').trim();
+    if (/\.mp4$/i.test(name)) return true;
+    const type = normalizeMime(file.type);
+    if (!type) return false;
+    return [
+      'video/mp4', 'video/x-m4v', 'application/mp4', 'application/octet-stream',
+      'video/quicktime'
+    ].indexOf(type) !== -1;
+  }
+
   function syncSourceUI() {
     const source = sourceSelect ? sourceSelect.value : 'image';
     const isExternal = source === 'external';
-    const isVideo = source === 'video';
     if (uploadFields) uploadFields.classList.toggle('hidden', isExternal);
     if (externalFields) externalFields.classList.toggle('hidden', !isExternal);
     if (posterFields) posterFields.classList.toggle('hidden', source === 'image');
     if (mediaInput) {
       if (source === 'image') {
-        mediaInput.accept = 'image/png,image/jpeg,image/jpg,image/gif,image/webp';
+        mediaInput.accept = 'image/png,image/jpeg,image/jpg,image/gif,image/webp,.png,.jpg,.jpeg,.gif,.webp';
         if (mediaHelp) mediaHelp.textContent = 'Images: PNG, JPG, GIF, WEBP';
         if (mediaLabel) mediaLabel.textContent = 'Image File';
       } else if (source === 'video') {
-        mediaInput.accept = 'video/mp4';
+        // Include .mp4 extension + common Safari MIME values for mobile pickers
+        mediaInput.accept = 'video/mp4,video/x-m4v,video/quicktime,.mp4';
         if (mediaHelp) mediaHelp.textContent = 'MP4 only · Max ' + maxVideoSeconds + 's · Max {{ gallery_max_video_mb }} MB';
         if (mediaLabel) mediaLabel.textContent = 'MP4 Video File';
       }
@@ -211,19 +237,19 @@
       if (!file) return;
       const source = sourceSelect ? sourceSelect.value : 'image';
       if (source === 'image') {
-        if (!file.type.startsWith('image/') && !/\.(png|jpe?g|gif|webp)$/i.test(file.name)) {
-          alert('Please choose a PNG, JPG, GIF, or WEBP image.');
+        if (!file.type.startsWith('image/') && !/\.(png|jpe?g|gif|webp)$/i.test(file.name || '')) {
+          alert('Unsupported format. Use PNG, JPG, GIF, or WEBP.');
           mediaInput.value = '';
           return;
         }
       } else if (source === 'video') {
-        if (file.type && file.type !== 'video/mp4' && !/\.mp4$/i.test(file.name)) {
-          alert('Please upload an MP4 video only.');
+        if (isClearlyRejectedVideo(file) || !isLikelyMp4(file)) {
+          alert('Unsupported format. Upload an MP4 video only.');
           mediaInput.value = '';
           return;
         }
         if (file.size > maxVideoBytes) {
-          alert('Video is too large. Maximum size is {{ gallery_max_video_mb }} MB.');
+          alert('Video exceeds maximum size ({{ gallery_max_video_mb }} MB).');
           mediaInput.value = '';
           return;
         }
@@ -239,13 +265,20 @@
         video.addEventListener('loadedmetadata', function () {
           const dur = video.duration;
           if (isFinite(dur) && dur > maxVideoSeconds) {
-            alert('Video is too long (' + Math.round(dur) + 's). Maximum is ' + maxVideoSeconds + ' seconds.');
+            alert('Video exceeds ' + maxVideoSeconds + ' seconds (detected ' + Math.round(dur) + 's).');
             mediaInput.value = '';
             clearMediaPreview();
             return;
           }
           if (mediaMeta) {
             mediaMeta.textContent = 'Duration: ' + Math.round(dur || 0) + 's · Size: ' + formatBytes(file.size);
+            mediaMeta.classList.remove('hidden');
+          }
+        });
+        video.addEventListener('error', function () {
+          // Let the server perform definitive validation; preview failure is not fatal.
+          if (mediaMeta) {
+            mediaMeta.textContent = 'Size: ' + formatBytes(file.size) + ' · Preview unavailable (will validate on save)';
             mediaMeta.classList.remove('hidden');
           }
         });

@@ -921,7 +921,7 @@ def _gallery_video_limits():
 
 def _apply_uploaded_gallery_file(form, source):
     """Validate and save image or MP4 based on media_source. Returns dict or None + flash."""
-    from ..services.gallery_media import get_mp4_duration_seconds
+    from ..services.gallery_media import validate_gallery_mp4_file
     from ..services.upload import save_gallery_image_only, save_gallery_video_only
 
     media_file = form.media.data
@@ -929,24 +929,36 @@ def _apply_uploaded_gallery_file(form, source):
         return None, "Please choose a file to upload."
 
     max_seconds, max_bytes = _gallery_video_limits()
-
-    # Best-effort size from stream
-    file_size = None
-    try:
-        media_file.stream.seek(0, 2)
-        file_size = media_file.stream.tell()
-        media_file.stream.seek(0)
-    except Exception:
-        file_size = None
+    detected_mime = (getattr(media_file, "mimetype", None) or "").strip()
+    original_name = (getattr(media_file, "filename", None) or "").strip()
 
     if source == "image":
         path, media_type = save_gallery_image_only(media_file)
         if not path:
-            return None, "Unsupported image. Use PNG, JPG, JPEG, GIF, or WEBP."
+            current_app.logger.info(
+                "Gallery image upload rejected name=%s mime=%s",
+                original_name[:120],
+                detected_mime[:80],
+            )
+            return None, "Unsupported format. Use PNG, JPG, JPEG, GIF, or WEBP."
+        file_size = None
+        try:
+            media_file.stream.seek(0, 2)
+            file_size = media_file.stream.tell()
+            media_file.stream.seek(0)
+        except Exception:
+            file_size = None
+        current_app.logger.info(
+            "Gallery image upload ok name=%s mime=%s size=%s path=%s",
+            original_name[:120],
+            detected_mime[:80],
+            file_size,
+            path,
+        )
         return {
             "image_path": path,
             "media_type": "image",
-            "mime_type": getattr(media_file, "mimetype", None) or "image/jpeg",
+            "mime_type": detected_mime or "image/jpeg",
             "file_size": file_size,
             "duration_seconds": None,
             "external_url": None,
@@ -957,23 +969,45 @@ def _apply_uploaded_gallery_file(form, source):
         }, None
 
     if source == "video":
-        if file_size is not None and file_size > max_bytes:
-            return None, f"Video is too large. Maximum size is {max_bytes // (1024 * 1024)} MB."
-        mime = (getattr(media_file, "mimetype", None) or "").lower()
-        if mime and mime not in ("video/mp4", "application/mp4", "application/octet-stream"):
-            return None, "Unsupported video format. Upload an MP4 file (video/mp4) only."
-        duration = get_mp4_duration_seconds(media_file)
-        if duration is not None and duration > max_seconds:
-            return None, f"Video is too long ({int(duration)}s). Maximum duration is {max_seconds} seconds (5 minutes)."
+        meta, err = validate_gallery_mp4_file(
+            media_file,
+            max_seconds=max_seconds,
+            max_bytes=max_bytes,
+        )
+        if err:
+            current_app.logger.info(
+                "Gallery MP4 upload rejected name=%s mime=%s reason=%s",
+                original_name[:120],
+                detected_mime[:80],
+                err,
+            )
+            return None, err
+
         path, media_type = save_gallery_video_only(media_file)
         if not path:
-            return None, "Unsupported video. Upload an MP4 file only."
+            current_app.logger.info(
+                "Gallery MP4 save failed name=%s mime=%s size=%s duration=%s",
+                original_name[:120],
+                detected_mime[:80],
+                (meta or {}).get("file_size"),
+                (meta or {}).get("duration_seconds"),
+            )
+            return None, "Upload failed. Unable to save the MP4 file."
+
+        current_app.logger.info(
+            "Gallery MP4 upload ok name=%s mime=%s size=%s duration=%s path=%s",
+            original_name[:120],
+            (meta or {}).get("mime_type") or detected_mime[:80],
+            (meta or {}).get("file_size"),
+            (meta or {}).get("duration_seconds"),
+            path,
+        )
         return {
             "image_path": path,
             "media_type": "video",
             "mime_type": "video/mp4",
-            "file_size": file_size,
-            "duration_seconds": duration,
+            "file_size": (meta or {}).get("file_size"),
+            "duration_seconds": (meta or {}).get("duration_seconds"),
             "external_url": None,
             "embed_url": None,
             "provider": None,

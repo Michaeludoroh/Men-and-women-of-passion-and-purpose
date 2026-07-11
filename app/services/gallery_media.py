@@ -262,3 +262,180 @@ def format_duration(seconds: float | None) -> str:
     if h:
         return f"{h}:{m:02d}:{s:02d}"
     return f"{m}:{s:02d}"
+
+
+# ---------------------------------------------------------------------------
+# Gallery MP4 upload validation (independent of Sermons)
+# ---------------------------------------------------------------------------
+
+# Browser MIME types commonly reported for genuine MP4 / ISO BMFF files.
+GALLERY_MP4_MIME_ALLOW = frozenset({
+    "video/mp4",
+    "video/x-m4v",
+    "application/mp4",
+    "application/octet-stream",
+    # Safari / iOS frequently labels MP4 uploads as QuickTime even when the
+    # container is ISO BMFF with an .mp4 filename.
+    "video/quicktime",
+})
+
+GALLERY_REJECT_VIDEO_EXTENSIONS = frozenset({
+    "avi", "mov", "mkv", "wmv", "flv", "3gp", "3g2", "webm", "mpg", "mpeg", "m4a",
+})
+
+GALLERY_REJECT_VIDEO_MIMES = frozenset({
+    "video/x-msvideo",
+    "video/avi",
+    "video/x-matroska",
+    "video/webm",
+    "video/x-flv",
+    "video/3gpp",
+    "video/3gpp2",
+    "video/x-ms-wmv",
+    "audio/mp4",
+    "audio/x-m4a",
+})
+
+
+def _normalize_mime(mimetype: str | None) -> str:
+    raw = (mimetype or "").strip().lower()
+    if not raw:
+        return ""
+    # Strip parameters e.g. video/mp4; codecs="avc1.42E01E"
+    return raw.split(";", 1)[0].strip()
+
+
+def _filename_extension(filename: str | None) -> str:
+    name = (filename or "").strip()
+    if not name or "." not in name:
+        return ""
+    return name.rsplit(".", 1)[-1].lower().strip()
+
+
+def sniff_is_mp4_container(data: bytes) -> bool:
+    """Return True when bytes look like ISO BMFF / MP4 (ftyp box present)."""
+    if not data or len(data) < 12:
+        return False
+    head = data[:256]
+    if head[4:8] == b"ftyp":
+        return True
+    # Some writers place ftyp a few bytes in; keep the scan tight.
+    return b"ftyp" in head
+
+
+def read_upload_prefix(file_storage, nbytes: int = 65536) -> bytes:
+    """Read a prefix for sniffing/duration without relying on browser MIME."""
+    stream = getattr(file_storage, "stream", None) or file_storage
+    try:
+        stream.seek(0)
+        data = stream.read(nbytes)
+        stream.seek(0)
+        return data or b""
+    except Exception:
+        try:
+            stream.seek(0)
+        except Exception:
+            pass
+        return b""
+
+
+def rewind_upload(file_storage) -> None:
+    stream = getattr(file_storage, "stream", None) or file_storage
+    try:
+        stream.seek(0)
+    except Exception:
+        pass
+
+
+def validate_gallery_mp4_file(
+    file_storage,
+    *,
+    max_seconds: int,
+    max_bytes: int,
+) -> tuple[dict | None, str | None]:
+    """
+    Validate a Gallery MP4 upload.
+
+    Strategy (permanent fix):
+    1. Extension-first for hard rejects (AVI/MOV/MKV/…)
+    2. Treat browser MIME as advisory — accept common MP4 family MIME values
+       including Safari's video/quicktime when the file is otherwise valid
+    3. Confirm ISO BMFF via ftyp sniff
+    4. Enforce size + duration limits
+
+    Returns (meta_dict, None) on success or (None, error_message) on failure.
+    """
+    if not file_storage or not getattr(file_storage, "filename", None):
+        return None, "Please choose a file to upload."
+
+    original_name = (file_storage.filename or "").strip()
+    ext = _filename_extension(original_name)
+    mime = _normalize_mime(getattr(file_storage, "mimetype", None))
+
+    file_size = None
+    try:
+        stream = getattr(file_storage, "stream", None) or file_storage
+        stream.seek(0, 2)
+        file_size = stream.tell()
+        stream.seek(0)
+    except Exception:
+        file_size = None
+
+    if ext in GALLERY_REJECT_VIDEO_EXTENSIONS:
+        return None, f"Unsupported format (.{ext}). Upload an MP4 video only."
+
+    if mime in GALLERY_REJECT_VIDEO_MIMES and ext != "mp4":
+        return None, "Unsupported format. Upload an MP4 video only."
+
+    # Prefer .mp4 extension; allow missing/odd extension only when MIME is MP4-family
+    # and container sniff confirms MP4 (handles mobile pickers that drop extensions).
+    extension_ok = ext == "mp4"
+    mime_ok = mime in GALLERY_MP4_MIME_ALLOW
+    if not extension_ok and not mime_ok:
+        return None, "Unsupported format. Upload an MP4 video only."
+
+    if file_size is not None and file_size > max_bytes:
+        mb = max_bytes / (1024 * 1024)
+        mb_label = f"{mb:.0f}" if mb >= 1 else f"{mb:.2f}"
+        return None, f"Video exceeds maximum size ({mb_label} MB)."
+
+    if file_size == 0:
+        return None, "Unable to process media. The uploaded file is empty."
+
+    # Read enough bytes for sniff + duration (full read only when needed for mvhd)
+    prefix = read_upload_prefix(file_storage, 256 * 1024)
+    if not sniff_is_mp4_container(prefix):
+        # Fall back to full-file sniff for unusual layouts; still rewind afterward.
+        full = read_upload_prefix(file_storage, max_bytes if file_size is None else min(file_size, max_bytes) + 1)
+        if not sniff_is_mp4_container(full):
+            rewind_upload(file_storage)
+            return None, "Corrupted video or not a valid MP4 container."
+        data_for_duration = full
+    else:
+        # Need full bytes for reliable mvhd walk when moov is at end (common).
+        try:
+            stream = getattr(file_storage, "stream", None) or file_storage
+            stream.seek(0)
+            data_for_duration = stream.read()
+            stream.seek(0)
+        except Exception:
+            rewind_upload(file_storage)
+            return None, "Unable to process media."
+
+    duration = _parse_mp4_duration(data_for_duration)
+    rewind_upload(file_storage)
+
+    if duration is not None and duration > max_seconds:
+        return None, (
+            f"Video exceeds {max_seconds} seconds "
+            f"(detected {int(duration)}s)."
+        )
+
+    return {
+        "filename": original_name,
+        "extension": ext or "mp4",
+        "mime_type": mime or "video/mp4",
+        "file_size": file_size,
+        "duration_seconds": duration,
+        "sniff_ok": True,
+    }, None

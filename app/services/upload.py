@@ -55,13 +55,39 @@ def save_gallery_image_only(file):
 
 
 def save_gallery_video_only(file):
-    """Save MP4 only; returns (path, 'video') or (None, None)."""
+    """
+    Save gallery MP4 only. Returns (path, 'video') or (None, None).
+
+    Extension checks use the original upload filename. The stored name is forced
+    to end with .mp4 because secure_filename() can strip Unicode basenames and
+    leave a bare 'mp4' token without a dot.
+    """
     if not file or not getattr(file, "filename", None):
         return None, None
-    if _extension(file.filename) not in GALLERY_VIDEO_EXTENSIONS:
+    original = (file.filename or "").strip()
+    ext = _extension(original)
+    # Allow missing extension when caller already validated MP4 content.
+    if ext and ext not in GALLERY_VIDEO_EXTENSIONS:
         return None, None
-    path = save_upload(file, "gallery", GALLERY_VIDEO_EXTENSIONS)
-    return (path, "video") if path else (None, None)
+
+    filename = secure_filename(original) or "video"
+    if not filename.lower().endswith(".mp4"):
+        # secure_filename('视频.mp4') -> 'mp4'  |  secure_filename('clip') -> 'clip'
+        if filename.lower() == "mp4":
+            filename = "video.mp4"
+        else:
+            filename = f"{filename}.mp4"
+
+    unique_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
+    upload_dir = os.path.join(current_app.static_folder, "uploads", "gallery")
+    os.makedirs(upload_dir, exist_ok=True)
+    filepath = os.path.join(upload_dir, unique_name)
+    try:
+        file.stream.seek(0)
+    except Exception:
+        pass
+    file.save(filepath)
+    return f"uploads/gallery/{unique_name}", "video"
 
 
 def save_gallery_poster(file):
