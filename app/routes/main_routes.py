@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request
+from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request, Response
 from flask_login import current_user, login_required
 from datetime import datetime
 from ..models import Sermon, Application, Leader, GalleryImage, GALLERY_CATEGORIES, Event
@@ -147,6 +147,86 @@ def events():
 @main.route("/app")
 def app_download():
     return render_template("app_download.html")
+
+
+@main.route("/privacy-policy")
+def privacy_policy():
+    return render_template("privacy_policy.html")
+
+
+@main.route("/terms-of-service")
+def terms_of_service():
+    return render_template("terms_of_service.html")
+
+
+@main.route("/support")
+def support():
+    return render_template("support.html")
+
+
+@main.route("/account-deletion")
+def account_deletion():
+    return render_template("account_deletion.html")
+
+
+@main.route("/robots.txt")
+def robots_txt():
+    lines = [
+        "User-agent: *",
+        "Allow: /",
+        "Disallow: /admin/",
+        "Disallow: /auth/",
+        "Disallow: /api/",
+        "Disallow: /dashboard",
+        "Disallow: /profile",
+        f"Sitemap: {url_for('main.sitemap_xml', _external=True)}",
+        "",
+    ]
+    return Response("\n".join(lines), mimetype="text/plain")
+
+
+@main.route("/sitemap.xml")
+def sitemap_xml():
+    pages = [
+        ("main.index", "1.0", "daily"),
+        ("main.about", "0.8", "monthly"),
+        ("main.about_minister_joy", "0.7", "monthly"),
+        ("main.leadership", "0.7", "monthly"),
+        ("main.gallery", "0.8", "weekly"),
+        ("main.events", "0.8", "weekly"),
+        ("main.app_download", "0.9", "monthly"),
+        ("main.contact", "0.7", "monthly"),
+        ("main.applications", "0.6", "monthly"),
+        ("main.privacy_policy", "0.5", "yearly"),
+        ("main.terms_of_service", "0.5", "yearly"),
+        ("main.support", "0.6", "monthly"),
+        ("main.account_deletion", "0.5", "yearly"),
+        ("sermon.sermons", "0.8", "weekly"),
+        ("prayer.prayer_request", "0.7", "monthly"),
+        ("classes.classes_home", "0.7", "monthly"),
+        ("giving.giving_page", "0.7", "monthly"),
+        ("partnership.partnership_page", "0.7", "monthly"),
+    ]
+    urls = []
+    for endpoint, priority, changefreq in pages:
+        try:
+            loc = url_for(endpoint, _external=True)
+        except Exception:
+            continue
+        urls.append(
+            f"  <url>\n"
+            f"    <loc>{loc}</loc>\n"
+            f"    <changefreq>{changefreq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            f"  </url>"
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    return Response(xml, mimetype="application/xml")
 
 
 @main.route("/contact", methods=["GET", "POST"])

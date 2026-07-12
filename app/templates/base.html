@@ -160,15 +160,31 @@
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-bold mb-4" style="color: var(--gold-primary);">Contact</h4>
-                    <div class="space-y-2 text-gray-300 text-sm">
-                        <p><i class="fas fa-envelope mr-2" style="color: var(--gold-primary);"></i>womenofpassionandpurpose2024@gmail.com</p>
-                        <a href="{{ url_for('prayer.prayer_request') }}" class="inline-block mt-4 btn-gold-nav py-3 px-6 rounded-xl text-sm font-bold">Prayer Request</a>
-                    </div>
+                    <h4 class="text-lg font-bold mb-4" style="color: var(--gold-primary);">Legal &amp; Support</h4>
+                    <ul class="space-y-2 text-gray-300 text-sm">
+                        <li><a href="{{ url_for('main.privacy_policy') }}" class="hover:text-brand-gold transition">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('main.terms_of_service') }}" class="hover:text-brand-gold transition">Terms of Service</a></li>
+                        <li><a href="{{ url_for('main.support') }}" class="hover:text-brand-gold transition">Support</a></li>
+                        <li><a href="{{ url_for('main.account_deletion') }}" class="hover:text-brand-gold transition">Account Deletion</a></li>
+                        <li class="pt-2">
+                            <a href="mailto:support@woppandmopp.com" class="hover:text-brand-gold transition break-all">
+                                <i class="fas fa-envelope mr-2" style="color: var(--gold-primary);"></i>support@woppandmopp.com
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prayer.prayer_request') }}" class="inline-block mt-3 btn-gold-nav py-3 px-6 rounded-xl text-sm font-bold">Prayer Request</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
             <div class="border-t border-white/20 pt-8 text-center text-gray-400 text-sm">
-                &copy; 2026 Men and Women of Passion and Purpose. All rights reserved.
+                <p class="mb-3">&copy; 2026 Men and Women of Passion and Purpose. All rights reserved.</p>
+                <p class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs sm:text-sm">
+                    <a href="{{ url_for('main.privacy_policy') }}" class="hover:text-brand-gold transition">Privacy</a>
+                    <a href="{{ url_for('main.terms_of_service') }}" class="hover:text-brand-gold transition">Terms</a>
+                    <a href="{{ url_for('main.support') }}" class="hover:text-brand-gold transition">Support</a>
+                    <a href="{{ url_for('main.account_deletion') }}" class="hover:text-brand-gold transition">Delete Account</a>
+                </p>
             </div>
         </div>
     </footer>

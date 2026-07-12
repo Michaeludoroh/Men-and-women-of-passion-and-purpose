@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Support | Men and Women of Passion and Purpose{% endblock %}
+{% block meta_description %}Get help with the WOPP App and Men and Women of Passion and Purpose website. Contact support@woppandmopp.com for membership, billing, and account assistance.{% endblock %}
+{% block og_title %}Support | MWPP Ministry{% endblock %}
+{% block og_description %}Contact Men and Women of Passion and Purpose support for help with the WOPP App, memberships, and account questions.{% endblock %}
+
+{% block content %}
+<section class="page-hero mb-10 md:mb-12 rounded-3xl">
+  <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Support</h1>
+    <p class="text-lg md:text-xl opacity-95">We are here to help with the WOPP App, memberships, and website questions.</p>
+  </div>
+</section>
+
+<section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+  <div class="grid md:grid-cols-3 gap-6 mb-10">
+    <div class="card p-6 text-center">
+      <div class="contact-icon-box mx-auto mb-4">
+        <i class="fas fa-envelope text-white"></i>
+      </div>
+      <h2 class="text-lg font-black section-heading mb-2">Support Email</h2>
+      <a href="mailto:support@woppandmopp.com" class="text-brand-purple font-semibold hover:underline break-all">support@woppandmopp.com</a>
+    </div>
+    <div class="card p-6 text-center">
+      <div class="contact-icon-box mx-auto mb-4">
+        <i class="fas fa-globe text-white"></i>
+      </div>
+      <h2 class="text-lg font-black section-heading mb-2">Website</h2>
+      <a href="https://woppandmopp.com" target="_blank" rel="noopener noreferrer" class="text-brand-purple font-semibold hover:underline break-all">https://woppandmopp.com</a>
+    </div>
+    <div class="card p-6 text-center">
+      <div class="contact-icon-box mx-auto mb-4">
+        <i class="fas fa-clock text-white"></i>
+      </div>
+      <h2 class="text-lg font-black section-heading mb-2">Support Hours</h2>
+      <p class="text-gray-600">Monday – Friday<br>9:00 AM – 5:00 PM (WAT)</p>
+      <p class="text-sm text-gray-500 mt-2">We aim to respond within 1–2 business days.</p>
+    </div>
+  </div>
+
+  <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+    <a href="mailto:support@woppandmopp.com?subject=WOPP%20Support%20Request" class="btn-hero-gold py-4 px-8 rounded-2xl font-bold text-center">
+      <i class="fas fa-headset mr-2"></i>Contact Support
+    </a>
+    <a href="https://woppandmopp.com" target="_blank" rel="noopener noreferrer" class="btn-outline-gold py-4 px-8 rounded-2xl font-bold text-center">
+      <i class="fas fa-external-link-alt mr-2"></i>Visit Website
+    </a>
+  </div>
+
+  <div class="card p-6 sm:p-8 md:p-10">
+    <h2 class="text-2xl md:text-3xl font-black section-heading mb-6">Frequently Asked Questions</h2>
+
+    <div class="space-y-6">
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">How do I contact support?</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Email <a href="mailto:support@woppandmopp.com" class="text-brand-purple font-semibold hover:underline">support@woppandmopp.com</a>
+          with your name, registered email, device type (iOS/Android/web), and a short description of the issue.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">I paid for a membership but do not have access. What should I do?</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Confirm the purchase succeeded in your Apple or Google account, then restart the App and sign in with the same account.
+          If access is still missing, email support with your purchase receipt or order ID.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">How do I cancel a subscription?</h3>
+        <p class="text-gray-600 leading-relaxed">
+          iOS subscriptions are cancelled in Apple ID → Subscriptions. Android subscriptions are cancelled in Google Play → Payments &amp; subscriptions.
+          Store platforms manage renewals and refunds according to their policies.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">How do I delete my account?</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Request deletion by emailing <a href="mailto:support@woppandmopp.com" class="text-brand-purple font-semibold hover:underline">support@woppandmopp.com</a>.
+          See our <a href="{{ url_for('main.account_deletion') }}" class="text-brand-purple font-semibold hover:underline">Account Deletion</a> page for what is removed and typical timeframes.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">I am not receiving push notifications.</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Check that notifications are enabled for the WOPP App in your device settings and that you are signed in.
+          Network restrictions or battery-saving modes can also delay delivery.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Where can I read your privacy and terms documents?</h3>
+        <p class="text-gray-600 leading-relaxed">
+          Review our <a href="{{ url_for('main.privacy_policy') }}" class="text-brand-purple font-semibold hover:underline">Privacy Policy</a>
+          and <a href="{{ url_for('main.terms_of_service') }}" class="text-brand-purple font-semibold hover:underline">Terms of Service</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service | Men and Women of Passion and Purpose{% endblock %}
+{% block meta_description %}Terms of Service for Men and Women of Passion and Purpose (MWPP / WOPP) website and mobile app, including memberships, App Store purchases, and acceptable use.{% endblock %}
+{% block og_title %}Terms of Service | MWPP Ministry{% endblock %}
+{% block og_description %}Terms governing use of the Men and Women of Passion and Purpose website, WOPP App, memberships, and ministry content.{% endblock %}
+
+{% block extra_head %}
+<style>
+  .legal-doc h2 {
+    color: var(--purple-primary);
+    font-weight: 800;
+    font-size: 1.35rem;
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid rgba(212, 175, 55, 0.35);
+  }
+  .legal-doc h3 {
+    color: var(--gray-dark);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 1.25rem 0 0.5rem;
+  }
+  .legal-doc p, .legal-doc li {
+    color: var(--gray-medium);
+    line-height: 1.75;
+    font-size: 0.98rem;
+  }
+  .legal-doc ul {
+    list-style: disc;
+    padding-left: 1.35rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .legal-doc li { margin-bottom: 0.4rem; }
+  .legal-doc a { color: var(--purple-primary); font-weight: 600; }
+  .legal-doc a:hover { color: var(--gold-dark); text-decoration: underline; }
+  .legal-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--gray-light);
+    color: var(--purple-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(90, 24, 154, 0.12);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-hero mb-10 md:mb-12 rounded-3xl">
+  <div class="page-hero-content max-w-4xl mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-6xl font-black section-heading-light mb-4">Terms of Service</h1>
+    <p class="text-lg md:text-xl opacity-95">The rules that govern use of our website and WOPP App.</p>
+  </div>
+</section>
+
+<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+  <div class="card p-6 sm:p-8 md:p-10 legal-doc">
+    <p class="legal-meta mb-6"><i class="fas fa-calendar-alt" style="color: var(--gold-primary);"></i> Last Updated: July 13, 2026</p>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>
+      These Terms of Service (&ldquo;Terms&rdquo;) govern your access to and use of the Men and Women of Passion and Purpose
+      (&ldquo;MWPP,&rdquo; &ldquo;WOPP,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) website at
+      <a href="https://woppandmopp.com" target="_blank" rel="noopener noreferrer">https://woppandmopp.com</a>
+      and the WOPP mobile application (collectively, the &ldquo;Services&rdquo;). By accessing or using the Services,
+      you agree to these Terms and our <a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a>.
+      If you do not agree, do not use the Services.
+    </p>
+
+    <h2>2. User Accounts</h2>
+    <p>
+      Some features require an account. You agree to provide accurate information, keep your credentials confidential,
+      and notify us promptly of unauthorized use. You are responsible for activity under your account. We may suspend
+      or terminate accounts that violate these Terms or pose a security risk.
+    </p>
+
+    <h2>3. Membership Subscriptions</h2>
+    <p>
+      MWPP may offer paid memberships or subscriptions that unlock content, library access, classes, or other features.
+      Subscription details, pricing, billing period, and benefits are presented at purchase. Membership access continues
+      while your subscription remains active and in good standing.
+    </p>
+
+    <h2>4. Apple App Store Purchases</h2>
+    <p>
+      If you purchase a subscription or digital product on an Apple device, payment is charged to your Apple ID account
+      through Apple In-App Purchase. Renewals, cancellations, and refunds are managed according to Apple&rsquo;s App Store
+      terms. To cancel auto-renewal, use your Apple ID subscription settings. MWPP cannot process Apple refunds directly.
+    </p>
+
+    <h2>5. Google Play Purchases</h2>
+    <p>
+      If you purchase a subscription or digital product on an Android device, payment is charged through Google Play Billing.
+      Renewals, cancellations, and refunds are managed according to Google Play policies. To cancel auto-renewal, use your
+      Google Play subscription settings. MWPP cannot process Google Play refunds directly.
+    </p>
+
+    <h2>6. Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use the Services for unlawful, harmful, harassing, or fraudulent purposes</li>
+      <li>Attempt to gain unauthorized access to accounts, systems, or data</li>
+      <li>Scrape, reverse engineer, or disrupt the Services</li>
+      <li>Share account credentials or redistribute paid content without permission</li>
+      <li>Upload malware or content that infringes others&rsquo; rights</li>
+      <li>Misrepresent your identity or affiliation with MWPP</li>
+    </ul>
+
+    <h2>7. Intellectual Property</h2>
+    <p>
+      The Services, including branding, logos, design, text, audio, video, graphics, and software, are owned by MWPP or
+      its licensors and are protected by intellectual property laws. You receive a limited, non-exclusive, non-transferable
+      license to access the Services for personal, non-commercial use, subject to these Terms.
+    </p>
+
+    <h2>8. Ministry Content</h2>
+    <p>
+      Sermons, teachings, devotionals, and other ministry materials are provided for spiritual edification and personal use.
+      You may not copy, republish, sell, or commercially exploit ministry content without prior written permission from MWPP,
+      except where sharing features or fair use expressly allow limited personal sharing.
+    </p>
+
+    <h2>9. Events</h2>
+    <p>
+      Event listings, schedules, locations, and registration details on the website or App are informational and may change.
+      MWPP is not responsible for third-party venue policies, travel arrangements, or personal expenses related to attendance
+      unless expressly stated in a separate event agreement.
+    </p>
+
+    <h2>10. Library Access</h2>
+    <p>
+      Library, class, or media access may depend on membership status. Access ends when a subscription expires, is cancelled,
+      or is revoked for Terms violations. Downloaded or cached materials remain subject to these Terms and may become
+      unavailable after access ends.
+    </p>
+
+    <h2>11. Termination</h2>
+    <p>
+      You may stop using the Services at any time and may request account deletion as described on our
+      <a href="{{ url_for('main.account_deletion') }}">Account Deletion</a> page. We may suspend or terminate access if you
+      breach these Terms, misuse the Services, or if we discontinue a feature. Provisions that by nature should survive
+      (including intellectual property, limitation of liability, and dispute-related clauses) will survive termination.
+    </p>
+
+    <h2>12. Limitation of Liability</h2>
+    <p>
+      To the fullest extent permitted by law, MWPP and its leaders, volunteers, partners, and affiliates are not liable for
+      indirect, incidental, special, consequential, or punitive damages, or any loss of data, profits, or goodwill arising
+      from your use of the Services. Our total liability for any claim relating to the Services shall not exceed the amount
+      you paid to MWPP (if any) for the specific service giving rise to the claim in the twelve (12) months preceding the claim.
+      Some jurisdictions do not allow certain limitations; in those cases, our liability is limited to the maximum extent permitted.
+    </p>
+
+    <h2>13. Contact</h2>
+    <p>Questions about these Terms may be sent to:</p>
+    <ul>
+      <li>Email: <a href="mailto:support@woppandmopp.com">support@woppandmopp.com</a></li>
+      <li>Website: <a href="https://woppandmopp.com" target="_blank" rel="noopener noreferrer">https://woppandmopp.com</a></li>
+      <li>Support: <a href="{{ url_for('main.support') }}">Support page</a></li>
+    </ul>
+
+    <h2>14. Changes to These Terms</h2>
+    <p>
+      We may update these Terms periodically. The &ldquo;Last Updated&rdquo; date shows the latest revision.
+      Continued use of the Services after changes constitutes acceptance of the updated Terms.
+    </p>
+
+    <p class="mt-8 text-sm" style="color: var(--gray-medium);">
+      Related: <a href="{{ url_for('main.privacy_policy') }}">Privacy Policy</a> ·
+      <a href="{{ url_for('main.account_deletion') }}">Account Deletion</a> ·
+      <a href="{{ url_for('main.support') }}">Support</a>
+    </p>
+  </div>
+</section>
+{% endblock %}
