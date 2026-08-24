@@ -3,9 +3,21 @@ from flask_login import login_user, logout_user, current_user
 from ..forms import RegisterForm, LoginForm
 from ..models import User
 from ..extensions import db
-from ..utils.security import is_safe_redirect_url
+from ..utils.security import is_safe_redirect_url, is_website_admin_path
 
 auth = Blueprint("auth", __name__)
+
+
+def _post_login_redirect(user):
+    """Send members to the website dashboard; never honor admin next-URLs for non-admins."""
+    next_page = request.args.get("next")
+    if next_page and is_safe_redirect_url(next_page):
+        if is_website_admin_path(next_page) and getattr(user, "role", None) != "admin":
+            return redirect(url_for("main.dashboard"))
+        return redirect(next_page)
+    if getattr(user, "role", None) == "admin":
+        return redirect(url_for("admin.admin_dashboard"))
+    return redirect(url_for("main.dashboard"))
 
 
 @auth.route("/register", methods=["GET", "POST"])
@@ -23,7 +35,7 @@ def register():
                 request.remote_addr,
                 request.headers.get("User-Agent", "unknown"),
             )
-            flash("Email already exists. Please login.", "warning")
+            flash("Unable to create an account with this email. Please sign in or use a different email.", "warning")
             return redirect(url_for("auth.login"))
 
         user = User(
@@ -50,12 +62,7 @@ def register():
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        next_page = request.args.get("next")
-        if next_page and is_safe_redirect_url(next_page):
-            return redirect(next_page)
-        if current_user.role == "admin":
-            return redirect(url_for("admin.admin_dashboard"))
-        return redirect(url_for("main.dashboard"))
+        return _post_login_redirect(current_user)
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -70,13 +77,8 @@ def login():
                 request.remote_addr,
                 request.headers.get("User-Agent", "unknown"),
             )
-            next_page = request.args.get("next")
             flash("Welcome back!", "success")
-            if next_page and is_safe_redirect_url(next_page):
-                return redirect(next_page)
-            if user.role == "admin":
-                return redirect(url_for("admin.admin_dashboard"))
-            return redirect(url_for("main.dashboard"))
+            return _post_login_redirect(user)
 
         current_app.logger.warning(
             "Login failed email=%s ip=%s ua=%s",

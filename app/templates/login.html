@@ -5,7 +5,7 @@
     <div class="auth-card card">
         <img src="{{ logo_url() }}" alt="Men and Women of Passion and Purpose logo" class="brand-logo mx-auto mb-4">
         <h1>Website Login</h1>
-        <p class="auth-lead">Sign in with your existing ministry account to access your dashboard. Use this page for the public site and <strong>Website Admin</strong> (sermons, gallery, events, prayers).</p>
+        <p class="auth-lead">Sign in to your ministry website account to access your dashboard.</p>
         <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" class="space-y-4" x-data="{ showPassword: false, submitting: false }" @submit="submitting = true">
             {{ form.hidden_tag() }}
             <div>
@@ -31,10 +31,6 @@
         </form>
         <p class="auth-footer-links">
             Don't have an account? <a href="{{ url_for('auth.register') }}">Create an account</a>
-        </p>
-        <p class="auth-note">
-            App Admin at <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer">admin.woppandmopp.com</a>
-            uses a <strong>different</strong> account. Website passwords will not work there.
         </p>
     </div>
 </section>

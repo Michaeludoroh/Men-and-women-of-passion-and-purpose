@@ -72,7 +72,9 @@
                             <a href="{{ url_for('main.dashboard') }}" class="nav-link">Dashboard</a>
                             {% if current_user.role == 'admin' %}
                                 <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Website Admin</a>
+                                {% if app_admin_url %}
                                 <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="nav-link">App Admin</a>
+                                {% endif %}
                             {% endif %}
                             <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold site-nav-logout">Logout</a>
                         {% else %}
@@ -123,7 +125,9 @@
                     <a href="{{ url_for('main.dashboard') }}" class="site-nav-mobile-link" @click="open = false">Dashboard</a>
                     {% if current_user.role == 'admin' %}
                         <a href="{{ url_for('admin.admin_dashboard') }}" class="site-nav-mobile-link" @click="open = false">Website Admin</a>
+                        {% if app_admin_url %}
                         <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="site-nav-mobile-link" @click="open = false">App Admin</a>
+                        {% endif %}
                     {% endif %}
                     <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold site-nav-mobile-cta" @click="open = false">Logout</a>
                 {% else %}

@@ -62,6 +62,16 @@ def create_app():
 
     @app.context_processor
     def inject_media_helpers():
+        from flask_login import current_user
+
+        # App Admin is a separate system. Never put its URL in public template context.
+        injected_app_admin_url = ""
+        if (
+            getattr(current_user, "is_authenticated", False)
+            and getattr(current_user, "role", None) == "admin"
+        ):
+            injected_app_admin_url = app_admin_url()
+
         return {
             "logo_url": logo_url,
             "favicon_url": favicon_url,
@@ -78,7 +88,7 @@ def create_app():
             "social_links": get_social_links(),
             "sermon_watch_url": get_sermon_watch_url(),
             "contact_social_backgrounds": CONTACT_ICON_BACKGROUNDS,
-            "app_admin_url": app_admin_url(),
+            "app_admin_url": injected_app_admin_url,
             "ministry": get_ministry_context(),
         }
 
