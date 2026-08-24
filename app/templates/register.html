@@ -1,27 +1,56 @@
 {% extends "base.html" %}
 {% block title %}Register | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
 {% block content %}
-<section class="max-w-xl mx-auto">
-    <h1 class="text-3xl font-bold text-purple-900 mb-4">Create Your Account</h1>
-    <form method="POST" class="card space-y-4">
-        {{ form.hidden_tag() }}
-        <div>
-            <label class="label">{{ form.name.label }}</label>
-            {{ form.name(class="input-field") }}
-        </div>
-        <div>
-            <label class="label">{{ form.email.label }}</label>
-            {{ form.email(class="input-field") }}
-        </div>
-        <div>
-            <label class="label">{{ form.password.label }}</label>
-            {{ form.password(class="input-field") }}
-        </div>
-        <div>
-            <label class="label">{{ form.confirm_password.label }}</label>
-            {{ form.confirm_password(class="input-field") }}
-        </div>
-        <div>{{ form.submit(class="btn-primary w-full") }}</div>
-    </form>
+<section class="auth-page">
+    <div class="auth-card card">
+        <img src="{{ logo_url() }}" alt="Men and Women of Passion and Purpose logo" class="brand-logo mx-auto mb-4">
+        <h1>Create Your Account</h1>
+        <p class="auth-lead">Join Men and Women of Passion and Purpose. Your account is for the public website and member dashboard.</p>
+        <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-4" x-data="{ showPassword: false, showConfirm: false, submitting: false }" @submit="submitting = true">
+            {{ form.hidden_tag() }}
+            <div>
+                <label class="label" for="name">{{ form.name.label.text }}</label>
+                {{ form.name(class="input-field", id="name", autocomplete="name", required=true, **{"aria-required": "true", "aria-invalid": "true" if form.name.errors else "false"}) }}
+                {% if form.name.errors %}
+                    <p class="form-error" role="alert">{{ form.name.errors[0] }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label class="label" for="email">{{ form.email.label.text }}</label>
+                {{ form.email(class="input-field", id="email", autocomplete="email", required=true, **{"aria-required": "true", "aria-invalid": "true" if form.email.errors else "false"}) }}
+                {% if form.email.errors %}
+                    <p class="form-error" role="alert">{{ form.email.errors[0] }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label class="label" for="password">{{ form.password.label.text }}</label>
+                <div class="password-field">
+                    {{ form.password(class="input-field", id="password", autocomplete="new-password", required=true, **{"aria-required": "true", "aria-invalid": "true" if form.password.errors else "false", "x-bind:type": "showPassword ? 'text' : 'password'"}) }}
+                    <button type="button" class="password-toggle" @click="showPassword = !showPassword" :aria-pressed="showPassword.toString()" :aria-label="showPassword ? 'Hide password' : 'Show password'">
+                        <i class="fas" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <p class="form-error" role="alert">{{ form.password.errors[0] }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label class="label" for="confirm_password">{{ form.confirm_password.label.text }}</label>
+                <div class="password-field">
+                    {{ form.confirm_password(class="input-field", id="confirm_password", autocomplete="new-password", required=true, **{"aria-required": "true", "aria-invalid": "true" if form.confirm_password.errors else "false", "x-bind:type": "showConfirm ? 'text' : 'password'"}) }}
+                    <button type="button" class="password-toggle" @click="showConfirm = !showConfirm" :aria-pressed="showConfirm.toString()" :aria-label="showConfirm ? 'Hide confirm password' : 'Show confirm password'">
+                        <i class="fas" :class="showConfirm ? 'fa-eye-slash' : 'fa-eye'" aria-hidden="true"></i>
+                    </button>
+                </div>
+                {% if form.confirm_password.errors %}
+                    <p class="form-error" role="alert">{{ form.confirm_password.errors[0] }}</p>
+                {% endif %}
+            </div>
+            {{ form.submit(class="btn-primary w-full auth-submit rounded-xl py-3 font-bold", **{":disabled": "submitting", ":aria-busy": "submitting.toString()"}) }}
+        </form>
+        <p class="auth-footer-links">
+            Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+        </p>
+    </div>
 </section>
 {% endblock %}

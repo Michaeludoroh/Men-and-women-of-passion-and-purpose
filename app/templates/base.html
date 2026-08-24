@@ -22,6 +22,9 @@
                             purple: '#5A189A',
                             white: '#FFFFFF',
                         }
+                    },
+                    screens: {
+                        wide: '1440px'
                     }
                 }
             }
@@ -33,85 +36,107 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>[x-cloak]{display:none!important}</style>
     {% block extra_head %}{% endblock %}
     <link rel="icon" href="{{ favicon_url() }}" type="image/png" sizes="32x32">
     <link rel="icon" href="{{ favicon_16_url() }}" type="image/png" sizes="16x16">
     <link rel="apple-touch-icon" href="{{ apple_touch_icon_url() }}" sizes="180x180">
 </head>
 <body class="font-poppins bg-white text-gray-900 antialiased scroll-smooth">
-    <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" x-data="{ open: false }">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-3 sm:py-4">
-                <a href="{{ url_for('main.index') }}" class="flex items-center space-x-3 group">
-                    <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo">
-                    <span class="hidden sm:block text-sm font-black brand-text leading-tight">MEN & WOMEN OF<br>PASSION & PURPOSE</span>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header class="site-header" x-data="{ open: false }" x-effect="document.body.classList.toggle('nav-lock', open)" @keydown.escape.window="if (open) { open = false; $refs.navToggle && $refs.navToggle.focus(); }" @resize.window="if (window.innerWidth >= 1440) open = false">
+        <nav class="site-header-nav" aria-label="Main">
+            <div class="site-header-inner">
+                <a href="{{ url_for('main.index') }}" class="site-brand group">
+                    <img src="{{ logo_url() }}" alt="Men and Women of Passion and Purpose logo" class="brand-logo">
+                    <span class="site-brand-text brand-text">MEN &amp; WOMEN OF<br>PASSION &amp; PURPOSE</span>
                 </a>
 
-                <div class="hidden lg:flex items-center space-x-5">
-                    <a href="{{ url_for('main.index') }}" class="nav-link py-2 text-sm font-semibold">Home</a>
-                    <a href="{{ url_for('main.about') }}" class="nav-link py-2 text-sm font-semibold">About</a>
-                    <a href="{{ url_for('main.leadership') }}" class="nav-link py-2 text-sm font-semibold">Leadership</a>
-                    <a href="{{ url_for('main.gallery') }}" class="nav-link py-2 text-sm font-semibold">Gallery</a>
-                    <a href="{{ url_for('main.events') }}" class="nav-link py-2 text-sm font-semibold">Events</a>
-                    <a href="{{ url_for('sermon.sermons') }}" class="nav-link py-2 text-sm font-semibold">Sermons</a>
-                    <a href="{{ url_for('prayer.prayer_request') }}" class="nav-link py-2 text-sm font-semibold">Prayer</a>
-                    <a href="{{ url_for('partnership.partnership_page') }}" class="nav-link py-2 text-sm font-semibold">Partner</a>
-                    <a href="{{ url_for('classes.classes_home') }}" class="nav-link py-2 text-sm font-semibold">School</a>
-                    <a href="{{ url_for('main.contact') }}" class="nav-link py-2 text-sm font-semibold">Contact</a>
-                    <a href="{{ url_for('main.app_download') }}" class="nav-link py-2 text-sm font-semibold">WOPP App</a>
-                    <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav py-2 px-5 rounded-xl text-sm uppercase tracking-wide">Give</a>
-                    {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('main.dashboard') }}" class="nav-link py-2 text-sm font-semibold">Dashboard</a>
-                        {% if current_user.role == 'admin' %}
-                            <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link py-2 text-sm font-semibold">Website Admin</a>
-                            <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="nav-link py-2 text-sm font-semibold">App Admin</a>
+                <div class="site-nav-desktop" aria-label="Primary">
+                    <div class="site-nav-links">
+                        <a href="{{ url_for('main.index') }}" class="nav-link">Home</a>
+                        <a href="{{ url_for('main.about') }}" class="nav-link">About</a>
+                        <a href="{{ url_for('main.leadership') }}" class="nav-link">Leadership</a>
+                        <a href="{{ url_for('main.gallery') }}" class="nav-link">Gallery</a>
+                        <a href="{{ url_for('main.events') }}" class="nav-link">Events</a>
+                        <a href="{{ url_for('sermon.sermons') }}" class="nav-link">Sermons</a>
+                        <a href="{{ url_for('prayer.prayer_request') }}" class="nav-link">Prayer</a>
+                        <a href="{{ url_for('partnership.partnership_page') }}" class="nav-link">Partner</a>
+                        <a href="{{ url_for('classes.classes_home') }}" class="nav-link">School</a>
+                        <a href="{{ url_for('main.contact') }}" class="nav-link">Contact</a>
+                        <a href="{{ url_for('main.app_download') }}" class="nav-link">WOPP App</a>
+                    </div>
+                    <div class="site-nav-actions">
+                        <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav site-nav-give">Give</a>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.dashboard') }}" class="nav-link">Dashboard</a>
+                            {% if current_user.role == 'admin' %}
+                                <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">Website Admin</a>
+                                <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="nav-link">App Admin</a>
+                            {% endif %}
+                            <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold site-nav-logout">Logout</a>
+                        {% else %}
+                            <a href="{{ url_for('auth.login') }}" class="btn-login">Login</a>
+                            <a href="{{ url_for('auth.register') }}" class="nav-link">Join</a>
                         {% endif %}
-                        <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold py-2 px-4 text-sm rounded-lg">Logout</a>
-                    {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn-outline-gold py-2 px-4 text-sm rounded-lg">Login</a>
-                        <a href="{{ url_for('auth.register') }}" class="btn-gold-nav py-2 px-5 rounded-xl text-sm uppercase tracking-wide">Join</a>
-                    {% endif %}
+                    </div>
                 </div>
 
-                <button @click="open = !open" class="lg:hidden p-2 rounded-lg hover:bg-gray-100">
-                    <i class="fas" :class="open ? 'fa-times' : 'fa-bars'" class="text-xl"></i>
+                <button type="button"
+                        class="site-nav-toggle"
+                        x-ref="navToggle"
+                        @click="open = !open; $nextTick(() => { if (open && $refs.mobilePanel) { const first = $refs.mobilePanel.querySelector('a, button'); first && first.focus(); } })"
+                        :aria-expanded="open.toString()"
+                        aria-controls="mobile-navigation"
+                        :aria-label="open ? 'Close menu' : 'Open menu'">
+                    <span class="sr-only" x-text="open ? 'Close menu' : 'Open menu'">Open menu</span>
+                    <i class="fas text-xl" :class="open ? 'fa-times' : 'fa-bars'" aria-hidden="true"></i>
                 </button>
             </div>
-        </div>
+        </nav>
 
-        <div x-show="open" @click.away="open = false" x-transition class="lg:hidden bg-white border-t shadow-xl">
-            <div class="px-4 py-4 space-y-1">
-                <a href="{{ url_for('main.index') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Home</a>
-                <a href="{{ url_for('main.about') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">About</a>
-                <a href="{{ url_for('main.leadership') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Leadership</a>
-                <a href="{{ url_for('main.gallery') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Gallery</a>
-                <a href="{{ url_for('main.events') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Events</a>
-                <a href="{{ url_for('sermon.sermons') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Sermons</a>
-                <a href="{{ url_for('prayer.prayer_request') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Prayer</a>
-                <a href="{{ url_for('partnership.partnership_page') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Partner</a>
-                <a href="{{ url_for('classes.classes_home') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">School</a>
-                <a href="{{ url_for('main.contact') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Contact</a>
-                <a href="{{ url_for('main.app_download') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">WOPP App</a>
-                <div class="pt-4 pb-2 border-t border-gray-100">
+        <div class="site-nav-backdrop" x-show="open" x-cloak x-transition.opacity @click="open = false"></div>
+        <div id="mobile-navigation"
+             class="site-nav-mobile"
+             x-ref="mobilePanel"
+             x-show="open"
+             x-cloak
+             x-transition
+             role="dialog"
+             aria-modal="true"
+             aria-label="Mobile menu">
+            <div class="site-nav-mobile-inner">
+                <a href="{{ url_for('main.index') }}" class="site-nav-mobile-link" @click="open = false">Home</a>
+                <a href="{{ url_for('main.about') }}" class="site-nav-mobile-link" @click="open = false">About</a>
+                <a href="{{ url_for('main.leadership') }}" class="site-nav-mobile-link" @click="open = false">Leadership</a>
+                <a href="{{ url_for('main.gallery') }}" class="site-nav-mobile-link" @click="open = false">Gallery</a>
+                <a href="{{ url_for('main.events') }}" class="site-nav-mobile-link" @click="open = false">Events</a>
+                <a href="{{ url_for('sermon.sermons') }}" class="site-nav-mobile-link" @click="open = false">Sermons</a>
+                <a href="{{ url_for('prayer.prayer_request') }}" class="site-nav-mobile-link" @click="open = false">Prayer</a>
+                <a href="{{ url_for('partnership.partnership_page') }}" class="site-nav-mobile-link" @click="open = false">Partner</a>
+                <a href="{{ url_for('classes.classes_home') }}" class="site-nav-mobile-link" @click="open = false">School</a>
+                <a href="{{ url_for('main.contact') }}" class="site-nav-mobile-link" @click="open = false">Contact</a>
+                <a href="{{ url_for('main.app_download') }}" class="site-nav-mobile-link" @click="open = false">WOPP App</a>
+                <div class="site-nav-mobile-social">
                     {% with variant='compact' %}{% include 'includes/social_links.html' %}{% endwith %}
                 </div>
-                <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav block p-3 text-center rounded-xl mt-2">Give Now</a>
+                <a href="{{ url_for('giving.giving_page') }}" class="btn-gold-nav site-nav-mobile-cta" @click="open = false">Give</a>
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Dashboard</a>
+                    <a href="{{ url_for('main.dashboard') }}" class="site-nav-mobile-link" @click="open = false">Dashboard</a>
                     {% if current_user.role == 'admin' %}
-                        <a href="{{ url_for('admin.admin_dashboard') }}" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">Website Admin</a>
-                        <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="block p-3 font-semibold rounded-xl hover:bg-gray-50">App Admin</a>
+                        <a href="{{ url_for('admin.admin_dashboard') }}" class="site-nav-mobile-link" @click="open = false">Website Admin</a>
+                        <a href="{{ app_admin_url }}" target="_blank" rel="noopener noreferrer" class="site-nav-mobile-link" @click="open = false">App Admin</a>
                     {% endif %}
-                    <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold block p-3 text-center rounded-lg mt-2">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn-outline-gold site-nav-mobile-cta" @click="open = false">Logout</a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn-outline-gold block p-3 text-center rounded-lg mt-2">Login</a>
-                    <a href="{{ url_for('auth.register') }}" class="btn-gold-nav block p-3 text-center rounded-xl mt-2">Join Now</a>
+                    <a href="{{ url_for('auth.login') }}" class="btn-login site-nav-mobile-cta" @click="open = false">Login</a>
+                    <a href="{{ url_for('auth.register') }}" class="site-nav-mobile-link site-nav-mobile-join" @click="open = false">Join</a>
                 {% endif %}
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="pt-20 min-h-screen">
+    <main id="main-content" class="site-main">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 space-y-2">
@@ -131,7 +156,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        <img src="{{ logo_url() }}" alt="WOPP App Logo" class="brand-logo">
+                        <img src="{{ logo_url() }}" alt="Men and Women of Passion and Purpose logo" class="brand-logo">
                         <h3 class="text-lg font-black" style="color: var(--gold-primary);">MWPP Ministry</h3>
                     </div>
                     <p class="text-gray-300 leading-relaxed mb-4">Raising purpose-driven believers through the Word, prayer, worship, and kingdom impact.</p>

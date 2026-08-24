@@ -60,26 +60,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Navbar Scroll Effect
-    let lastScrollY = window.scrollY;
+    // Navbar scroll shadow — keep the header visible so the menu stays usable
     window.addEventListener('scroll', () => {
-        const nav = document.querySelector('nav');
+        const header = document.querySelector('.site-header') || document.querySelector('nav');
+        if (!header) return;
         if (window.scrollY > 100) {
-            nav.classList.add('nav-scrolled');
+            header.classList.add('nav-scrolled');
         } else {
-            nav.classList.remove('nav-scrolled');
+            header.classList.remove('nav-scrolled');
         }
-
-        // Hide/show on scroll direction (mobile)
-        if (window.innerWidth <= 768) {
-            if (window.scrollY > lastScrollY && window.scrollY > 100) {
-                nav.style.transform = 'translateY(-100%)';
-            } else {
-                nav.style.transform = 'translateY(0)';
-            }
-        }
-        lastScrollY = window.scrollY;
-    });
+    }, { passive: true });
 
     // Parallax Effect for Hero (subtle) — exclude sermon previews
     window.addEventListener('scroll', () => {

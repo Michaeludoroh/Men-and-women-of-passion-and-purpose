@@ -1,16 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Profile | MEN AND WOMEN OF PASSION AND PURPOSE{% endblock %}
 {% block content %}
-<section class="max-w-md md:max-w-lg mx-auto p-6">
-    <h1 class="text-2xl md:text-3xl font-bold text-purple-900 mb-6 line-clamp-1">Update Profile</h1>
-    <form method="POST" class="card space-y-4 p-6">
-        {{ form.hidden_tag() }}
-        <div>
-            <label class="label">{{ form.name.label }}</label>
-            {{ form.name(class="input-field") }}
-        </div>
-        <div>{{ form.submit(class="btn-primary w-full") }}</div>
-    </form>
+<section class="auth-page">
+    <div class="auth-card card">
+        <h1>Update Profile</h1>
+        <form method="POST" class="space-y-4">
+            {{ form.hidden_tag() }}
+            <div>
+                <label class="label" for="name">{{ form.name.label.text }}</label>
+                {{ form.name(class="input-field", id="name", autocomplete="name") }}
+                {% if form.name.errors %}
+                    <p class="form-error" role="alert">{{ form.name.errors[0] }}</p>
+                {% endif %}
+            </div>
+            <div>{{ form.submit(class="btn-primary w-full rounded-xl py-3 font-bold") }}</div>
+        </form>
+    </div>
 </section>
 {% endblock %}
-
