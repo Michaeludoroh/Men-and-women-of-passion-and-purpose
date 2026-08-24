@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Stagger Animation (Enhanced from original)
-    const animateElements = document.querySelectorAll('.card, .btn-hero-gold, .nav-link, .sermon-card');
+    const animateElements = document.querySelectorAll('.card, .btn-hero-gold, .sermon-card');
     animateElements.forEach((el, index) => {
         el.style.opacity = '0';
         el.style.transform = 'translateY(30px)';
@@ -370,8 +370,4 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Mobile menu smooth open/close
-document.querySelector('.mobile-menu-button')?.addEventListener('click', function() {
-    document.querySelector('.md\\:hidden')?.classList.toggle('menu-open');
-});
 
