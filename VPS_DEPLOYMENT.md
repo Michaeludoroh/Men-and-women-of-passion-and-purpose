@@ -319,60 +319,74 @@ sudo journalctl -u mwpp -f
 
 ## 6. Nginx Configuration
 
-### 6.1 HTTP server block (pre-SSL)
+### 6.1 Routing model (Phase 1 — selective Nest proxy)
 
-Create `/etc/nginx/sites-available/mwpp`:
+Host Nginx owns `woppandmopp.com` / `www.woppandmopp.com`. Flask remains the public website.
 
-```nginx
-upstream mwpp_app {
-    server 127.0.0.1:8000 fail_timeout=0;
-}
+| Path | Upstream |
+|------|----------|
+| `/`, `/about`, `/gallery`, `/events`, `/static/` | Flask Gunicorn (`127.0.0.1:8000`) |
+| Flask JSON: `/api/v1/gallery`, `/api/v1/events`, `/api/v1/ministry`, `/api/v1/health`, `/api/v1/contact`, … | Flask |
+| Nest mobile: `/api/v1/auth/`, `/subscriptions/`, `/users/`, `/payments/`, `/notifications/`, `/announcements/`, `/clips/`, `/library`, `/ebooks/`, `/events/public`, `/events/me` | NestJS (`127.0.0.1:4000`) |
+| `/realtime` | Docker WebSocket (`127.0.0.1:4100`) |
 
-server {
-    listen 80;
-    listen [::]:80;
-    server_name yourdomain.com www.yourdomain.com;
+Canonical files:
+- `deploy/nginx/mwpp.conf` — full HTTP site template (Phase 1)
+- `deploy/nginx/phase1-nest-locations.conf` — paste into live Certbot **443** server
 
-    client_max_body_size 16M;
+**Do not** proxy all of `/api/` to Nest in Phase 1.
 
-    # Certbot webroot (added automatically by certbot --nginx)
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location /static/ {
-        alias /var/www/mwpp/app/static/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-        access_log off;
-    }
-
-    location / {
-        proxy_pass http://mwpp_app;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_redirect off;
-        proxy_read_timeout 120s;
-        proxy_connect_timeout 120s;
-    }
-}
-```
-
-Enable the site:
+### 6.2 Install / update Phase 1 on a live Certbot site (recommended)
 
 ```bash
-sudo mkdir -p /var/www/certbot
-sudo ln -s /etc/nginx/sites-available/mwpp /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default
+# On the VPS
+sudo cp /etc/nginx/sites-available/mwpp /etc/nginx/sites-available/mwpp.bak.$(date +%Y%m%d%H%M)
+
+# 1) Add upstreams once (if missing) near the top of the site file:
+#    upstream nest_api { server 127.0.0.1:4000 fail_timeout=0; }
+#    upstream nest_ws  { server 127.0.0.1:4100 fail_timeout=0; }
+
+# 2) Paste contents of deploy/nginx/phase1-nest-locations.conf into the
+#    listen 443 ssl server block, BEFORE location / and BEFORE any location /api/.
+
+# 3) Confirm Nest is listening locally
+curl -fsS http://127.0.0.1:4000/api/v1/health
+curl -i http://127.0.0.1:4000/api/v1/auth/me   # expect 401
+
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-### 6.2 Redirect www to apex (optional)
+### 6.3 HTTP / full-file reference
+
+Use `deploy/nginx/mwpp.conf` for a complete Phase 1 HTTP template.
+For production HTTPS, **merge** `deploy/nginx/phase1-nest-locations.conf` into the existing Certbot 443 server — do not delete SSL certificate lines.
+
+Do **not** add `location /api/ { proxy_pass http://nest_api; }` in Phase 1.
+
+### 6.4 Redirect www to apex (optional)
 
 If you prefer `www` → bare domain, add a separate server block or use Certbot's redirect option during SSL setup.
+
+### 6.5 Phase 1 validation
+
+```bash
+# Nest path (unauthenticated) — expect 401 JSON from Nest
+curl -i https://woppandmopp.com/api/v1/auth/me
+
+# Flask path — expect Flask gallery JSON (not Nest)
+curl -i https://woppandmopp.com/api/v1/gallery
+
+# Website still Flask
+curl -I https://woppandmopp.com/
+```
+
+### 6.6 Phase 1 rollback
+
+```bash
+sudo cp /etc/nginx/sites-available/mwpp.bak.YYYYMMDDHHMM /etc/nginx/sites-available/mwpp
+sudo nginx -t && sudo systemctl reload nginx
+```
 
 ---
 
@@ -403,20 +417,50 @@ Certificates renew automatically via systemd timer. Default renewal attempts occ
 
 ### 7.3 Expected post-Certbot HTTPS block
 
-Certbot typically produces something like:
+After Certbot, keep existing SSL lines and ensure the **443** server includes NestJS locations **before** the Flask catch-all. Full reference: `deploy/nginx/mwpp.conf` (commented HTTPS section).
 
 ```nginx
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name yourdomain.com www.yourdomain.com;
+    server_name woppandmopp.com www.woppandmopp.com;
 
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/woppandmopp.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/woppandmopp.com/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    client_max_body_size 16M;
+    client_max_body_size 100M;
+
+    location /api/ {
+        proxy_pass http://nest_api;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Correlation-Id $http_x_correlation_id;
+        proxy_redirect off;
+        proxy_read_timeout 120s;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 120s;
+    }
+
+    location /realtime {
+        proxy_pass http://nest_ws;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        proxy_buffering off;
+    }
 
     location /static/ {
         alias /var/www/mwpp/app/static/;
@@ -440,11 +484,10 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name yourdomain.com www.yourdomain.com;
+    server_name woppandmopp.com www.woppandmopp.com;
     return 301 https://$host$request_uri;
 }
 ```
-
 ### 7.4 Recommended Nginx security additions (manual)
 
 After Certbot succeeds, optionally add to the `443` server block:
@@ -532,7 +575,9 @@ On a staging VPS, restore a recent `.dump` and uploads archive per `BACKUP_AND_R
 | Gunicorn running | `systemctl is-active mwpp` |
 | Nginx running | `systemctl is-active nginx` |
 | PostgreSQL running | `systemctl is-active postgresql` |
-| App health API | `curl -fsS https://yourdomain.com/api/v1/health` |
+| NestJS platform health (via host Nginx) | `curl -fsS https://woppandmopp.com/api/v1/health` |
+| NestJS auth route exists | `curl -i https://woppandmopp.com/api/v1/auth/me` → expect **401** (not HTML 404) |
+| Flask website still serves apex | `curl -fsSI https://woppandmopp.com/` → HTML from Flask |
 | Homepage | `curl -fsS -o /dev/null -w "%{http_code}" https://yourdomain.com/` |
 
 ### 9.2 Uptime monitoring (external)

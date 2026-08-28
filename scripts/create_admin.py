@@ -21,7 +21,23 @@ def main():
     with app.app_context():
         existing = user_model.query.filter_by(email=email).first()
         if existing:
-            print(f"\nUser with email '{email}' already exists. No changes made.")
+            current_role = getattr(existing, "role", None) or "member"
+            print(f"\nUser with email '{email}' already exists (role: '{current_role}').")
+            if current_role == admin_role:
+                print("No changes made. To change the password, run scripts/reset_admin_password.py")
+                sys.exit(0)
+
+            confirm = input("Promote this account to admin and set the password you just entered? [y/N]: ").strip().lower()
+            if confirm not in ("y", "yes"):
+                print("No changes made.")
+                sys.exit(0)
+
+            existing.role = admin_role
+            existing.set_password(password)
+            if name and getattr(existing, "name", None) != name:
+                existing.name = name
+            db.session.commit()
+            print(f"\nSUCCESS: '{email}' promoted to '{admin_role}' and password updated.")
             sys.exit(0)
 
         user = user_model(name=name, email=email, role=admin_role)

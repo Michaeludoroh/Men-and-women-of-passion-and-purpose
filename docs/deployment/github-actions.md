@@ -1,6 +1,8 @@
 # GitHub Actions CI/CD — Men and Women of Passion and Purpose
 
-Production deployment automation for the ministry website. This pipeline **automates the existing VPS process** without changing Gunicorn, Flask, Nginx, or `mwpp.service`.
+Production deployment automation for the ministry website. This pipeline **automates the existing VPS process** without changing Gunicorn, Flask, or `mwpp.service` itself.
+
+**Nginx coexistence:** Host Nginx (`/etc/nginx/sites-available/mwpp`) owns apex TLS and Flask routing. NestJS `/api/` and `/realtime` are reverse-proxied to Docker on `127.0.0.1:4000` / `127.0.0.1:4100`. See `deploy/nginx/mwpp.conf` and `VPS_DEPLOYMENT.md` §6.
 
 ## Actual production configuration
 

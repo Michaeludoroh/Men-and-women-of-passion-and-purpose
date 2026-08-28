@@ -12,11 +12,10 @@ os.environ.setdefault("FLASK_ENV", "development")
 os.environ.setdefault("SECRET_KEY", "audit-secret")
 
 FORBIDDEN_PATTERNS = [
-    r"menandwomenofpassionandpurpose",
-    r"@menandwomenofpassionandpurpose",
+    r"instagram\.com/menandwomenofpassionandpurpose",
     r"tiktok\.com/@menandwomen",
     r"tiktok\.com/@womenofpassionandpurpose",
-    r"youtube\.com/@menandwomen",
+    r"youtube\.com/@womenofpassionandpurpose",
     r"youtube\.com/@moppandwopp",
     r"http://(www\.)?(tiktok|youtube|facebook)",
 ]
@@ -24,8 +23,8 @@ FORBIDDEN_PATTERNS = [
 EXPECTED_URLS = {
     "https://www.tiktok.com/@moppandwopp",
     "https://www.facebook.com/share/18GWq4xT8s/?mibextid=wwXIfr",
-    "https://www.instagram.com/menandwomenofpassionandpurpose",
-    "https://www.youtube.com/@womenofpassionandpurpose",
+    "https://www.instagram.com/moppandwopp",
+    "https://www.youtube.com/@menandwomenofpassionandpurpose",
 }
 
 SCAN_DIRS = [
@@ -48,7 +47,7 @@ class SocialLinkParser(HTMLParser):
             return
         attr = dict(attrs)
         href = attr.get("href", "")
-        if not any(host in href for host in ("tiktok.com", "facebook.com", "youtube.com")):
+        if not any(host in href for host in ("tiktok.com", "facebook.com", "youtube.com", "instagram.com")):
             return
         self._current = {
             "href": href,
@@ -130,8 +129,8 @@ def audit_api():
     expected = {
         "tiktok": "https://www.tiktok.com/@moppandwopp",
         "facebook": "https://www.facebook.com/share/18GWq4xT8s/?mibextid=wwXIfr",
-        "instagram": "https://www.instagram.com/menandwomenofpassionandpurpose",
-        "youtube": "https://www.youtube.com/@womenofpassionandpurpose",
+        "instagram": "https://www.instagram.com/moppandwopp",
+        "youtube": "https://www.youtube.com/@menandwomenofpassionandpurpose",
     }
     issues = []
     if data != expected:
